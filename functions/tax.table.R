@@ -2,9 +2,8 @@
 # usage tax.tabe(df)
 
 tax.table <- function(df){
-  library (tidyverse)
-  library (plyr)
-  
+  require(tidyverse)
+ 
   taxonomy.file <- as.data.frame(df)
   row.names(taxonomy.file) = taxonomy.file[,1]
   tax.mat = taxonomy.file[,-1]
