@@ -1,0 +1,8 @@
+Parameters,Values
+noprimerfolder,/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/cutadapt_output/run2_20211117/noprimers/COI
+hash,TRUE
+trimming.length.Read1,200
+trimming.length.Read2,180
+metadata,/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/cutadapt_output/run2_20211117/noprimers/COI/cutadapt_output_metadata_COI.csv
+output.folder,/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/dada2_output/run2_20211117/COI
+keep.mid.files,TRUE
