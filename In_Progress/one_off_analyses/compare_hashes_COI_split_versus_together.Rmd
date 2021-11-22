@@ -1,0 +1,126 @@
+---
+title: "check_hashes_across_runs"
+author: "Eily Allan"
+date: "10/11/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(here)
+library(dplyr)
+library(insect)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r import data}
+fwd_hashes <- read.csv(here("Output","dada2_output_files", "run2_rerun_20211013","COI_fwds_hash_key.csv"))
+bkwd_hashes <- read.csv(here("Output","dada2_output_files","run2_rerun_20211013","COI_bkwds_hash_key.csv"))
+all_hashes <- read.csv(here("Output","dada2_output_files","run2_rerun_20211008","COI_hash_key.csv"))
+
+fwd_asvs <- read.csv(here("Output","dada2_output_files","run2_rerun_20211013","COI_fwds_ASV_table.csv"))
+bkwd_asvs <- read.csv(here("Output","dada2_output_files","run2_rerun_20211013","COI_bkwds_ASV_table.csv"))
+all_asvs <- read.csv(here("Output","dada2_output_files","run2_rerun_20211008","COI_ASV_table.csv"))
+```
+
+```{r qc}
+
+## check sum of both 
+nrow(all_hashes) - nrow(bkwd_hashes) - nrow(fwd_hashes)
+# so if they are run separately, it finds more hashes than if you run them individually.... 
+
+## also see how many asvs/reads in each sample for each way dada'd
+all_stats <- 
+  all_asvs %>% 
+  group_by(Sample_name) %>%
+  summarise(tot_asvs = n(), tot_reads = sum(nReads)) 
+
+fwd_stats <- 
+  fwd_asvs %>% 
+  group_by(Sample_name) %>%
+  summarise(tot_asvs = n(), tot_reads = sum(nReads)) 
+
+bkwd_stats <- 
+  bkwd_asvs %>% 
+  group_by(Sample_name) %>%
+  summarise(tot_asvs = n(), tot_reads = sum(nReads)) 
+
+## check fragment lengths
+hist(nchar(all_hashes$Sequence))
+hist(nchar(bkwd_hashes$Sequence))
+hist(nchar(fwd_hashes$Sequence))
+# this is a variable fragment because of the degeneracies - they look similar so just leave them 
+
+```
+
+```{r now compare overlaps}
+
+# start with all and forward - compare by hash id 
+f_all_overlap <- all_hashes %>% inner_join(fwd_hashes) %>% select (Hash) %>% mutate (status = "shared") 
+b_all_overlap <- all_hashes %>% inner_join(bkwd_hashes) %>% select (Hash) %>% mutate (status = "shared") 
+f_b_overlap <- fwd_hashes %>% inner_join(bkwd_hashes) %>% select (Hash) %>% mutate (status = "shared") 
+
+# what if instead compare by actual sequence
+f_all_overlap_seq <- all_hashes %>% inner_join(fwd_hashes) %>% select (Sequence) %>% mutate (status = "shared") 
+b_all_overlap_seq <- all_hashes %>% inner_join(bkwd_hashes) %>% select (Sequence) %>% mutate (status = "shared") 
+f_b_overlap_seq <- fwd_hashes %>% inner_join(bkwd_hashes) %>% select (Sequence) %>% mutate (status = "shared") 
+# exact same answers which it should be 
+
+# create tables based on hash ids 
+f_all_stats <- 
+  all_asvs %>% bind_rows(fwd_asvs, .id = "dada2_run") %>% left_join(f_all_overlap)%>% group_by(dada2_run, status)%>% summarise (nReads = sum(nReads), nhash = n_distinct(Hash))
+
+b_all_stats <- 
+  all_asvs %>% bind_rows(bkwd_asvs, .id = "dada2_run") %>% left_join(b_all_overlap)%>% group_by(dada2_run, status)%>% summarise (nReads = sum(nReads), nhash = n_distinct(Hash))
+
+```
+
+```{r rc the backwards ones and then compare}
+fixb_all_overlap <- bkwd_hashes
+rc_seq <- vector(length = dim(bkwd_hashes)[1])
+
+# this is ridiculous and shouldn't be for loop but wtf i can't get it to work 
+for (i in 1:dim(bkwd_hashes)[1]) {
+  rc_seq[i] = rc(bkwd_hashes[i,2])
+  
+}
+
+fixb_all_overlap$Sequence <- rc_seq
+
+# re-hash 
+#fixb_all_overlap$Hash <- as.character(hash(fixb_all_overlap$Sequence))
+
+
+fixb_all_overlap <- all_hashes %>% inner_join(fixb_all_overlap) %>% select (Hash) %>% mutate (status = "shared") 
+# No overlap... that would be a problem... 
+
+# but maybe should compare by sequence instead of hash because now they are RC'd so should be right direction but maybe given a different hash id 
+fixb_all_overlap_seq <- all_hashes %>% inner_join(fixb_all_overlap) %>% select (Sequence) %>% mutate (status = "shared") 
+fixb_fwd_overlap_seq <- fwd_hashes %>% inner_join(fixb_all_overlap) %>% select (Sequence) %>% mutate (status = "shared") 
+
+
+```
+
+```{r instead try pulling the backwards }
+new.set <- bkwd_hashes
+rc_seq <- vector(length = dim(bkwd_hashes)[1])
+
+# this is ridiculous and shouldn't be for loop but wtf i can't get it to work 
+for (i in 1:dim(bkwd_hashes)[1]) {
+  rc_seq[i] = rc(bkwd_hashes[i,2])
+  
+}
+
+new.set$Sequence <- rc_seq
+
+fixb_all_overlap <- all_hashes %>% inner_join(new.set) %>% select (Hash) %>% mutate (status = "shared") 
+# No overlap... that would be a problem... 
+
+```
+

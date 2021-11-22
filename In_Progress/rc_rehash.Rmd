@@ -1,0 +1,94 @@
+---
+title: "rc_rehash.Rmd"
+author: "Eily Allan"
+date: "10/14/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Because we are idiots, some samples were sequenced with the adapters/primers backwards. (MAJOR face palm.) We made life a lot harder for ourselves. 
+
+So, to fix this, after dada2, we need to reverse complement the representative sequence from the dada2 output and then we ALSO have to "re-hash" because the hash ID corresponds to the sequence (so if we are using the RC of the sequence the hash id will be wrong). That way we can compare hashes from samples that the primers were put on backwards to samples where the primers were put on correctly. 
+
+```{r load the files where primers/adapters were put on backwards}
+library(here)
+library(dplyr)
+library(insect)
+library(digest)
+
+hash_key <- read.csv(here("Output","dada2_output_files", "run3_20211018", "COI_bkwds_hash_key.csv"))
+asv_table <- read.csv(here("Output","dada2_output_files", "run3_20211018", "COI_bkwds_ASV_table.csv"))
+```
+
+
+```{r reverse complement the representative sequences}
+new_hash_key <- hash_key
+rc_seq <- vector(length = dim(hash_key)[1])
+
+# this is ridiculous and shouldn't be for loop but wtf i can't get it to work 
+for (i in 1:dim(hash_key)[1]) {
+  rc_seq[i] = rc(hash_key[i,2])
+  }
+
+new_hash_key$Sequence <- rc_seq
+```
+
+```{r now rehash}
+# great - but now we need to rehash - be careful because there are different algorithms
+new_hash_key$Hash <- sapply(new_hash_key$Sequence, digest, algo = "sha1", serialize = F, skip = "auto")
+
+# then write the new hash key to a csv
+write.csv(new_hash_key, here("Output","dada2_output_files", "run3_20211018", "COI_bkwds_new_hash_key.csv"))
+
+```
+
+```{r now change hashes in asv table and resave it}
+old_to_new_hash_key <- data.frame(hash_key$Hash, new_hash_key$Hash)
+colnames(old_to_new_hash_key) <- c("Hash", "NewHash")
+new_asv_table <- inner_join(asv_table, old_to_new_hash_key) 
+new_asv_table <- new_asv_table[, !(colnames(new_asv_table) %in% "Hash")]
+
+new_asv_table <- new_asv_table %>% 
+  rename(Hash = NewHash)
+
+write.csv(new_asv_table, here("Output","dada2_output_files", "run3_20211018", "COI_bkwds_new_ASV_table.csv"))
+
+```
+
+CHECK TO MAKE SURE IT WORKED USING: 
+run 1 (which was classified as RC) with the subset of run 2 samples that were run backwards
+run 2 backwards and run 2 forwards
+
+```{r test this by looking at forwards and backwards from run 2 rerun}
+f_hash_key <- read.csv(here("Output","dada2_output_files", "run2_rerun_20211013", "COI_fwds_hash_key.csv"))
+f_asv_table <- read.csv(here("Output","dada2_output_files", "run2_rerun_20211013", "COI_fwds_ASV_table.csv"))
+
+b_hash_key <- read.csv(here("Output","dada2_output_files", "run2_rerun_20211013", "COI_bkwds_200_175_hash_key.csv"))
+b_asv_table <- read.csv(here("Output","dada2_output_files", "run2_rerun_20211013", "COI_bkwds_200_175_ASV_table.csv"))
+
+b_new_hash_key <- b_hash_key
+b_rc_seq <- vector(length = dim(b_hash_key)[1])
+
+for (i in 1:dim(b_hash_key)[1]) {
+  b_rc_seq[i] = rc(b_hash_key[i,2])
+  }
+
+b_new_hash_key$Sequence <- b_rc_seq
+b_new_hash_key$Hash <- sapply(b_new_hash_key$Sequence, digest, algo = "sha1", serialize = F, skip = "auto")
+b_new_asv_table <- b_asv_table
+
+### these should all have overlap (without changing anything)
+intersect(hash_key$Hash, b_hash_key$Hash)
+intersect(hash_key$Sequence, b_hash_key$Sequence)
+
+### these should now have overlap after we re-hashed
+intersect(new_hash_key$Hash, b_new_hash_key$Hash)
+intersect(new_hash_key$Hash, f_hash_key$Hash)
+intersect(b_new_hash_key$Hash, f_hash_key$Hash)
+intersect(b_new_hash_key$Sequence, f_hash_key$Sequence)
+## YAY it works :) 
+
+```
