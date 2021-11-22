@@ -1,0 +1,190 @@
+---
+title: "rc_rehash.Rmd"
+author: "Eily Allan"
+date: "10/14/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+let's try plotting some PCAs to make sure things are clustering as we hope 
+
+```{r load the files where primers/adapters were put on backwards}
+library(here)
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+library(vegan)
+library(reshape2)
+library(ggplot2)
+library(RColorBrewer)
+
+metadata <- read.csv(here("Input","sequencing_metadata_files","master_sequencing_datasheet20211018.csv"), header = TRUE)
+asvs <- read.csv(here("Output","dada2_output_files", "2021-10-18COI.merged.ASV.table.csv"))
+```
+
+## Format ASV tables (raw/index) to be used for PCAs and adonis -- and without Barnes for both
+
+```{r formatting}
+
+### Clean up the ASV table of raw reads 
+
+# first only select metadata corresponding to samples
+metadata <-  metadata[metadata$Sample_name %in% asvs$Sample_name,]
+intersect(unique(metadata$Sample_name), unique(asvs$Sample_name))
+
+# take out only mifish samples for now
+#metadata <- metadata[metadata$Locus == "MiFish",]
+#metadata <- metadata[metadata$Type != "kangaroo",]
+asvs <- asvs[asvs$Sample_name %in% metadata$Sample_name ,]
+
+# translate ASVs into table that has ASVs as rows and samples as columns 
+asv_mat <-  pivot_wider(asvs, names_from = Sample_name, values_from = nReads) 
+asv_mat <- asv_mat[,-1] # remove locus column
+asv_mat <- as.data.frame(asv_mat) # make data frame
+row.names(asv_mat) = asv_mat[,1] # make row names the ASV hash
+asv_mat = asv_mat[,-1] # remove the column with the ASV hash 
+asv_mat[is.na(asv_mat)] <- 0 # change NAs to 0s 
+
+# check kangaroo for cross-contamination/ tag jumping 
+#kanga <- asv_mat[asv_mat$COI.Kangaroo.Run.2>0,]
+#real_samples_kanga <- colSums(kanga) # looks good! Only 10 and 7 reads compared to 105528 in the Kangaroo 
+#asv_mat = asv_mat[,-11] # now remove the kangaroo from the dataset because it will mess up the PCAs 
+#metadata <- metadata[metadata$Sample_name %in% colnames(asv_mat),] # remove kangaroo
+
+#rare <- rrarefy(asv_mat, 1000)
+rarecurve(t(asv_mat), step=1000, sample=2000)
+
+# # remove mayas samples and april portage which is backwards
+# metadata <- metadata[-1,]
+# metadata <- metadata[-1,]
+# metadata <- metadata[-1,]
+# metadata <- metadata[-1,]
+# metadata <- metadata[-1,]
+# metadata <- metadata[-1,]
+# metadata <- metadata[-4,]
+# 
+# asv_mat <- asv_mat[, -41]
+# asv_mat <- asv_mat[, -40]
+# asv_mat <- asv_mat[, -39]
+# asv_mat <- asv_mat[, -38]
+# asv_mat <- asv_mat[, -15]
+# asv_mat <- asv_mat[, -13]
+# asv_mat <- asv_mat[, -4]
+
+
+asv_mat <- asv_mat[, -103]
+asv_mat <- asv_mat[, -68]
+asv_mat <- asv_mat[, -67]
+asv_mat <- asv_mat[, -66]
+asv_mat <- asv_mat[, -65]
+asv_mat <- asv_mat[, -64]
+asv_mat <- asv_mat[, -63]
+asv_mat <- asv_mat[, -61]
+asv_mat <- asv_mat[, -50]
+asv_mat <- asv_mat[, -49]
+asv_mat <- asv_mat[, -48]
+asv_mat <- asv_mat[, -47]
+asv_mat <- asv_mat[, -43]
+asv_mat <- asv_mat[, -29]
+metadata <-  metadata[metadata$Sample_name %in% colnames(asv_mat),]
+```
+
+
+## Run PCA analyses (Bray and Jaccard) for both raw/index
+
+```{r PCAs}
+
+### Calculations with Barnes
+
+# PCA on raw reads - with bray curtis distance 
+pca.raw.bc.nmds <- metaMDS(t(asv_mat), distance = "bray")
+pca.raw.bc.MDS1 = pca.raw.bc.nmds$points[,1] #store nmds values
+pca.raw.bc.MDS2 = pca.raw.bc.nmds$points[,2] #store nmds values
+
+# PCA on raw reads - with jaccard distance 
+pca.raw.jac.nmds <- metaMDS(t(asv_mat), distance = "jaccard")
+pca.raw.jac.MDS1 = pca.raw.jac.nmds$points[,1] #store nmds values
+pca.raw.jac.MDS2 = pca.raw.jac.nmds$points[,2] #store nmds values
+
+raw.pca.to.plot <- cbind(metadata, pca.raw.bc.MDS1, pca.raw.bc.MDS2, pca.raw.jac.MDS1, pca.raw.jac.MDS2)
+
+```
+
+### PCA plots 
+
+```{r PCA plots}
+
+# raw reads / bray curtis
+ggplot(raw.pca.to.plot, aes(x=pca.raw.bc.MDS1, y=pca.raw.bc.MDS2)) +
+  geom_point(size=4, aes(color=factor(Creek), shape=factor(Month.year))) +
+  theme_bw() +
+  labs(x="PC1",y="PC2", color="Creek") +
+  ggtitle('COI - Raw Reads - Bray Curtis')
+# ggsave("/Users/elizabethandruszkiewicz/GoogleDrive/UW/Bioinformatics/test_ramon/PCA_raw_bc_COI.jpg", units="in", width=5, height=4, dpi=300)
+
+# raw reads / jaccard
+ggplot(raw.pca.to.plot, aes(x=pca.raw.jac.MDS1, y=pca.raw.jac.MDS2)) +
+  geom_point(size=4, aes(color=factor(Creek), shape=factor(Month.year))) +
+  theme_bw() +
+  labs(x="PC1",y="PC2", color="Creek") +
+  ggtitle('COI - Raw Reads - Jaccard')
+
+```
+
+```{r convert to eDNA index and replot}
+### Convert ASV table to eDNA index (without collapsing biological replicates)
+#asvs$event <- metadata$Event[match(asvs$Sample_name, row.names(metadata))] # add column with creek_up/down_date as "event" 
+#asvs$biol.rep <- metadata$Replicate[match(asvsi$Sample_name, row.names(metadata))] # add column for biological replicates
+
+asvs <- asvs[asvs$Sample_name %in% metadata$Sample_name ,]
+index <- eDNAindex(asvs,
+                  Sample_column = Sample_name,
+                  OTU_column = Hash,
+                  Counts_column = nReads) #,
+                  #Biological.replicate = biol.rep) # right now, don't collapse biological replicates
+
+index_mat <-  pivot_wider(index, names_from = Sample_name, values_from = Normalized.reads) # now we have matrix with eDNA index
+index_mat <- as.data.frame(index_mat)
+row.names(index_mat) = index_mat[,1] # make row names from ASV hash
+index_mat = index_mat[,-1] # remove column with the ASV hash 
+index_mat[is.na(index_mat)] <- 0 # change NAs to 0s
+
+# # remove kangaroo, mayas samples, and the backwards sample 
+# index_mat = index_mat[,-42] 
+# index_mat = index_mat[,-41] 
+# index_mat = index_mat[,-40] 
+# index_mat = index_mat[,-39] 
+# index_mat = index_mat[,-38] 
+# index_mat = index_mat[,-37] 
+# index_mat = index_mat[,-36] 
+# index_mat = index_mat[,-4] 
+
+pca.index.bc.nmds <- metaMDS(t(index_mat), distance = "bray")
+pca.index.bc.MDS1 = pca.index.bc.nmds$points[,1] #store nmds values
+pca.index.bc.MDS2 = pca.index.bc.nmds$points[,2] #store nmds values
+
+# PCA on raw reads - with jaccard distance 
+pca.index.jac.nmds <- metaMDS(t(index_mat), distance = "jaccard")
+pca.index.jac.MDS1 = pca.index.jac.nmds$points[,1] #store nmds values
+pca.index.jac.MDS2 = pca.index.jac.nmds$points[,2] #store nmds values
+
+index.pca.to.plot <- cbind(metadata, pca.index.bc.MDS1, pca.index.bc.MDS2, pca.index.jac.MDS1, pca.index.jac.MDS2)
+
+# index / bray curtis
+ggplot(index.pca.to.plot, aes(x=pca.index.bc.MDS1, y=pca.index.bc.MDS2)) +
+  geom_point(size=4, aes(color=factor(Creek), shape=factor(Month.year))) +
+  theme_bw() +
+  labs(x="PC1",y="PC2", color="Creek") +
+  ggtitle('COI - eDNA Index - Bray Curtis')
+# ggsave("/Users/elizabethandruszkiewicz/GoogleDrive/UW/Bioinformatics/test_ramon/PCA_raw_bc_COI.jpg", units="in", width=5, height=4, dpi=300)
+
+# index / jaccard
+ggplot(index.pca.to.plot, aes(x=pca.index.jac.MDS1, y=pca.index.jac.MDS2)) +
+  geom_point(size=4, aes(color=factor(Creek), shape=factor(Month.year))) +
+  theme_bw() +
+  labs(x="PC1",y="PC2", color="Creek") +
+  ggtitle('COI - eDNA Index - Jaccard')
+``` 

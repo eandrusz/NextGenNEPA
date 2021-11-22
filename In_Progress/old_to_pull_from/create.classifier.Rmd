@@ -1,0 +1,123 @@
+---
+title: "From CRUX to insect"
+output: html_notebook
+---
+
+The idea is to get the sequences from the database CRUX has done to s
+```{r libraries}
+library (tidyverse)
+library (here)
+library (insect)
+library (taxonomizr)
+library (primerTree) # To run this it is better to have your NCBI API key in the system. 
+
+# Go to myNCBI to get your own and then run  Sys.setenv(NCBI_API_KEY = "YOUR_API_KEY")
+# Or if you want it to be in your Rprofile, then add it to your ~/.Renviron by adding it to the file ~/.Renviron 
+# NCBI_API_KEY="yourkey" 
+# Then restart R and then check that Sys.getenv("NCBI_API_KEY") is what you want
+
+```
+
+# 1. Load the fasta file and the insect version of ncbi taxonomy
+
+```{r data}
+Seqs <- readFASTA(here("", "old_to_pull_from", "classifiers_to_use_in_insect", "insect_classifiers", "12S", "Global_.fasta"))
+
+Seqs <- readFASTA("/Users/erdag/NextGenNEPA_local/classifiers/COI_build/Combined_blast_wang_RefDB.fasta")
+
+
+lineages <- read_delim(here("Users", "erdag", "NextGenNEPA_local", "classifiers", "COI_build", "Combined_blast_wang_RefDB_taxonomy.txt"), col_names = c("Accession", "lineage"), delim = "\t" )
+
+lineages <- read_delim("/Users/erdag/NextGenNEPA_local/classifiers/COI_build/Combined_blast_wang_RefDB_taxonomy.txt", col_names = c("Accession", "lineage"), delim = "\t" )
+
+
+
+# new.taxonomy.rds is a tabulated version of Genebanks' taxonomy, in which for each taxID you have its name and rank, and 
+#also the taxID of its parent taxa. It's a big file so a no-no for github. You can download one from gdrive or 
+
+#with insect::taxonomy()
+world.taxonomy <- insect::taxonomy()
+# world.taxonomy <- read_rds(here("analysis", "classifiers_to_use_in_insect", "new.taxonomy.rds"))
+world.taxonomy %>% 
+  write_rds(here("In_Progress", "old_to_pull_from", "classifiers_to_use_in_insect", "new.taxonomy.20210723.rds"))
+```
+
+From the lineages that CRUX provides, get the species value (all lineages have 7 terms, which is very nice)
+```{r }
+lineages %>% 
+  separate (lineage, sep = ";", into = LETTERS[1:7]) %>% 
+  select (Accession, last.term = G) -> Conversion.df
+```
+
+For many of them, ther should be a perfect match in the taxonomydb. Now check for how many of those terms we don't have a perfect match in the taxonomy database; and search for those in Genbank for an updated taxID - DO WE NEED TO DO THIS FOR THE COI SINCE WANGENSTEEN MAY BE OLDER?
+```{r }
+# Do we have a name for each last thing on the lineages?
+Conversion.df %>% 
+  anti_join(world.taxonomy, by = c("last.term" = "name")) %>% # these are the ones without match
+  slice(1:2) %>% 
+  mutate(taxids = map_chr(Accession, gi2taxid)) -> taxIDs # keep the taxids
+
+Conversion.df %>% 
+  inner_join(world.taxonomy %>% select(last.term = name,
+                                       taxID)) %>%  # these are the ones with a match
+  bind_rows(taxIDs %>% 
+              mutate(taxID = as.numeric(taxids)) %>% 
+              select(-taxids)) -> with.taxids # and we have joined them all in one table
+```
+
+For some of them, we have not been able to find a matching taxID
+```{r }
+# Did it work
+
+with.taxids %>% 
+  filter (is.na(taxID)) %>% 
+  left_join(lineages)
+```
+
+Turns out the taxonomy of those things has changed, or there are sinonyms, or are not described species yet. Shall we drop them, or find the right taxonomic annotation for them?
+
+
+## If we skip them
+
+Then remove those 21 sequences from the database, change the names of the sequences from >ACCESSION to >ACCESSION|TAXID
+
+```{r If we skip them}
+seqs.to.remove <- with.taxids %>% 
+  filter (is.na(taxID)) %>% 
+  pull(Accession)
+# remove from the list
+NewSeqs <- discard (Seqs,names(Seqs) %in%seqs.to.remove)
+# create a tibble of oldname, newname
+
+tibble(Accession = names(NewSeqs)) %>% 
+  left_join(with.taxids %>%
+              select(Accession, taxID)) %>%
+    #filter (is.na(taxID)) # ALL HAVE a Value
+  unite(Accession, taxID, col = "newname", sep = "|") %>%
+  pull() %>%  # and change the name of newseqs
+  set_names(NewSeqs,nm= .) -> New.new.seqs # assign it to a new object so I can check they start with the same names 
+# (Meaning that I haven't stupidly renamed the sequences)
+
+# Write them to a file 
+
+New.new.seqs %>% 
+  writeFASTA(file = here("In_Progress", "old_to_pull_from", "classifiers_to_use_in_insect", "insect_classifiers", "12S", "Only_with_taxID.fasta"))
+
+```
+
+
+
+# Create classifier 
+
+Better to do it in the cluster, but the code is
+
+```{r}
+Seqs <- readFASTA( here("analysis", "classifiers_to_use_in_insect", "insect_classifiers", "12S", "Only_with_taxID.fasta"))
+
+
+#for learn function need: x= sequence DB aka the fasta file with "accession|taxID", and db = a hierarchical taxonomy database in a dataframe with taxID, parent_taxID, rank, name (see world.taxonomy)  
+world.taxonomy <- 
+insect::learn(New.new.seqs, db = world.taxonomy) -> new.classifier
+write_rds(new.classifier, here("analysis", "classifiers_to_use_in_insect", "insect_classifiers", "12S", "Classifier.12S.rds"))
+```
+

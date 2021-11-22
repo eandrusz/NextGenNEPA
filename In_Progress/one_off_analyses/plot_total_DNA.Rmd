@@ -1,0 +1,43 @@
+---
+title: "plot_total_dna"
+author: "Eily Allan"
+date: "08/17/2021"
+output: html_document
+---
+
+Plot total DNA for each creek/month. 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+rm(list = ls())
+library(ggplot2)
+library(tidyverse)
+library(here)
+library(RColorBrewer)
+
+data <- read.csv(here("Input","extract_qubits.csv"), header=TRUE)
+c1 <- colorRampPalette(brewer.pal(5, 'Dark2'))(5)
+
+averaged_reps <- data %>% 
+  group_by(monthyear, creek, location) %>% 
+  summarise(avgqubit = mean(qubit)) 
+
+```
+
+## Plot metadata separated by creek/station, plotted over time
+
+```{r plots}
+
+# plot total DNA concentratoins 
+ggplot(averaged_reps) +
+  geom_point(na.rm=TRUE, aes(x=monthyear, y= avgqubit, size = 2, color=as.factor(creek), shape = as.factor(location))) +
+  # scale_y_log10() +
+  #scale_color_manual(values = c1) +
+  #scale_shape_manual(values = c(15, 16, 17, 18)) +
+  #labs(x="Month", y="Total DNA (ng/ul)", size="", color="Creek", shape="Station") +
+  #guides(size = FALSE) +
+  theme_bw()
+```
+
+

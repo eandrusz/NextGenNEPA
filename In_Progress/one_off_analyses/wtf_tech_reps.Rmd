@@ -1,0 +1,73 @@
+---
+title: "wtf_tech_reps.Rmd"
+author: "Eily Allan"
+date: "11/9/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(vegan)
+
+COI.ASV.table <- read.csv(here("Output","dada2_output_files","20211111.COI.merged.ASV.table.csv"))
+COI.hash.key <- read.csv(here("Output","dada2_output_files","20211111.COI.hash.key.csv"))
+COI.metadata <- read.csv(here("Output","dada2_output_files","20211111.COI.all.metadata.csv"))
+
+MiX.ASV.table <- read.csv(here("Output","dada2_output_files","20211111.MiX.merged.ASV.table.csv"))
+MiX.hash.key <- read.csv(here("Output","dada2_output_files","20211111.MiX.hash.key.csv"))
+MiX.metadata <- read.csv(here("Output","dada2_output_files","20211111.MiX.all.metadata.csv"))
+
+```
+
+## Look at kangaroo first 
+
+```{r kangaroo}
+COI.metadata <- COI.metadata %>% 
+  select(-Sample_name) %>% 
+  rename(Sample_name = Sample_ID)
+  
+COI.ASV.table <- COI.ASV.table %>% 
+  left_join(COI.metadata, by = "Sample_name")
+
+COI.kangaroo <-
+  COI.ASV.table %>% 
+  filter (Type == "kangaroo") 
+
+#%>% 
+  #group_by(Hash) %>% 
+  #summarise(tot = sum(nReads)) 
+
+```
+
+## Then look at technical replicates
+
+```{r technical repliates}
+
+COI.tech.reps <-
+  COI.ASV.table %>% 
+  filter (Type == "tech_rep") 
+
+COI.tech.reps.table <- 
+  COI.tech.reps %>% 
+  select(c(Sample_name, Hash, nReads)) %>% 
+  group_by(Sample_name) %>% 
+  pivot_wider(names_from = Sample_name, values_from =  nReads) 
+
+# BC distance
+COI.tech.reps.table <- as.data.frame(COI.tech.reps.table) # make data frame
+row.names(COI.tech.reps.table) = COI.tech.reps.table[,1] # make row names the ASV hash
+COI.tech.reps.table = COI.tech.reps.table[,-1] # remove the column with the ASV hash 
+COI.tech.reps.table[is.na(COI.tech.reps.table)] <- 0
+
+raw.bc <- vegdist(t(COI.tech.reps.table), method="bray")
+nmds.raw.bc <- metaMDS(t(COI.tech.reps.table), distance = "bray")
+
+
+## look at 0321 Brn Up 2 - other biological replicates 
+
+BrnUp.all.0321 <- 
+  COI.ASV.table %>% 
+  filter (Month.year == 321, )
+
+```

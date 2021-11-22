@@ -1,0 +1,71 @@
+---
+title: "check_hashes_across_runs"
+author: "Eily Allan"
+date: "10/11/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(here)
+library(dplyr)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r import data}
+
+run1_mf_hashes <- read.csv(here("Output","dada2_output_files","run1_20210527","MiFish","hash_key.csv"))
+run1_mm_hashes <- read.csv(here("Output","dada2_output_files","run1_20210527","MiMammal","hash_key.csv"))
+run1_coi_hashes <- read.csv(here("Output","dada2_output_files","run1_20210527","COI","hash_key.csv"))
+
+run2_mf_hashes <- read.csv(here("Output","dada2_output_files","run2_rerun_20211008","MiFish_hash_key.csv"))
+run2_mm_hashes <- read.csv(here("Output","dada2_output_files","run2_rerun_20211008","MiMammal_hash_key.csv"))
+run2_coi_hashes <- read.csv(here("Output","dada2_output_files","run2_rerun_20211008","COI_hash_key.csv"))
+
+run1_mf_asv <- read.csv(here("Output","dada2_output_files","run1_20210527","MiFish","ASV_table.csv"))
+run2_mf_asv <- read.csv(here("Output","dada2_output_files","run2_rerun_20211008","MiFish_ASV_table.csv"))
+```
+
+```{r qc}
+
+# some of the mifish ASVs are really long - which makes sense because we saw in the bioanalyzer that there was another peak and it was from the MiFish library
+# let's remove any reads that are longer than 200 bp because they are probably bacterial junk
+run2_mf_seq_lengh <- nchar(run2_mf_hashes$Sequence)
+hist(run2_mf_seq_lengh)
+run2_mf_keep <- run2_mf_seq_lengh < 200
+run2_mf_short_only <- run2_mf_hashes[run2_mf_keep ,]
+hist(nchar(run2_mf_short_only$Sequence))
+
+# this might also happen with mimammal - let's check - it does but not as bad - but let's remove anyways
+run2_mm_seq_lengh <- nchar(run2_mm_hashes$Sequence)
+hist(run2_mm_seq_lengh)
+run2_mm_short_only <- run2_mm_hashes[run2_mm_seq_lengh < 200 ,]
+hist(nchar(run2_mm_short_only$Sequence))
+
+## hmmm.. what about COI lengths
+hist(nchar(run1_coi_hashes$Sequence))
+hist(nchar(run2_coi_hashes$Sequence))
+# this is a variable fragment because of the degeneracies - they look similar so just leave them 
+######### REMINDER TO GO BACK THOUGH BECAUSE SOME ARE FORWARD AND SOME ARE BACKWARDS - TRY DADA2 SEPARATING THEM 
+
+```
+
+```{r now compare across the two runs}
+mf_shared <- intersect(run1_mf_hashes$Hash, run2_mf_short_only$Hash)
+mm_shared <- intersect(run1_mm_hashes$Hash, run2_mm_short_only$Hash)
+coi_shared <- intersect(run1_coi_hashes$Hash, run2_coi_hashes$Hash)
+
+
+run1_mf_hashes %>% inner_join(run2_mf_hashes) %>% select (Hash) %>% mutate (status = "shared" ) -> overlap
+
+run1_mf_asv$Sample_name <- as.character(run1_mf_asv$Sample_name)
+test <- run1_mf_asv %>% bind_rows(run2_mf_asv, .id = "Run") %>% left_join(overlap)%>% group_by(Run, status)%>% summarise (nREads = sum(nReads), nhash = n_distinct(Hash))
+
+```
+

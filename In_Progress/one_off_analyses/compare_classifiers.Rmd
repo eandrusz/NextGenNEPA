@@ -1,0 +1,218 @@
+---
+title: "compare_classifiers"
+author: "Eily Allan"
+date: "11/15/2021"
+output: html_document
+---
+
+We are trying to compare classifiers to see what works best for COI Leray XT. We have many different iterations... 
+
+The first is the COI Leray classifier that insect has on their website, which uses COI Leray primers (not XT) and was last updated on 20181124 - this is V5 (https://cran.r-project.org/web/packages/insect/vignettes/insect-vignette.html). 
+
+Because it is slightly out of date and doesn't have the XT primers (which should catch more), the other way we can build our own is starting with the blast results files from our first three runs, pull down world taxonomy, clean up, do LCA analysis (??? EZZA DID YOU DO THIS OR NO BECAUSE WE LEFT OTHER TAXONOMY IN CASE WE FIND IT), clean up again, format, use insects "learn" function to build tree. The blast database was updated in (RYAN WHAT MONTH? OCTOBER?) 2021. 
+
+We can do that for just our blast results OR add in results from Wangensteen et al. 2018 where the Leray XT primers were originally published. (Paper:https://peerj.com/articles/4705/, DB download: https://github.com/metabarpark/Reference-databases). We can take the "db_COI_MBPK_March2016.fasta" file and format it and use the same insect "learn" function to make a tree. This includes more than just NCBI (ours is just NCBI) but it is more outdated (2016). But as far as I can find, they just have fasta/taxonomy, not a tree format.
+
+Finally, we could combine our blast results with Owen's fasta file. Our blast results will be smaller number of sequences/taxa (because we are only including what we found in our samples), but anything that we found that was also in Owen's database, we want to be sure to keep our blast results for because the old annotations are 5 years out of date.
+
+In summary, potential classifiers are:
+
+1. INSECT: insect - Leray (not XT) - updated in 2018 - download as tree (RDS) already.  
+2. BLAST.US: blast results from runs 1,2,3 - Leray XT - localized - read in, do lca and clean up, build tree
+3. BLAST.OWEN: Wangensteen et al. 2018 reference database - read in, build tree
+4. BLAST.US.OWEN: combine 2 and 3, build tree 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(tidyverse)
+library(insect)
+
+# Working directories
+base.dir <- "/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/"
+output.dir <- paste0(base.dir,"Output")
+compare.dir <- paste0(output.dir,"/hashes_to_taxonomy_output/compare_classifiers/")
+
+```
+
+I thought that Erin ran this on 11/12/2021 to compare the performance of #1 and #2 but I think that something got messed up.
+
+Erin ran "hashes_to_taxonomy" file with the following parameters:
+older:
+    value: C:\Users\erdag\github\NextGenNEPA\Output\hashes_to_taxonomy_output\run4_rerun\COI_blast_classifier 
+  Hash_key:
+    value: C:\Users\erdag\github\NextGenNEPA\Output\dada2_output_files\runs1_2_3_coi_hash_key.csv
+  ASVs: 
+    value: C:\Users\erdag\github\NextGenNEPA\Output\dada2_output_files\run4_rerun\COI_ASV_table.csv
+  classifier:
+    value: C:\Users\erdag\NextGenNEPA_local\classifiers\COI_classifier.rds
+  previous_effort: 
+    value: C:\Users\erdag\github\NextGenNEPA\Output\hashes_to_taxonomy_output\run3\COI\2021-10-18hashes.annotated.rds
+    
+    
+So she took the ASVs from run 4 - but the hash key was from runs 1-3 - and classified using the classifier that we just made (from the blast results of runs 1-3)... I think she commented out the previous effort but am not totally clear because it is commented out in one line but then another line that needs to be commented out to not use it is not. It *should* be commented out becasue we don't want to use a previous effor here. 
+
+Before we even compare classifiers, there is going to be a discrepancy here because the hash key does not have hashes from run 4 but we are trying to classify hashes from run 4. Let's keep going and see what we can find out (while I re-run this script with the ASVs from runs 1-3 rather than run 4 -- or alternatively use run 4 but put the right hash key in and compare classifiers.)
+
+```{r read input files}
+
+## ASV Tables
+
+# Start with the ASVS from runs 1, 2, and 3 that we combined and blasted to create "our classifier"
+run123.asvs <- read.csv(paste0(output.dir,"/dada2_output_files/20211115.COI.runs123.ASV.table.csv"))
+# Erin didn't do this with runs 1, 2, and 3 - instead we have run 4 right now
+run4.asvs <- read.csv(paste0(output.dir,"/dada2_output_files/run4_rerun/COI/ASV_table.csv"))
+
+## Files used to make classifier
+
+# Then read in the file that Erin made to create the classifier from the blast results 
+# IMPORTANTLY - I *think* the ours holey database from runs 1-3 is "Blast_curated_distinct_RefDB.fasta" but I am not sure. Erin had Ryan use this file to make a classifier in insect on 11/11/21 and Ryan named it "COI_classifier.rds" and I renamed it to "COI_classifier_runs123_blast.rds" in attempt to reduce future confusion. 
+run123.hash.key <- read.csv(paste0(output.dir,"/dada2_output_files/runs1_2_3_coi_hash_key.csv"))
+run123.blast.output <- read_delim(("//Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Input/classifiers/runs1_2_3_coi_hash_key_format6-1.txt"), col_names = c("qseqid", "sseqid", "sacc", "pident", "length", "mismatch", "gapopen", "qcovus", "qstart", "qend", "sstart", "send", "evalue", "bitscore", "staxid", "qlen", "sscinames", "sseq"), delim = "\t" )
+run123.classifier.input <- readFASTA(paste0(base.dir,"/Input/Blast_curated_distinct_RefDB.fasta"))
+run4.hash.key <- read.csv(paste0(output.dir,"/dada2_output_files/run4_rerun/COI/hash_key.csv"))
+
+run123.nhashasvs <- as.numeric(length(unique(run123.asvs$Hash)))
+run123.nhash <- as.numeric(dim(run123.hash.key)[1])
+# something isn't quite right here because these two should be the exact same - let's ignore for now... 
+run123.nblasthits <- as.numeric(length(unique(run123.blast.output$qseqid)))
+# ok so only about 16k of the 93k of hashes are hitting something in blast
+
+run4.nhashasvs <- as.numeric(length(unique(run4.asvs$Hash)))
+run4.nhash <- as.numeric(length(unique(run4.asvs$Hash)))
+# well this is good that these match exactly - we don't have blast results but we can compare to what classified using run 1-3 blast results
+
+```
+
+To compare performance, we want to use the ASVs from the same files that we built the BLAST.US (#2) from to make sure that that specific way of classifying is doing everything as it should. Then, after that we can compare to using the pre-made tree from insect (#1).
+
+```{r read in output files}
+
+## Output after classifying (depends on which classifier was used)
+
+# So look at the taxonomy that is assigned to each ASV with different classifiers. We would hope/expect that when we use the tree built from the blast results of runs 1-3 is used to classify the ASVs from runs 1-3 it is a very good match. The insect database may be less good if there is stuff missing in it. 
+
+run123.blast.us.classif <- read.csv(paste0(output.dir,"/hashes_to_taxonomy_output/compare_classifiers/runs123.blast.us.hashes.annotated.csv"), row.names=1)
+# without literally reclassifying the combined ASV tables, should be able to use the most recently run classification script 
+run123.insect.classif <- read.csv(paste0(output.dir,"/hashes_to_taxonomy_output/run3/COI/hashes.annotated.csv"), row.names=1)
+
+#runs123.blast.owen.classif <- read.csv(paste0(compare.dir,"hashes.annotated.runs123asvs.owenclassif.csv"))
+#runs123.blast.us.owen.classif <- read.csv(paste0(compare.dir,"hashes.annotated.runs123asvs.usowenclassif.csv"))
+  
+```
+
+
+```{r start comparison}
+
+## 1. INSECT CLASSIFIER
+
+run123.ninsect <- as.numeric(length(intersect(run123.hash.key$Hash, run123.insect.classif$representative)))
+# ok so 10k out of 90k are coming out after classification step - but some have no rank.. 
+
+run123.insect.withrank <- 
+  run123.insect.classif %>% 
+  filter(rank != "no rank")
+# now only 4500 out of 90k
+
+# but still most are just kingdom or superkingdom
+run123.insect.belowkingdom <-
+  run123.insect.withrank %>% 
+  filter(rank != "kingdom") %>% 
+  filter(rank != "superkingdom")
+# oh boy and now only 500 out of 90k 
+
+## 2. BLAST US CLASSIFIER
+
+run123.nblastus <- as.numeric(length(intersect(run123.hash.key$Hash, run123.blast.us.classif$representative)))
+# ok so everything is in there but what is it actually?
+
+run123.blast.us.withrank <- 
+  run123.blast.us.classif %>% 
+  filter(rank != "rank0") %>% 
+  select(-accession)
+# now only 500ish with a rank - most of these are to species and genus level 
+
+## FOUND IN 1 AND 2 
+run123.insect.and.us <- intersect(run123.insect.belowkingdom$representative, run123.blast.us.withrank$representative)
+# so this is really interesting.. only 68 hashes are both assigned by our blast and insect when you take out things that have no rank
+
+run123.insect.and.us.exact <- intersect(run123.insect.classif[,-4], run123.blast.us.classif[,-c(4,6)])
+
+combo <- run123.blast.us.classif %>% 
+  left_join(run123.insect.classif)
+
+# pull the full taxonomies for the 68 hashes that were both classified 
+run123.insect.both <- run123.insect.belowkingdom %>% 
+  filter(representative %in% run123.insect.and.us)
+
+run123.us.both <- run123.blast.us.withrank %>% 
+  filter(representative %in% run123.insect.and.us)
+
+run123.overlap <- bind_rows(run123.insect.both, run123.us.both, .id="classification_method")
+
+```
+
+
+OLD - SEE BELOW FOR RUN 4 WITH INSECT VS. BLAST RUNS 1-3
+
+We don't have the files for this yet so we can just compare from run 4 how the classifiers worked (not comparing numbers from what we put in to make the tree versus what we got out).
+
+For run 4:
+30429 ASVs to start with in the dada2 output from run 4 (run4.asvs)
+XX ASVs that were assigned something in blast that we used to make the tree
+
+
+
+```{r read in output files}
+
+## Output after classifying (depends on which classifier was used)
+
+# Again, a head-to-head would be classifying the ASV table from runs 1,2,3 with the classifier (aka tree) created from the blast results of runs 1,2,3 --- instead, we have run 4 classified but can compare us versus insect (and later owen and us/owen) - still unclear if the wrong hash key impacts how classification occured (I have to imagine it does - especially because the insect classifier was probably run with the right hash key for run 4)
+
+run4.insect.classif <- read.csv(paste0(output.dir,"/hashes_to_taxonomy_output/run4_rerun/COI_old_classifier/hashes.annotated.csv"), row.names=1)
+run4.blast.us.classif <- read.csv(paste0(output.dir,"/hashes_to_taxonomy_output/run4_rerun/COI_blast_classifier/hashes.annotated.csv"), row.names=1)
+
+# What we want eventually....
+#runs123.insect.classif <- read.csv(paste0(compare.dir,"hashes.annotated.runs123asvs.insectclassif.csv"))
+#runs123.blast.us.classif <- read.csv(paste0(compare.dir,"hashes.annotated.runs123asvs.usclassif.csv"))
+#runs123.blast.owen.classif <- read.csv(paste0(compare.dir,"hashes.annotated.runs123asvs.owenclassif.csv"))
+#runs123.blast.us.owen.classif <- read.csv(paste0(compare.dir,"hashes.annotated.runs123asvs.usowenclassif.csv"))
+  
+```
+
+
+```{r start comparison}
+
+## 1. INSECT CLASSIFIER
+
+run4.ninsect <- as.numeric(length(intersect(run4.hash.key$Hash, run4.insect.classif$representative)))
+# ok so 20k out of 30k are coming out after classification step - but some have no rank.. 
+
+run4.insect.withrank <- 
+  run4.insect.classif %>% 
+  filter(rank != "no rank")
+# now only 5600 out of 30k
+
+# but still most are just kingdom or superkingdom
+run4.insect.belowkingdom <-
+  run4.insect.withrank %>% 
+  filter(rank != "kingdom") %>% 
+  filter(rank != "superkingdom")
+# oh boy and now only 627 out of 30k 
+
+## 2. BLAST US CLASSIFIER
+
+run4.nblastus <- as.numeric(length(intersect(run4.hash.key$Hash, run4.blast.us.classif$representative)))
+# ok so 20k out of 30k are coming out after classification step - but some have no rank.. 
+
+run4.blast.us.withrank <- 
+  run4.blast.us.classif %>% 
+  filter(rank != "rank0") %>% 
+  select(-accession)
+
+# most of these are to species and genus level... but a lot less 
+
+## FOUND IN 1 AND 2 
+run4.insect.and.us <- intersect(run4.insect.belowkingdom$representative, run4.blast.us.withrank$representative)
+
+```

@@ -1,0 +1,162 @@
+---
+title: "wangensteen_db_reformat"
+author: "Eily Allan"
+date: "10/27/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(Biostrings)
+library(here)
+library(insect)
+library(seqinr)
+#library(tidyverse)
+
+owen_db <- readDNAStringSet(file=here("Input", "db_COI_March2016_fixed.fasta"))
+```
+
+## Parse the labels
+
+This formatting includes lots of stuff we don't actually need - split the labels by what they are and store them in a data frame.
+
+```{r parse}
+owen_labels <- names(owen_db)
+owen_seqs <- paste(owen_db)
+owen_labels2 <- strsplit(owen_labels, ";")
+
+
+### WTF THERE MUST BE A BETTER WAY TO DO THIS - THIS IS DISGUSTING 
+
+kingdom_names <- vector(length=length(owen_labels2))
+for(i in 1:length(owen_labels2)) {
+  name = grep("kingdom_name=", owen_labels2[[i]], value = TRUE)
+  if (identical(name, character(0))) {
+    kingdom_names[i] <- "NA"
+  } else {
+    kingdom_names[i] <- name
+  }
+}
+kingdom_names <- sub(" kingdom_name=", "", kingdom_names)
+
+phylum_names <- vector(length=length(owen_labels2))
+for(i in 1:length(owen_labels2)) {
+  name = grep("phylum_name=", owen_labels2[[i]], value = TRUE)
+  if (identical(name, character(0))) {
+    phylum_names[i] <- "NA"
+  } else {
+    phylum_names[i] <- name
+  }
+}
+phylum_names <- sub(" phylum_name=", "", phylum_names)
+#some have "None" but change to "NA"
+phylum_names <- gsub("None", "NA", phylum_names)
+
+
+class_names <- vector(length=length(owen_labels2))
+for(i in 1:length(owen_labels2)) {
+  name = grep("class_name=", owen_labels2[[i]], value = TRUE)
+  if (identical(name, character(0))) {
+    class_names[i] <- "NA"
+  } else {
+    class_names[i] <- name
+  }
+}
+class_names <- sub(" class_name=", "", class_names)
+#some have "None" but change to "NA"
+class_names <- gsub("None", "NA", class_names)
+
+
+order_names <- vector(length=length(owen_labels2))
+for(i in 1:length(owen_labels2)) {
+  name = grep("order_name=", owen_labels2[[i]], value = TRUE)
+  if (identical(name, character(0))) {
+    order_names[i] <- "NA"
+  } else {
+    order_names[i] <- name
+  }
+}
+order_names <- sub(" order_name=", "", order_names)
+#some have "None" but change to "NA"
+order_names <- gsub("None", "NA", order_names)
+
+
+family_names <- vector(length=length(owen_labels2))
+for(i in 1:length(owen_labels2)) {
+  name = grep("family_name=", owen_labels2[[i]], value = TRUE)
+  if (identical(name, character(0))) {
+    family_names[i] <- "NA"
+  } else {
+    family_names[i] <- name
+  }
+}
+family_names <- sub(" family_name=", "", family_names)
+#some have "None" but change to "NA"
+family_names <- gsub("None", "NA", family_names)
+
+genus_names <- vector(length=length(owen_labels2))
+for(i in 1:length(owen_labels2)) {
+  name = grep("genus_name=", owen_labels2[[i]], value = TRUE)
+  if (identical(name, character(0))) {
+    genus_names[i] <- "NA"
+  } else {
+    genus_names[i] <- name
+  }
+}
+genus_names <- sub(" genus_name=", "", genus_names)
+#some have "None" but change to "NA"
+genus_names <- gsub("None", "NA", genus_names)
+
+species_names <- vector(length=length(owen_labels2))
+for(i in 1:length(owen_labels2)) {
+  name = grep("species_name=", owen_labels2[[i]], value = TRUE)
+  if (identical(name, character(0))) {
+    species_names[i] <- "NA"
+  } else {
+    species_names[i] <- name
+  }
+}
+species_names <- sub(" species_name=", "", species_names)
+# some have an underscore instead of space between genus and species in species name (BOLD vs GenBank) so change them to have space
+species_names <- gsub("_", " ", species_names)
+# some are jacked up and have ### in species name so just make those NA
+species_names <- gsub("###", "NA", species_names)
+#some have "None" but change to "NA"
+species_names <- gsub("None", "NA", species_names)
+
+accessions <- vector(length=length(owen_labels2))
+for(i in 1:length(owen_labels2)) {
+  accessions[i]= owen_labels2[[i]][1]
+}
+
+taxid <- vector(length=length(owen_labels2))
+for(i in 1:length(owen_labels2)) {
+  name = grep(" taxid=", owen_labels2[[i]], value = TRUE)
+  if (identical(name, character(0))) {
+    taxid[i] <- "NA"
+  } else {
+    taxid[i] <- name
+  }
+}
+taxid <- sub(" taxid=", "", taxid)
+
+acc_taxid <- paste0(accessions,"|",taxid)
+```
+
+## Reformat into fasta and txt file 
+
+Now just make one file that is the accession number and the sequence (separated by space) -- and a text file that is the accession number and then the lineage (tab deliminated)
+
+```{r reformat}
+owen_fasta <- data.frame(accessions, owen_seqs)
+
+fname <- here("Input","Wangensteen_RF_DB.fasta")
+write.fasta(sequences = as.list(owen_seqs), names = accessions, file.out = fname)
+
+# 
+fname2 <- here("Input","Wangensteen_RF_DB_taxonomy.txt")
+owen_txt <- data.frame(accessions, taxid, acc_taxid, kingdom_names, phylum_names, class_names, order_names, family_names, genus_names, species_names)
+write.csv(owen_txt, fname2, row.names=FALSE)
+
+
+
+```
