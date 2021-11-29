@@ -6,7 +6,7 @@ output: html_document
 
 params: 
   run:
-    value: 2
+    value: 3
   marker:
     value: COI
  
@@ -192,5 +192,11 @@ clasif.hashes <- readRDS(paste0(run_marker_output_folder,"/blast.badrank.hashes.
 write.csv(blast.bad.rank.hashes, paste0(run_marker_output_folder,"/blast.badrank.hashes.annotated",".csv"))
 
 blast.both <- rbind(multi.lca.no.rank, multi.lca.bad.rank)
-saveRDS(blast.both, file=paste0(here("Output","classification_output"),"/",format(Sys.Date(), "%Y%m%d"), ".", params$marker,".blast.previous.hashes.annotated.rds"))
+saveRDS(blast.both, file=paste0(here("Output","classification_output"),"/", params$marker,".all.blast.previous.hashes.annotated.rds"))
+
+# now if we only keep the blast results that were to genus/species
+blast.gs <- blast.both %>% 
+   filter(genus != NA)
+saveRDS(blast.gs, file=paste0(here("Output","classification_output"),"/", params$marker,".all.gs.blast.previous.hashes.annotated.rds"))
+
 ```

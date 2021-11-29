@@ -7,21 +7,21 @@ output:
     toc: true
 params: 
   folder:
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/classification_output/run3_20211117/COI
+    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/classification_output/run4_20211117/MiFish
   Hash_key:
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/dada2_output/run3_20211117/COI/hash_key.csv
+    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/dada2_output/run4_20211117/MiFish/hash_key.csv
   ASVs: 
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/dada2_output/run3_20211117/COI/ASV_table.csv
+    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/dada2_output/run4_20211117/MiFish/ASV_table.csv
   classifier:
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Input/classifiers/classification.tree.coi.leray.v5.rds
+    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Input/classifiers/classifier_12S_MiFish.rds
   previous_effort: 
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/classification_output/20211120.COI.all.gs.previous.hashes.annotated.rds
+    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/classification_output/MiFish.all.gs.previous.hashes.annotated.rds
   local_blast: 
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/classification_output/20211121.COI.blast.previous.hashes.annotated.rds
+    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/classification_output/MiFish.blast.previous.hashes.annotated.rds
   run:
-    value: 3
+    value: 4
   marker:
-    value: COI
+    value: MiFish
   
 ---
 
@@ -58,34 +58,34 @@ Hash     <- read_csv(params$Hash_key) %>%
   select(Hash, Sequence) %>% distinct()
 ALL.ASVs <- read_csv(params$ASVs)
 
-### COI -- HAS SOME BACKWARDS
-# #reverse complement the representative sequence for each hash
-cutadapt_metadata <- read.csv("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/cutadapt_output/run3_20211117/noprimers/COI/cutadapt_output_metadata_COI.csv")
-is.backwards <- (cutadapt_metadata$rc == 1)
-samples.backwards <- cutadapt_metadata$Sample_name[is.backwards]
-samples.forwards <- cutadapt_metadata$Sample_name[! is.backwards]
-
-ASVs.fwd <- ALL.ASVs %>%
-  filter(Sample_name %in% samples.forwards)
-ASVs.bkwd <- ALL.ASVs %>%
-  filter(Sample_name %in% samples.backwards)
-
-Hash.fwds <- Hash %>%
-  filter(Hash %in% ASVs.fwd$Hash)
-Hash.bkwds <- Hash %>%
-  filter(Hash %in% ASVs.bkwd$Hash)
-
-# actually RC them
-rc_seq <- vector(length = dim(Hash.bkwds)[1])
-# this is ridiculous and shouldn't be for loop but wtf i can't get it to work
-for (i in 1:dim(Hash.bkwds)[1]) {
-  rc_seq[i] = rc(Hash.bkwds[i,2])
-}
-Hash.bkwds$Sequence <- rc_seq
-Hash.bkwds <- Hash.bkwds %>%
-  select(Hash, Sequence) %>% distinct()
-
-Hash <- rbind(Hash.fwds, Hash.bkwds)
+# ### COI -- HAS SOME BACKWARDS
+# # #reverse complement the representative sequence for each hash
+# cutadapt_metadata <- read.csv("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run4_20211117/noprimers/COI/cutadapt_output_metadata_COI.csv")
+# is.backwards <- (cutadapt_metadata$rc == 1)
+# samples.backwards <- cutadapt_metadata$Sample_name[is.backwards]
+# samples.forwards <- cutadapt_metadata$Sample_name[! is.backwards]
+# 
+# ASVs.fwd <- ALL.ASVs %>%
+#   filter(Sample_name %in% samples.forwards)
+# ASVs.bkwd <- ALL.ASVs %>%
+#   filter(Sample_name %in% samples.backwards)
+# 
+# Hash.fwds <- Hash %>%
+#   filter(Hash %in% ASVs.fwd$Hash)
+# Hash.bkwds <- Hash %>%
+#   filter(Hash %in% ASVs.bkwd$Hash)
+# 
+# # actually RC them
+# rc_seq <- vector(length = dim(Hash.bkwds)[1])
+# # this is ridiculous and shouldn't be for loop but wtf i can't get it to work
+# for (i in 1:dim(Hash.bkwds)[1]) {
+#   rc_seq[i] = rc(Hash.bkwds[i,2])
+# }
+# Hash.bkwds$Sequence <- rc_seq
+# Hash.bkwds <- Hash.bkwds %>%
+#   select(Hash, Sequence) %>% distinct()
+# 
+# Hash <- rbind(Hash.fwds, Hash.bkwds)
 
 # comment these out if this is the first run and there is no previous effort or blast
 previous.effort <- read_rds(params$previous_effort)
@@ -100,10 +100,10 @@ Let's keep only the unique sequences
 Make them into a DNAbin object for insect
 
 ```{r make it into a DNA object}
-# ## FOR 12S REMOVE ANYTHING TOO BIG
-# hash.length <- nchar(Hash$Sequence) 
-# hash.keep <- hash.length < 200
-# Hash <- Hash[hash.keep,]
+## FOR 12S REMOVE ANYTHING TOO BIG
+hash.length <- nchar(Hash$Sequence)
+hash.keep <- hash.length < 200
+Hash <- Hash[hash.keep,]
 
 
 ## if using a previous effort
@@ -162,8 +162,11 @@ good.clasif.hashes <- readRDS(file=paste0(run_marker_output_folder,"/gs.new.hash
 write.csv(good.clasif.hashes, file=paste0(run_marker_output_folder,"/gs.new.hashes.annotated.csv"))
 
 # make and save combined rds file with the previous effort and the new one 
+combined <- rbind(previous.effort, all.clasif.hashes)
+saveRDS(combined, file=paste0(here("Output","classification_output"),"/", params$marker,".all.previous.hashes.annotated.rds"))
+
 combined.gs <- rbind(previous.effort,good.clasif.hashes)
-saveRDS(combined.gs, file=paste0(here("Output","classification_output"),"/",format(Sys.Date(), "%Y%m%d"), ".", params$marker,".all.gs.previous.hashes.annotated.rds"))
+saveRDS(combined.gs, file=paste0(here("Output","classification_output"),"/", params$marker,".all.gs.previous.hashes.annotated.rds"))
 ```
 
 ## STEP 3: Now we want to take the leftover hashes that were not previously classified, not in our previous local BLAST database, not newly classified -- and we want to BLAST them and add them to make a new local BLAST database. 
@@ -198,7 +201,35 @@ writeFasta(hash.to.blast, filename=paste0(run_marker_output_folder,"/run", param
 writeFasta(hash.to.blast2, filename=paste0(run_marker_output_folder,"/run", params$run,".",params$marker,".hashes.to.blast2.fasta"))
 ```
 
-The first step is running this command through the server to blast the results and pull down the data we need for each
+The first step is running this command through the server to blast the results and pull down the data we need for each. SEE GOOGLE DRIVE FOR CODE! (Link: https://drive.google.com/drive/u/1/folders/1Ctgkr0poeogKBv4IJHzzz7q6aVrJLL37)
+
+Then use the 5a.classify.blast.EA.Rmd file to turn the blast results into taxonomy (via LCA) and then we can go back to each run and add the classifications to ASVs that did not get classified on the tree but the BLAST results did have a good (species or genus level) annotation.  
+
+Then we want to add the good classifications from 
+
+```{r add in hashes that were classified with blast}
+# blast.bad.rank.results <- readRDS(paste0(run_marker_output_folder,"/blast.badrank.hashes.annotated",".rds"))
+# blast.no.rank.hashes <- readRDS(paste0(run_marker_output_folder,"/blast.norank.hashes.annotated",".rds"))
+# 
+# blast.bad.rank.gs.results <- blast.bad.rank.results %>% 
+#   filter(genus != NA)
+# 
+# blast.no.rank.gs.results <- blast.no.rank.results %>% 
+#   filter(genus != NA)
+# 
+# # this will combine any hash that is given any rank in either the insect tree or the blast results 
+# anyrank.insect.plus.blast.clasif.hashes <- x
+# 
+# # this will combine only hashes that are given a genus or species level rank either via insect or the blast results
+# good.insect.plus.blast.clasif.hashes <- x 
+
+
+```
+
+
+
+################################################ GRAVEYARD ################################################ 
+
 ```{bash}
 #!/bin/bash
 

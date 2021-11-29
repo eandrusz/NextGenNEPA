@@ -1,0 +1,192 @@
+---
+title: "species_for_mocks"
+author: "Eily Allan"
+date: "11/22/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+```
+
+Let's take the combined ASV tables for runs 1-4 and find the top (and bottom?) hashes for each marker. Maybe take the top 10 unique species and top 10 bottom species to put in - that way we can tell if species are not amplifying because they have a low amplification efficiency (a) or if they just really aren't in our samples. 
+
+After that, we will add in all the salmonids and a few other target species of interest (for fish - bull trout, lamprey, etc.)
+
+```{r import files}
+
+# add in the combined ASV tables from runs 1-4
+all.coi.asvs <- read.csv("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/dada2_output/20211120.combined.COI.ASV.table.csv")
+all.mifish.asvs <- read.csv("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/dada2_output/20211120.combined.MiFish.ASV.table.csv")
+all.mimammal.asvs <- read.csv("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/dada2_output/20211120.combined.MiMammal.ASV.table.csv")
+
+# now we also need the classifications to see what the hashes actually are 
+# i think we can use the most recent genus and species classifications (because we need to know those to put in)
+all.coi.classifications <- readRDS("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/classification_output/COI.all.gs.previous.hashes.annotated.rds")
+all.coi.classifications <- all.coi.classifications %>% 
+  rename(Hash = representative)
+
+all.mifish.classifications <- readRDS("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/classification_output/MiFish.all.gs.previous.hashes.annotated.rds")
+all.mifish.classifications <- all.mifish.classifications %>% 
+  rename(Hash = representative)
+
+all.mimammal.classifications <- readRDS("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/classification_output/MiMammal.all.gs.previous.hashes.annotated.rds")
+all.mimammal.classifications <- all.mimammal.classifications %>% 
+  rename(Hash = representative)
+
+# lets add in the blast results too in case there are some that weren't in here
+all.coi.classifications2 <- readRDS("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/classification_output/COI.blast.previous.hashes.annotated.rds")
+all.coi.classifications2 <- all.coi.classifications2 %>% 
+  rename(Hash = representative)
+
+all.mifish.classifications2 <- readRDS("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/classification_output/MiFish.blast.previous.hashes.annotated.rds")
+all.mifish.classifications2 <- all.mifish.classifications2 %>% 
+  rename(Hash = representative)
+
+all.mimammal.classifications2 <- readRDS("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/classification_output/MiMammal.blast.previous.hashes.annotated.rds")
+all.mimammal.classifications2 <- all.mimammal.classifications2 %>% 
+  rename(Hash = representative)
+
+# then check to see if there are any new hashes in blast that aren't in the previous 
+intersect(all.coi.classifications$Hash, all.coi.classifications2$Hash)
+intersect(all.mifish.classifications$Hash, all.mifish.classifications2$Hash)
+intersect(all.mimammal.classifications$Hash, all.mimammal.classifications2$Hash)
+
+#none so phew
+```
+
+```{r attach taxonomy}
+
+coi.all <- all.coi.asvs %>% 
+  group_by(Hash) %>% # for each sample that has multiple asvs that assign to the same taxa...
+  summarise(tot = sum(nReads)) %>% 
+  arrange(desc(tot)) %>% 
+  left_join(all.coi.classifications, by= "Hash") 
+
+# for coi select only metazoans
+coi.metazoan <- coi.all %>% 
+  filter(kingdom == "Metazoa")
+
+coi.species <- coi.metazoan %>% 
+  filter(species != "") %>% 
+  arrange(desc(tot))
+
+mifish.all <- all.mifish.asvs %>% 
+  group_by(Hash) %>% # for each sample that has multiple asvs that assign to the same taxa...
+  summarise(tot = sum(nReads)) %>% 
+  arrange(desc(tot)) %>% 
+  left_join(all.mifish.classifications, by= "Hash")
+
+mifish.species <- mifish.all %>% 
+  filter(species != "") %>% 
+  arrange(desc(tot))
+
+mimammal.all <- all.mimammal.asvs %>% 
+  group_by(Hash) %>% # for each sample that has multiple asvs that assign to the same taxa...
+  summarise(tot = sum(nReads)) %>% 
+  arrange(desc(tot)) %>% 
+  left_join(all.mimammal.classifications, by= "Hash")
+
+mimammal.species <- mimammal.all %>% 
+  filter(species != "") %>% 
+  arrange(desc(tot))
+
+```
+
+```{r}
+
+# there arent that many for 12s ... lets just get all unique species
+
+mifish.unique <- unique(mifish.species$species)
+mimammal.unique <- unique(mimammal.species$species)
+coi.unique <- unique(coi.species$species)
+#write.csv(coi.unique, "/Users/elizabethandruszkiewicz/Desktop/coi.metazoans.to.species.csv")
+
+
+# ok lets take marker, nReads, taxon to make a table for ryan
+coi.simple <- coi.species %>% 
+  select(tot, taxon)
+coi.simple$marker = "COI"
+  
+mifish.simple <- mifish.species %>% 
+  select(tot, taxon)
+mifish.simple$marker = "MiFish"
+
+mimammal.simple <- mimammal.species %>% 
+  select(tot, taxon)
+mimammal.simple$marker = "MiMammal"
+
+all.detected.species.level <- rbind(coi.simple, mifish.simple, mimammal.simple)
+write.csv(all.detected.species.level, "/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/all.detected.species.level.csv")
+
+```
+
+```{r compare markers}
+unique.markers <- 
+  all.detected.species.level %>% 
+  group_by(taxon, marker) %>% 
+  summarize(total= sum(tot))
+
+unique.num.markers <- 
+  unique.markers %>% 
+  count(taxon)
+
+mix.plot <- 
+  unique.markers %>% 
+  filter(marker != "COI")
+
+# bar plot - this is bad and also too many taxa
+ggplot(test, aes(fill=marker, y=total, x=taxon)) + 
+    geom_bar(position="dodge", stat="identity")
+
+# heat map of only mifish and mimammal 
+ggplot(mix.plot, aes(marker, taxon, fill= log10(total))) + 
+  geom_tile() +
+  theme_bw() +
+  scale_fill_gradient(low="white", high="blue")
+
+```
+
+```{r more plotting}
+
+# now lets sum by family to compare three markers
+coi.family <- coi.species %>%
+  group_by(class) %>% 
+  summarize(total = sum(tot))
+coi.family <- coi.family %>% 
+  filter(class !="")
+coi.family$marker = "COI"
+
+mifish.family <- mifish.species %>%
+  group_by(class) %>% 
+  summarize(total = sum(tot))
+mifish.family <- mifish.family %>% 
+  filter(class !="")
+mifish.family$marker = "MiFish"
+
+mimammal.family <- mimammal.species %>%
+  group_by(class) %>% 
+  summarize(total = sum(tot))
+mimammal.family <- mimammal.family %>% 
+  filter(class !="")
+mimammal.family$marker = "MiMammal"
+
+all.detected.family.level <- rbind(coi.family, mifish.family, mimammal.family)
+
+# let's try heat map now of all three markers but at family level
+ggplot(all.detected.family.level, aes(marker, class, fill= log10(total))) + 
+  geom_tile() +
+  theme_bw() +
+  scale_fill_gradient(low="white", high="blue")
+
+#### STILL TOO CRAZY - go back to order - right now too lazy so just change it but not variable names
+
+```
+
+```{r with creek level stuff}
+mix.together <- rbind(mifish.species, mimammal.species)
+
+
+```
