@@ -30,12 +30,12 @@ Like I said, things are helter-skelter but we should have ASV tables and classif
 metadata <- read.csv("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Input/sequencing_metadata_files/master_sequencing_datasheet_20211026.csv")
 metadata <- metadata %>% filter(Locus == "COI")
 
-ASV.table <- read.csv("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/dada2_output_files/20211111.COI.merged.ASV.table.csv")
+ASV.table <- read.csv("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/dada2_output/20211129.combined.COI.ASV.table.csv")
 
 # check that all samples are in ASV.table as in metadata file
 dim(metadata)[1] == length(unique(ASV.table$Sample_name))
 
-Hash.key <- read.csv("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/dada2_output_files/20211111.COI.hash.key.csv")
+Hash.key <- read.csv("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/dada2_output/20211129.combined.COI.hash.key.csv")
 
 # check that all the hashes in the hash key and ASV table are the same
 length(unique(ASV.table$Hash)) == length(unique(Hash.key$Hash))

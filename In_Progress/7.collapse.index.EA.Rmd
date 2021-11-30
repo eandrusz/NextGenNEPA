@@ -20,15 +20,15 @@ library(reshape2)
 ```{r read in files}
 
 # Read the merged ASV tables
-COI.ASV.table <- read_csv(paste0(here("Output", "dada2_output"), "/", format(Sys.Date(), "%Y%m%d") , ".combined.COI.ASV.table.csv"))
-MiFish.ASV.table <- read_csv(paste0(here("Output", "dada2_output"), "/", format(Sys.Date(), "%Y%m%d") , ".combined.MiFish.ASV.table.csv"))
-MiMammal.ASV.table <- read_csv(paste0(here("Output", "dada2_output"), "/", format(Sys.Date(), "%Y%m%d") , ".combined.MiMammal.ASV.table.csv"))
+COI.ASV.table <- read_csv(paste0(here("Output", "dada2_output"), "/", "20211129.combined.COI.ASV.table.csv"))
+MiFish.ASV.table <- read_csv(paste0(here("Output", "dada2_output"), "/", "20211122.combined.MiFish.ASV.table.csv"))
+MiMammal.ASV.table <- read_csv(paste0(here("Output", "dada2_output"), "/", "20211122.combined.MiMammal.ASV.table.csv"))
 
 # Read in the classification output for each run 
 # the files written to the general folder (not run specific) should have everything classified from all runs because they are our "databases" to use for future runs - we want to use the "DATE.MARKER.all.gs.previous.hashes.annotated.rds" file 
-COI.annotations <- readRDS(file=paste0(here("Output","classification_output"),"/20211119.COI.all.gs.previous.hashes.annotated.rds"))
-MiFish.annotations <- readRDS(file=paste0(here("Output","classification_output"),"/20211120.MiFish.all.gs.previous.hashes.annotated.rds"))
-MiMammal.annotations <- readRDS(file=paste0(here("Output","classification_output"),"/20211120.MiMammal.all.gs.previous.hashes.annotated.rds"))
+COI.annotations <- readRDS(file=paste0(here("Output","classification_output"),"/COI.all.gs.previous.hashes.annotated.rds"))
+MiFish.annotations <- readRDS(file=paste0(here("Output","classification_output"),"/MiFish.all.gs.previous.hashes.annotated.rds"))
+MiMammal.annotations <- readRDS(file=paste0(here("Output","classification_output"),"/MiMammal.all.gs.previous.hashes.annotated.rds"))
 
 all.metadata <- read.csv(here("Input", "sequencing_metadata_files", "master_sequencing_datasheet_20211026.csv"))
 
@@ -216,6 +216,9 @@ didwefuckup2 <- didwefuckup %>%
   group_by(var1well) %>% 
   top_n(1,-value) 
   
+
+
+
 
 ```
 

@@ -5,13 +5,13 @@ date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: html_document
 params:
   noprimerfolder: 
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/cutadapt_output/run4_20211117/noprimers/COI
+    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run4_20211117/noprimers/MiMammal
   hash: TRUE
-  trimming.length.Read1: 250
-  trimming.length.Read2: 180
-  metadata: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/cutadapt_output/run4_20211117/noprimers/COI/cutadapt_output_metadata_COI.csv
-  output.folder: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/dada2_output/run4_20211117/COI 
-  keep.mid.files: TRUE
+  trimming.length.Read1: 150
+  trimming.length.Read2: 150
+  metadata: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run4_20211117/noprimers/MiMammal/cutadapt_output_metadata_MiMammal.csv
+  output.folder: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/dada2_output/run4_20211117/MiMammal_truncq10 
+  keep.mid.files: FALSE
 
 ---
 
@@ -55,7 +55,7 @@ output.dir
 tibble(Parameters = names(params), Values = unlist(params)) %>% write_csv(file.path(output.dir,paste0("parameters_", Sys.Date(), ".csv")))
 
 ## NGN0299 was removed during filtering so edit metadata file to remove it
-#sample.metadata <- sample.metadata[-23,]
+sample.metadata <- sample.metadata[-23,]
 
 ```
 
@@ -89,7 +89,6 @@ The most common Amplicon length is 302, so trimming to 200 bp each read should g
 ```{r dadaing}
 
 ### SOME OF COI IS BACKWARDS
-
 
 sample.metadata %>%
   #filter(rc == 1) %>% # ONLY SELECT THE BACKWARDS ONES (1) OR FORWARDS ONES (0)

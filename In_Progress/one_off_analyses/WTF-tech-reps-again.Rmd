@@ -1,0 +1,145 @@
+---
+title: "new_wtf_tech_reps"
+author: "Eily Allan"
+date: "11/29/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(vegan)
+library(reshape2)
+library(here)
+```
+
+## Read everything in and combine 
+
+```{r read in files}
+
+# Read the merged ASV tables
+COI.ASV.table <- read_csv(paste0(here("Output", "dada2_output"), "/", "20211129.combined.COI.ASV.table.csv"))
+MiFish.ASV.table <- read_csv(paste0(here("Output", "dada2_output"), "/", "20211122.combined.MiFish.ASV.table.csv"))
+MiMammal.ASV.table <- read_csv(paste0(here("Output", "dada2_output"), "/", "20211122.combined.MiMammal.ASV.table.csv"))
+
+all.metadata <- read.csv(here("Input", "sequencing_metadata_files", "master_sequencing_datasheet_20211026.csv"))
+
+```
+
+## Manipulate to look at technical replicates
+
+```{r proportions and top 100}
+
+MiMammal.ASV.table <- MiMammal.ASV.table %>% 
+  select(-Locus) %>% 
+  group_by(Sample_name,Hash) %>% 
+  summarise(nReads = sum(nReads))
+
+# make proportions of ASVs per sample 
+MiMammal.ASV.table.prop <- MiMammal.ASV.table %>% 
+group_by(Sample_name, Hash) %>%
+      summarise ( sumreads = sum(nReads))  %>%  # This sums technical replicates
+      group_by(Sample_name) %>%
+      mutate (Tot = sum(sumreads),
+              Row.prop = sumreads / Tot)  
+
+num.asv.per.sample <- MiMammal.ASV.table.prop %>% count(Sample_name)
+
+# take top 100 
+MiMammal.ASV.table.prop.top100 <- MiMammal.ASV.table.prop %>% 
+arrange(desc(Row.prop)) %>% 
+group_by(Sample_name) %>% 
+slice(1:100)
+
+check.100.asv.per.sample <- MiMammal.ASV.table.prop.top100 %>% count(Sample_name)
+
+# do BC and plot PCA 
+for.anova <- MiMammal.ASV.table.prop.top100  %>% 
+  select(-sumreads) %>% 
+  select(-Tot) %>% 
+  rename(taxon = Hash) %>% 
+  rename(Normalized.reads = Row.prop)
+  
+source(here("functions", "tibble_to_matrix.R"))
+all.distances.full <- tibble_to_matrix (for.anova)
+
+as_tibble(subset(melt(as.matrix(all.distances.full)))) -> all.distances.melted
+# Any mjor screw ups
+summary(is.na(all.distances.melted$value))
+
+# remove kanagroo 
+all.distances.melted <- all.distances.melted[! str_detect(all.distances.melted$Var1,"Kangaroo"),]
+all.distances.melted <- all.distances.melted[! str_detect(all.distances.melted$Var2,"Kangaroo"),]
+
+all.distances.melted <- all.distances.melted %>% 
+  rename(Sample_name = Var1)
+
+metadata.layout <- all.metadata %>% 
+  select(Sequencing.run, Sample_ID, Well) %>% 
+  rename(Sample_name = Sample_ID)
+
+all.distances.melted <- all.distances.melted %>% 
+  left_join(metadata.layout, by= "Sample_name") %>% 
+  rename(Var1 = Sample_name) %>% 
+  rename(var1run = Sequencing.run) %>% 
+  rename(var1well = Well) 
+
+all.distances.melted <- all.distances.melted %>% 
+  rename(Sample_name = Var2)
+
+all.distances.melted <- all.distances.melted %>% 
+  left_join(metadata.layout, by= "Sample_name") %>% 
+  rename(Var2 = Sample_name) %>% 
+  rename(var2run = Sequencing.run) %>% 
+  rename(var2well = Well) 
+
+
+# separate big sample names
+all.distances.melted <-
+  all.distances.melted %>%
+  separate (Var1, into = c("Marker1", "Date1", "Creek1", "Site1", "Bottle1"), remove = FALSE) %>%
+  separate (Var2, into = c("Marker2", "Date2", "Creek2", "Site2", "Bottle2"), remove = FALSE) 
+
+# fix the hellhole of "2TR2" etc.
+all.distances.melted <-
+  all.distances.melted %>% 
+  mutate(Bottle1 = str_replace(Bottle1, "^1$", "1TR1")) %>% 
+  mutate(Bottle2 = str_replace(Bottle2, "^1$", "1TR1")) %>% 
+  mutate(Bottle1 = str_replace(Bottle1, "^2$", "2TR1")) %>%
+  mutate(Bottle2 = str_replace(Bottle2, "^2$", "2TR1")) %>%
+  mutate(Bottle1 = str_replace(Bottle1, "^3$", "3TR1")) %>%
+  mutate(Bottle2 = str_replace(Bottle2, "^3$", "3TR1")) %>% 
+  separate(Bottle1, into = c("Bottle1", "TechRep1"), sep= -3, remove=TRUE) %>% 
+  separate(Bottle2, into = c("Bottle2", "TechRep2"), sep= -3, remove=TRUE)
+
+
+all.distances.melted %>%
+  mutate ( Date.Creek.Site1 = paste0(Date1, Creek1, Site1),
+           Date.Creek.Site2 = paste0(Date2, Creek2, Site2),
+           Date.Creek1 = paste0(Date1, Creek1),
+           Date.Creek2 = paste0(Date2, Creek2),
+           Distance.type = case_when( Date.Creek.Site1 == Date.Creek.Site2 & Bottle1 == Bottle2 ~ "Tech.replicates",
+                                      Date.Creek.Site1 == Date.Creek.Site2 ~ "Biol.replicates",
+                                      Date.Creek1 == Date.Creek2 ~ "Same.datecreek.Diff.site",
+                                      Date1 == Date2 & Creek1 != Creek2 ~ "Same.date.Diff.creek",
+                                      Creek1 == Creek2 & Date1 != Date2 ~ "Same.creek.different.date",
+                                      Creek1 != Creek2 & Date1 != Date2 ~ "Different.creek.date",
+                                      TRUE ~ "FIX"
+                                     )) %>%
+  dplyr::select(Sample1 = Var1, Sample2 = Var2 , value , Distance.type, var1run, var1well, var2run, var2well) %>%
+  filter (Sample1 != Sample2) -> all.distances.to.plot
+
+# Checking all went well
+sapply(all.distances.to.plot, function(x) summary(is.na(x))) # good boi
+all.distances.to.plot$Distance.type <- all.distances.to.plot$Distance.type  %>% fct_relevel("Tech.replicates", "Biol.replicates", "Same.datecreek.Diff.site", "Same.date.Diff.creek", "Same.creek.different.date", "Different.creek.date")
+  
+ggplot (all.distances.to.plot) +
+  geom_histogram (aes (fill = Distance.type, x = value, after_stat(ndensity)), position = "dodge",  alpha = 0.9, bins = 50) +
+  facet_wrap( ~ Distance.type) +
+  labs (x = "Pairwise dissimilarity", y = "density" ,
+        Distance.type = "Distance") +
+    guides (fill = "none")
+
+
+```

@@ -1,0 +1,8 @@
+Parameters,Values
+noprimerfolder,/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run4_20211117/noprimers/MiMammal
+hash,TRUE
+trimming.length.Read1,150
+trimming.length.Read2,150
+metadata,/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run4_20211117/noprimers/MiMammal/cutadapt_output_metadata_MiMammal.csv
+output.folder,/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/dada2_output/run4_20211117/MiMammal_truncq10
+keep.mid.files,FALSE

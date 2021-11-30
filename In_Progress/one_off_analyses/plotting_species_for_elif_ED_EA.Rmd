@@ -1,0 +1,395 @@
+---
+title: "Salmonid.fiddle"
+author: "Erin D'Agnese"
+date: "11/24/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(here)
+library(tidyverse)
+library(vegan)
+library(reshape2)
+
+```
+
+```{r input}
+MiFish.ASV.table <- read_csv(paste0(here("Output", "dada2_output", "20211122.combined.MiFish.ASV.table.csv")))
+MiMammal.ASV.table <- read_csv(paste0(here("Output", "dada2_output", "20211122.combined.MiMammal.ASV.table.csv")))
+
+MiFish.annotations <- readRDS(file=paste0(here("Output","classification_output"),"/MiFish.all.gs.previous.hashes.annotated.rds"))
+MiMammal.annotations <- readRDS(file=paste0(here("Output","classification_output"),"/MiMammal.all.gs.previous.hashes.annotated.rds"))
+
+all.metadata <- read.csv(here("Input", "sequencing_metadata_files", "master_sequencing_datasheet_20211026.csv"))
+```
+
+```{r mifish}
+
+MiFish.simple.annotations <- MiFish.annotations %>% select(representative, taxon, genus, species) %>% rename(Hash = representative)
+MiFish.ASV.taxon <- MiFish.ASV.table %>% 
+  left_join(MiFish.simple.annotations, by = "Hash") %>% 
+  select(-Locus)
+
+# ok so that has everything.. let's remove (and save) ASVs that don't have an annotation 
+MiFish.ASV.no.taxon <- MiFish.ASV.taxon[is.na(MiFish.ASV.taxon$taxon),]
+# and same - keep things that do have an annotation (reminder to species or genus level so "good" annotation)
+MiFish.ASV.yes.taxon <- MiFish.ASV.taxon[! is.na(MiFish.ASV.taxon$taxon),]
+
+# compare number of ASVs and reads that are assigned to species and genus (or not)
+MiFish.n.ASV.no.taxon <- length(unique(MiFish.ASV.no.taxon$Hash))
+MiFish.n.reads.ASV.no.taxon <- sum(MiFish.ASV.no.taxon$nReads)
+MiFish.n.ASV.yes.taxon <- length(unique(MiFish.ASV.yes.taxon$Hash))
+MiFish.n.reads.ASV.yes.taxon <- sum(MiFish.ASV.yes.taxon$nReads)
+MiFish.percent.ASV.no.taxon <- MiFish.n.ASV.no.taxon/(MiFish.n.ASV.no.taxon+MiFish.n.ASV.yes.taxon)*100 
+MiFish.percent.reads.ASV.no.taxon <- MiFish.n.reads.ASV.no.taxon/(MiFish.n.reads.ASV.no.taxon+MiFish.n.reads.ASV.yes.taxon)*100 
+# ok so 98% of ASVs are not to genus or species BUT only 35% of *reads* are not assigned to genus or species
+# that seems ok for now - we can go back later and use the whole classification and see if we can get more info (family, order, etc.)
+
+
+# let's take only the ASVs that are annotated to something and collapse taxa (add reads together of ASVs that go to the same taxon)
+MiFish.by.taxa <- MiFish.ASV.yes.taxon %>% 
+  select(-Hash) %>% # we don't need the hash identifier anymore
+  group_by(Sample_name, taxon) %>% # for each sample that has multiple asvs that assign to the same taxa...
+  summarise(tot = sum(nReads))
+
+MiFish.by.taxa.pivot <- MiFish.by.taxa %>% 
+  pivot_wider(names_from = Sample_name, values_from =  tot) %>% # switch to rows (taxa) by columns (samples)
+  column_to_rownames(var="taxon")
+
+# we can also do this at the genus level 
+MiFish.by.genus <- MiFish.ASV.yes.taxon %>% 
+  select(-Hash) %>% # we don't need the hash identifier anymore
+  group_by(Sample_name, genus) %>% # for each sample that has multiple asvs that assign to the same taxa...
+  summarise(tot = sum(nReads))
+
+MiFish.by.genus.pivot <- MiFish.by.genus %>% 
+  pivot_wider(names_from = Sample_name, values_from =  tot) %>% # switch to rows (taxa) by columns (samples)
+  column_to_rownames(var="genus")
+
+# ok but we really should be using eDNA index instead of reads to be comparing things (LATER LET'S GO BACK AND DO BETTER)
+source(here("functions", "eDNAindex.R"))
+MiFish.ASV.index <-  eDNAindex(MiFish.ASV.table, Sample_name, Hash, nReads) # here use everything whether it was assigned taxonomy or not
+MiFish.taxa.index <- eDNAindex(MiFish.by.taxa, Sample_name, taxon, tot)
+MiFish.genus.index <- eDNAindex(MiFish.by.genus, Sample_name, genus, tot)
+
+MiFish.genus.index.pivot <- MiFish.genus.index %>% 
+  pivot_wider(names_from = Sample_name, values_from =  Normalized.reads) %>% # switch to rows (taxa) by columns (samples)
+  column_to_rownames(var="genus")
+
+# let's be really bad and just pool biological replicates right now....
+MiFish.by.genus.bio <- MiFish.by.genus %>% 
+  separate(Sample_name, into=c("marker","date","creek","site","bio_rep"), remove = FALSE) %>% 
+  unite("original_sample", "marker","date","creek","site")
+
+MiFish.by.genus.pooled.bio <- MiFish.by.genus.bio %>% 
+  separate(Sample_name, into=c("marker","date","creek","site","bio_rep"), remove = FALSE) %>% 
+  unite("original_sample", "marker","date","creek","site") %>% 
+  group_by(original_sample, genus) %>% # for each sample that has multiple asvs that assign to the same taxa...
+  summarise(tot = sum(tot)) 
+
+MiFish.genus.bio.index <- eDNAindex(MiFish.by.genus.bio, original_sample, genus, tot)
+MiFish.genus.bio.index2 <- eDNAindex(MiFish.by.genus.bio, original_sample, genus, tot, bio_rep)
+MiFish.genus.pooled.bio.index <- eDNAindex(MiFish.by.genus.pooled.bio, original_sample, genus, tot)
+
+MiFish.genus.pooled.bio.index.pivot <- MiFish.genus.pooled.bio.index%>% 
+  pivot_wider(names_from = original_sample, values_from =  Normalized.reads) %>% # switch to rows (taxa) by columns (samples)
+  column_to_rownames(var="genus")
+
+```
+
+
+```{r MiFish salmonids}
+#keeping all the ranks to select out to family level
+MiFish.annotations.all <- MiFish.annotations %>% rename(Hash = representative)
+MiFish.ASV.annotated <- MiFish.ASV.table %>% 
+  left_join(MiFish.annotations.all, by = "Hash") %>% 
+  select(-Locus)
+
+# ok so that has everything.. let's remove (and save) ASVs that don't have an annotation 
+MiFish.ASV.no.assignment <- MiFish.ASV.annotated[is.na(MiFish.ASV.annotated$taxon),]
+# and same - keep things that do have an annotation 
+MiFish.ASV.yes.assignment <- MiFish.ASV.annotated[! is.na(MiFish.ASV.annotated$taxon),]
+
+MiFish.by.taxa.full <- MiFish.ASV.yes.assignment %>% 
+  select(-Hash) %>% # we don't need the hash identifier anymore
+  group_by(Sample_name, genus, taxon) %>% # for each sample that has multiple asvs that assign to the same taxa...
+  summarise(tot = sum(nReads))
+
+
+#pull out only the ones from family salmonidae
+MiFish.salmonids <- MiFish.by.taxa.full %>% filter(genus == "Oncorhynchus")
+MiFish.salmonids.asv <- MiFish.salmonids %>% select(Sample_name, taxon, tot)
+
+MiFish.by.salmonids.pivot <- MiFish.salmonids %>% 
+  pivot_wider(names_from = Sample_name, values_from =  tot) %>% # switch to rows (taxa) by columns (samples)
+  column_to_rownames(var="taxon") 
+MiFish.salmonids.pivot <- MiFish.by.salmonids.pivot[, colnames(MiFish.by.salmonids.pivot) !="genus"]
+#need to replace NAs with 0s
+MiFish.salmonids.pivot[is.na(MiFish.salmonids.pivot)] = 0
+
+
+
+```
+
+```{r using eDNAindex to look at differences in just salmon}
+#let's use the eDNAindex table Eily made instead rather than raw reads
+MiFish.taxa.index.salmonids <- MiFish.taxa.index %>% filter (str_detect(taxon, "Oncorhynchus"))
+
+MiFish.salmonid.index.pivot <- MiFish.taxa.index.salmonids %>% 
+  pivot_wider(names_from = Sample_name, values_from =  Normalized.reads) %>% # switch to rows (taxa) by columns (samples)
+  column_to_rownames(var="taxon")
+
+MiFish.salmonid.index.pivot [is.na(MiFish.salmonid.index.pivot )] = 0
+
+MiFish.salmon.index.table <-  MiFish.taxa.index.salmonids %>% 
+  left_join(metadata.layout, by= "Sample_name") %>%
+  rename(Var1 = Sample_name) %>% 
+  rename(var1run = Sequencing.run) %>% 
+  rename(var1well = Well) 
+
+
+MiFish.salmon.index.met <- MiFish.salmon.index.table %>%
+  separate(Var1, into = c("Marker1", "Date1", "Creek1", "Site1", "Bottle1"), remove = FALSE)
+
+
+
+
+
+taxon.for.anova <- MiFish.taxa.index.salmonids #%>% 
+  #rename(taxon = genus) 
+  
+source(here("functions", "tibble_to_matrix.R"))
+all.distances.full <- tibble_to_matrix (taxon.for.anova)
+
+as_tibble(subset(melt(as.matrix(all.distances.full)))) -> all.distances.melted
+# Any mjor screw ups
+summary(is.na(all.distances.melted$value))
+
+# remove kanagroo 
+all.distances.melted <- all.distances.melted[! str_detect(all.distances.melted$Var1,"Kangaroo"),]
+all.distances.melted <- all.distances.melted[! str_detect(all.distances.melted$Var2,"Kangaroo"),]
+
+## add on run and well
+all.distances.melted <- all.distances.melted %>% 
+  rename(Sample_name = Var1)
+
+metadata.layout <- all.metadata %>% 
+  select(Sequencing.run, Sample_ID, Well) %>% 
+  rename(Sample_name = Sample_ID)
+
+all.distances.melted <- all.distances.melted %>% 
+  left_join(metadata.layout, by= "Sample_name") %>% 
+  rename(Var1 = Sample_name) %>% 
+  rename(var1run = Sequencing.run) %>% 
+  rename(var1well = Well) 
+
+all.distances.melted <- all.distances.melted %>% 
+  rename(Sample_name = Var2)
+
+all.distances.melted <- all.distances.melted %>% 
+  left_join(metadata.layout, by= "Sample_name") %>% 
+  rename(Var2 = Sample_name) %>% 
+  rename(var2run = Sequencing.run) %>% 
+  rename(var2well = Well) 
+
+
+# separate big sample names
+all.distances.melted <-
+  all.distances.melted %>%
+  separate (Var1, into = c("Marker1", "Date1", "Creek1", "Site1", "Bottle1"), remove = FALSE) %>%
+  separate (Var2, into = c("Marker2", "Date2", "Creek2", "Site2", "Bottle2"), remove = FALSE) 
+
+# fix the hellhole of "2TR2" etc.
+all.distances.melted <-
+  all.distances.melted %>% 
+  mutate(Bottle1 = str_replace(Bottle1, "^1$", "1TR1")) %>% 
+  mutate(Bottle2 = str_replace(Bottle2, "^1$", "1TR1")) %>% 
+  mutate(Bottle1 = str_replace(Bottle1, "^2$", "2TR1")) %>%
+  mutate(Bottle2 = str_replace(Bottle2, "^2$", "2TR1")) %>%
+  mutate(Bottle1 = str_replace(Bottle1, "^3$", "3TR1")) %>%
+  mutate(Bottle2 = str_replace(Bottle2, "^3$", "3TR1")) %>% 
+  separate(Bottle1, into = c("Bottle1", "TechRep1"), sep= -3, remove=TRUE) %>% 
+  separate(Bottle2, into = c("Bottle2", "TechRep2"), sep= -3, remove=TRUE)
+
+
+all.distances.melted %>%
+  mutate ( Date.Creek.Site1 = paste0(Date1, Creek1, Site1),
+           Date.Creek.Site2 = paste0(Date2, Creek2, Site2),
+           Date.Creek1 = paste0(Date1, Creek1),
+           Date.Creek2 = paste0(Date2, Creek2),
+           Distance.type = case_when( Date.Creek.Site1 == Date.Creek.Site2 & Bottle1 == Bottle2 ~ "Tech.replicates",
+                                      Date.Creek.Site1 == Date.Creek.Site2 ~ "Biol.replicates",
+                                      Date.Creek1 == Date.Creek2 ~ "Same.datecreek.Diff.site",
+                                      Date1 == Date2 & Creek1 != Creek2 ~ "Same.date.Diff.creek",
+                                      Creek1 == Creek2 & Date1 != Date2 ~ "Same.creek.different.date",
+                                      Creek1 != Creek2 & Date1 != Date2 ~ "Different.creek.date",
+                                      TRUE ~ "FIX"
+                                     )) %>%
+  dplyr::select(Sample1 = Var1, Sample2 = Var2 , value , Distance.type, var1run, var1well, var2run, var2well) %>%
+  filter (Sample1 != Sample2) -> all.distances.to.plot
+
+# remove when 1 = 2 and then 2 = 1 (remove duplicates)
+#all.distances.to.plot$paired <- paste0(all.distances.to.plot$Sample1, all.distances.to.plot$Sample2)
+#all.distances.to.plot <- all.distances.to.plot %>% distinct(paired, .keep_all = TRUE)
+
+# Checking all went well
+sapply(all.distances.to.plot, function(x) summary(is.na(x))) # good boi
+all.distances.to.plot$Distance.type <- all.distances.to.plot$Distance.type  %>% fct_relevel("Tech.replicates", "Biol.replicates", "Same.datecreek.Diff.site", "Same.date.Diff.creek", "Same.creek.different.date", "Different.creek.date")
+  
+ggplot (all.distances.to.plot) +
+  geom_histogram (aes (fill = Distance.type, x = value, after_stat(ndensity)), position = "dodge",  alpha = 0.9, bins = 50) +
+  facet_wrap( ~ Distance.type) +
+  labs (x = "Pairwise dissimilarity", y = "density" ,
+        Distance.type = "Distance") +
+    guides (fill = "none")
+
+ggsave(file="/Users/erdag/github/NextGenNEPA-main/Output/MiFish.allruns.salmonids.asvlevel.index.visual.anova.png", dpi = "retina")
+
+
+diffcreekdate <- all.distances.to.plot %>% 
+  filter(Distance.type == "Different.creek.date")
+
+didwefuckup <- all.distances.to.plot %>% 
+  filter(var1run == var2run) %>% 
+  filter(var1run == 2) 
+
+didwefuckup2 <- didwefuckup %>% 
+  group_by(var1well) %>% 
+  top_n(1,-value) 
+  
+
+
+```
+
+
+```{r playing with plotting eDNAindex}
+MiFish.salmon.index.met.plot <- MiFish.salmon.index.met 
+
+# remove kanagroo 
+MiFish.salmon.index.met.plot <- MiFish.salmon.index.met.plot[! str_detect(MiFish.salmon.index.met.plot$Var1,"Kangaroo"),]
+
+p <- ggplot(MiFish.salmon.index.met.plot, aes(fill=taxon, y= Normalized.reads, x=Creek1 )) +
+  geom_bar(position="stack", stat="identity") +
+  ggtitle("eDNAindex values for salmonids in MiFish results all runs") +
+  labs(x= "Creek", y="Summed eDNA index values")
+
+ggsave(file="/Users/erdag/github/NextGenNEPA-main/Output/MiFish.allruns.salmonids.index.creeks.stackedbar.png", dpi = "retina")
+
+p
+
+# try this tile plot instead 
+pad.salmon <- MiFish.salmon.index.met.plot %>% 
+  filter(Creek1 == "4Pad")
+
+pad.salmon$month.site <- paste0(pad.salmon$Date1,"-",pad.salmon$Site1)
+
+ggplot(pad.salmon, aes(month.site, taxon, fill= Normalized.reads, color= as.factor(Date1),width=0.7, height=0.7)) + 
+  geom_tile(size=2) +
+  theme_bw() +
+  labs(color="Month") +
+  ggtitle("Padden Creek - MiFish") +
+  scale_fill_gradient(low="white", high="black") +
+  scale_x_discrete(guide = guide_axis(angle = 45))
+
+#ggsave(file="//Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/MiFish.padden.salmonids.month.site.index.png", dpi = "retina")
+
+
+## LETS PLOT DIFFERENCE BETWEEN UPSTREAM AND DOWNSTREAM FOR ALL CREEKS 
+diff.up.down.salmon <- MiFish.salmon.index.met.plot %>% 
+  mutate(Date.Creek.Site = paste0(Date1, Creek1, Site1),
+         Date.Creek = paste0(Date1,Creek1)) %>% 
+  select(Date.Creek.Site, Date.Creek, Site1, Creek1, Date1, taxon, Normalized.reads) %>% 
+  group_by(taxon, Date.Creek, Site1, Date1) %>% 
+  summarise(meanindex = mean(Normalized.reads)) 
+  
+diff.up.down.salmon.plot <- diff.up.down.salmon %>% 
+  mutate(Date.Creek.Taxon = paste0(Date.Creek,"-", taxon)) %>% 
+  group_by(Date.Creek.Taxon) %>% 
+  nest() 
+
+#test <- diff.up.down.salmon.plot[[2]][[1]]$meanindex[2]-diff.up.down.salmon.plot[[2]][[1]]$meanindex[1]
+
+test <- map_df(diff.up.down.salmon.plot$data, ~ mutate(.x, diffindex = meanindex[length(meanindex)]-meanindex[1]))
+
+difference <- test %>% 
+  select(taxon,Date.Creek, Creek1, Date1, diffindex) %>% 
+  distinct()
+
+difference <- difference[!is.na(difference$diffindex),]
+
+ggplot(difference, aes(taxon, Date.Creek, fill= diffindex, width=0.7, height=0.7)) + 
+  geom_tile(size=2) +
+  theme_bw() +
+  labs(x = "Taxon", y = "Sample ID", fill="Upstream index - Downstream index") +
+  ggtitle("MiFish - Salmonids - Difference in Upstream/Downstream eDNA Index") +
+  scale_fill_distiller(palette = "RdBu") +
+  scale_x_discrete(guide = guide_axis(angle = 45))
+
+#ggsave(file="//Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/MiFish.salmonids.difference.in.index.png", dpi = "retina")
+
+
+# simply plot eDNA index over time per creek per species 
+
+MiFish.salmon.index.met.plot %>% 
+  filter(taxon =="Oncorhynchus clarkii") %>% 
+  ggplot(aes(Site1, Normalized.reads, color=Creek1)) + 
+  geom_point() +
+  facet_grid(Creek1 ~ Date1)
+
+#ggsave(file="//Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/MiFish.salmonids.padden.over.time.index.png", dpi = "retina")
+```
+
+
+```{r more plotting}
+
+s <- ggplot(MiFish.salmon.index.met.plot, aes(fill=taxon, y= Normalized.reads, x=Site1 )) +
+  geom_bar(position="stack", stat="identity") +
+  facet_wrap(~Creek1)+
+  labs(x="Site", y="eDNA index") +
+  ggtitle("eDNA index values of Salmon species below and above blockages in each creek")
+ 
+ggsave(file="/Users/erdag/github/NextGenNEPA-main/Output/MiFish.allruns.salmonids.index.creeks.bysite.bar.png", dpi = "retina")
+ 
+s
+```
+
+```{r bray curtis distances of salmon species}
+pca.index.bc.nmds <- metaMDS(t(MiFish.salmonids.pivot), distance = "bray")
+
+pca.index.bc.MDS1 = pca.index.bc.nmds$points[,1] #store nmds values
+pca.index.bc.MDS2 = pca.index.bc.nmds$points[,2] #store nmds values
+
+index.pca.to.plot <- cbind(MiFish.salmon.index.met, pca.index.bc.MDS1, pca.index.bc.MDS2)
+
+index_mat <-  pivot_wider(MiFish.taxa.index.salmonids, names_from = Sample_name, values_from = Normalized.reads) # now we have matrix with eDNA index
+index_mat <- as.data.frame(index_mat)
+row.names(index_mat) = index_mat[,1] # make row names from ASV hash
+index_mat = index_mat[,-1] # remove column with the ASV hash 
+index_mat[is.na(index_mat)] <- 0 # change NAs to 0s
+
+pca.index.bc.nmds <- metaMDS(t(index_mat), distance = "bray")
+pca.index.bc.MDS1 = pca.index.bc.nmds$points[,1] #store nmds values
+pca.index.bc.MDS2 = pca.index.bc.nmds$points[,2] #store nmds values
+
+
+metadata.salmon <- all.metadata[all.metadata$Sample_ID %in% MiFish.taxa.index.salmonids$Sample_name,]
+
+index.pca.to.plot <- cbind(metadata.salmon, pca.index.bc.MDS1, pca.index.bc.MDS2)
+
+index.pca.to.plot  <- index.pca.to.plot [! str_detect(index.pca.to.plot$Sample_ID,"Kangaroo"),]
+
+ggplot(index.pca.to.plot, aes(x=pca.index.bc.MDS1, y=pca.index.bc.MDS2)) +
+  geom_point(size=4, aes(color=factor(Creek), shape=factor(Station))) +
+  theme_bw() +
+  labs(x="PC1",y="PC2", color="Creek") +
+  ggtitle('Salmonid - eDNA Index - Bray Curtis')
+
+ggsave(file="/Users/erdag/github/NextGenNEPA-main/Output/MiFish.allruns.salmonids.index.creeks.bysite.braycurtisPCA.png", dpi = "retina")
+
+#doesn't have much of a discernible pattern, may need to remove tech reps to do this?
+
+```
+
+

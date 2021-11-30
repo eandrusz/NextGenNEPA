@@ -45,11 +45,14 @@ Now let's actually start pulling ASV and hash files together and merging them al
 ```{r pull and merge ASV tables and hashes by markers}
 
 # coi run 1 has sample as NGNX rather than sample name 
-COI.ASV.table <- bind_rows(map(COI.asvs[2], read_csv))
+COI.ASV.table <- bind_rows(map(COI.asvs[2:3], read_csv))
 COI1 <- read.csv(COI.asvs[1])
 COI1$Sample_name <- as.character(COI1$Sample_name)
 COI1 <- COI1 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") %>% select(Sample_ID,Locus,Hash,nReads) %>% rename("Sample_name" = "Sample_ID")
-COI.ASV.table <- bind_rows(COI.ASV.table, COI1)
+COI4 <- read.csv(COI.asvs[4])
+COI4$Sample_name <- as.character(COI4$Sample_name)
+COI4 <- COI4 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") %>% select(Sample_ID,Locus,Hash,nReads) %>% rename("Sample_name" = "Sample_ID")
+COI.ASV.table <- bind_rows(COI.ASV.table, COI1, COI4)
 
 COI.hash.key <- bind_rows(map(COI.hashes, read_csv))
 COI.hash.key <- COI.hash.key %>% 
