@@ -1,0 +1,4 @@
+"","representative","taxID","taxon","rank","score","kingdom","phylum","class","order","family","genus","species"
+"1","750a4ef330c32e1e3f479b3cba21182601d69799",8016,"Oncorhynchus","genus",NA,"Metazoa","Chordata","Actinopteri","Salmoniformes","Salmonidae","Oncorhynchus",""
+"2","f5f3173c8551c0433c110b48e9dad06a9860cbc0",9605,"Homo","genus",NA,"Metazoa","Chordata","Mammalia","Primates","Hominidae","Homo",""
+"3","199e257a656754c51df04d3fccc696275d10a201",30962,"Oncorhynchus clarkii","species",NA,"Metazoa","Chordata","Actinopteri","Salmoniformes","Salmonidae","Oncorhynchus","Oncorhynchus clarkii"
