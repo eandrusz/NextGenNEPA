@@ -5,7 +5,7 @@ date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: html_document
 params:
   run.num:
-    value: 1
+    value: 6
   minlength:
     value: 100
 ---
@@ -25,7 +25,7 @@ setwd("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/In_Pr
 # hard code in fastq folder to come from local hard drive NOT the github folder because the files are too big to host on Github
 fastqfolder <- paste0("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Input/fastq_files","/run",params$run.num)
 sequencingmetadatafile <- paste0(here("Input","sequencing_metadata_files/"),"metadata-input-run",params$run.num, ".csv") 
-outputfolder <- paste0(here("Output","cutadapt_output"),"/run",params$run.num,"_",format(Sys.Date(), "%Y%m%d"))
+outputfolder <- paste0("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/","cutadapt_output","/run",params$run.num,"_",format(Sys.Date(), "%Y%m%d"))
 paramsfile <- paste0(outputfolder,"/params.txt")
 
 ```
@@ -71,6 +71,6 @@ cutadapt --version
 
 ```{bash}
 
-bash test.bash.sh /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/cutadapt_output/run1_20211117/params.txt
+bash test.bash.sh /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run6_20211229/params.txt
 ```
 

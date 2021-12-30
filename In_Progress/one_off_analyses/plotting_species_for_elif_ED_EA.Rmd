@@ -339,6 +339,46 @@ MiFish.salmon.index.met.plot %>%
   facet_grid(Creek1 ~ Date1)
 
 #ggsave(file="//Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/MiFish.salmonids.padden.over.time.index.png", dpi = "retina")
+
+
+# simply plot eDNA index over time per creek -- for any salmonid -- pooling up/down
+MiFish.onch.index.plot <- MiFish.genus.index %>%
+  filter(genus == "Oncorhynchus") %>% 
+  group_by(Sample_name) %>% 
+  separate (Sample_name, into = c("Marker1", "Date1", "Creek1", "Site1", "Bottle1"), remove = FALSE) %>%
+  mutate(Bottle1 = str_replace(Bottle1, "^1$", "1TR1")) %>% 
+  mutate(Bottle1 = str_replace(Bottle1, "^2$", "2TR1")) %>%
+  mutate(Bottle1 = str_replace(Bottle1, "^3$", "3TR1")) %>%
+  separate(Bottle1, into = c("Bottle1", "TechRep1"), sep= -3, remove=TRUE)
+MiFish.onch.index.plot <- MiFish.onch.index.plot[! str_detect(MiFish.onch.index.plot$Sample_name,"Kangaroo"),]
+  
+MiFish.onch.index.plot %>% 
+  ggplot(aes(Date1, Normalized.reads, color=Creek1, shape=Site1)) + 
+  geom_point(size=3) +
+  facet_wrap(~Creek1) +
+  theme_bw() +
+  labs(y="eDNA index", x="Month", title="Oncorhynchus at each creek over time")
+
+ggsave(file="//Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/MiFish.salmonids.reads.creeks.over.time.index.png", dpi = "retina")
+
+# simply plot eDNA index over time per creek -- for only cutthraot -- pooling up/down
+MiFish.cut.index.plot <- MiFish.salmon.index.table %>%
+  filter(taxon == "Oncorhynchus clarkii") %>% 
+  separate (Var1, into = c("Marker1", "Date1", "Creek1", "Site1", "Bottle1"), remove = FALSE) %>%
+  mutate(Bottle1 = str_replace(Bottle1, "^1$", "1TR1")) %>% 
+  mutate(Bottle1 = str_replace(Bottle1, "^2$", "2TR1")) %>%
+  mutate(Bottle1 = str_replace(Bottle1, "^3$", "3TR1")) %>%
+  separate(Bottle1, into = c("Bottle1", "TechRep1"), sep= -3, remove=TRUE)
+MiFish.cut.index.plot <- MiFish.cut.index.plot[! str_detect(MiFish.cut.index.plot$Var1,"Kangaroo"),]
+  
+MiFish.cut.index.plot %>% 
+  ggplot(aes(Date1, Normalized.reads, color=Creek1, shape=Site1)) + 
+  geom_point(size=3) +
+  facet_wrap(~Creek1) +
+  theme_bw() +
+  labs(y="eDNA index", x="Month", title="Oncorhynchus clarkii index at each creek over time")
+
+ggsave(file="//Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/MiFish.cutthraot.index.creeks.over.time.index.png", dpi = "retina")
 ```
 
 

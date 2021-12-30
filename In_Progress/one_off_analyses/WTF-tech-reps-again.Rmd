@@ -23,6 +23,9 @@ COI.ASV.table <- read_csv(paste0(here("Output", "dada2_output"), "/", "20211129.
 MiFish.ASV.table <- read_csv(paste0(here("Output", "dada2_output"), "/", "20211122.combined.MiFish.ASV.table.csv"))
 MiMammal.ASV.table <- read_csv(paste0(here("Output", "dada2_output"), "/", "20211122.combined.MiMammal.ASV.table.csv"))
 
+# so I don't have to rewrite the code
+MiMammal.ASV.table <- COI.ASV.table
+
 all.metadata <- read.csv(here("Input", "sequencing_metadata_files", "master_sequencing_datasheet_20211026.csv"))
 
 ```
@@ -143,3 +146,102 @@ ggplot (all.distances.to.plot) +
 
 
 ```
+
+```{r centroid}
+
+# Instead of chosing based on the pw distances, we can do a similar thing using the distance to centroid
+# Find out which samples have only two pcr replicates
+for.centroid <- for.anova %>%
+  left_join(metadata.layout, by= "Sample_name") %>% 
+  separate(Sample_name, into = c("Marker1", "Date1", "Creek1", "Site1", "Bottle1"), remove = FALSE) %>% 
+  mutate(original_sample = paste0(Date1, Creek1, Site1))
+  
+for.centroid %>% dplyr::select(original_sample, Sample_name, taxon, Normalized.reads) %>% group_by(original_sample) %>% nest() -> nested.cleaning
+
+nested.cleaning %>% 
+  mutate(matrix = map(data, tibble_to_matrix)) -> nested.cleaning
+
+nested.cleaning %>% mutate(ncomparisons = map(matrix, length)) -> nested.cleaning
+
+# remove any kangaroo
+nested.cleaning <- nested.cleaning[! str_detect(nested.cleaning$original_sample,"Kangaroo"),]
+# now remove any NOT technical replicates
+nested.cleaning <- nested.cleaning %>% filter(ncomparisons < 4)
+ 
+dist_to_centroid <- function (x,y) {
+  biol <- rep(y, length(x))
+  
+  if (length(biol) == 1) {
+    output = rep(x[1]/2,2)
+    names(output) <- attr(x, "Labels")
+  }else{ 
+    
+  dispersion <- betadisper(x, group = biol)
+  output = dispersion$distances
+  }
+  output
+}
+
+nested.cleaning <- nested.cleaning %>% mutate (distances = map2(matrix, original_sample, dist_to_centroid))
+unlist (nested.cleaning$distances) -> all_distances
+hist(all_distances)
+
+normparams <- MASS::fitdistr(all_distances, "normal")$estimate                                      
+probs <- pnorm(all_distances, normparams[1], normparams[2])
+outliers <- which(probs>0.95)
+discard <-names (all_distances[outliers])
+
+to_write_discarded <- as.data.frame(all_distances[outliers]) %>% rownames_to_column("sample") %>% dplyr::select(sample, distance_to_centroid = 2)
+
+############# go back and do this with technical replicates
+for.centroid.tech.reps <- for.anova %>%
+  left_join(metadata.layout, by= "Sample_name") %>% 
+  separate(Sample_name, into = c("Marker1", "Date1", "Creek1", "Site1", "Bottle1"), remove = FALSE) %>% 
+  mutate(Bottle1 = str_replace(Bottle1, "^1$", "1TR1")) %>% 
+  mutate(Bottle1 = str_replace(Bottle1, "^2$", "2TR1")) %>%
+  mutate(Bottle1 = str_replace(Bottle1, "^3$", "3TR1")) %>%
+  separate(Bottle1, into = c("Bottle1", "TechRep1"), sep= -3, remove=TRUE) %>%
+  mutate(original_sample = paste0(Date1, Creek1, Site1, Bottle1))
+  
+for.centroid.tech.reps %>% dplyr::select(original_sample, Sample_name, taxon, Normalized.reads) %>% group_by(original_sample) %>% nest() -> nested.cleaning.tech.reps
+
+nested.cleaning.tech.reps %>% 
+  mutate(matrix = map(data, tibble_to_matrix)) -> nested.cleaning.tech.reps
+
+nested.cleaning.tech.reps %>% mutate(ncomparisons = map(matrix, length)) -> nested.cleaning.tech.reps
+
+# remove any kangaroo
+nested.cleaning.tech.reps <- nested.cleaning.tech.reps[! str_detect(nested.cleaning.tech.reps$original_sample,"Kangaroo"),]
+
+# now remove any NOT technical replicates
+nested.cleaning.tech.reps <- nested.cleaning.tech.reps %>% filter(ncomparisons > 2)
+nested.cleaning.tech.reps <- nested.cleaning.tech.reps %>% filter(ncomparisons < 4)
+
+
+dist_to_centroid <- function (x,y) {
+  biol <- rep(y, length(x))
+  
+  if (length(biol) == 1) {
+    output = rep(x[1]/2,2)
+    names(output) <- attr(x, "Labels")
+  }else{ 
+    
+  dispersion <- betadisper(x, group = biol)
+  output = dispersion$distances
+  }
+  output
+}
+
+nested.cleaning.tech.reps <- nested.cleaning.tech.reps %>% mutate (distances = map2(matrix, original_sample, dist_to_centroid))
+unlist (nested.cleaning.tech.reps$distances) -> all_distances.tech.reps
+hist(all_distances.tech.reps)
+
+normparams.tech.reps <- MASS::fitdistr(all_distances.tech.reps, "normal")$estimate                                      
+probs.tech.reps <- pnorm(all_distances.tech.reps, normparams.tech.reps[1], normparams.tech.reps[2])
+outliers.tech.reps <- which(probs.tech.reps>0.95)
+discard.tech.reps <-names (all_distances.tech.reps[outliers.tech.reps])
+
+to_write_discarded.tech.reps <- as.data.frame(all_distances.tech.reps[outliers.tech.reps]) %>% rownames_to_column("sample") %>% dplyr::select(sample, distance_to_centroid = 2)
+
+```
+
