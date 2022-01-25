@@ -36,36 +36,38 @@ Read in ASV table and hash key for run. Read in previous effort, insect classifi
 Hash     <- read_csv(Hash_key) %>% 
   select(Hash, Sequence) %>% distinct()
 
-#ALL.ASVs <- read_csv(params$ASVs)
+ALL.ASVs <- read_csv(params$ASVs)
 
-# ### COI -- HAS SOME BACKWARDS
-# # #reverse complement the representative sequence for each hash
-# cutadapt_metadata <- read.csv("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run4_20211117/noprimers/COI/cutadapt_output_metadata_COI.csv")
-# is.backwards <- (cutadapt_metadata$rc == 1)
-# samples.backwards <- cutadapt_metadata$Sample_name[is.backwards]
-# samples.forwards <- cutadapt_metadata$Sample_name[! is.backwards]
+ ### COI -- HAS SOME BACKWARDS
+ # #reverse complement the representative sequence for each hash
+ #cutadapt_metadata <- read.csv("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run4_20211117/noprimers/COI/cutadapt_output_metadata_COI.csv")
+cutadapt_metadata <- metadata_input_run2_fix
+
+ is.backwards <- (cutadapt_metadata$PrimerF == "TANACYTCNGGRTGNCCRAARAAYCA")
+ samples.backwards <- cutadapt_metadata$direction[is.backwards]
+ samples.forwards <- cutadapt_metadata$direction[! is.backwards]
 # 
-# ASVs.fwd <- ALL.ASVs %>%
-#   filter(Sample_name %in% samples.forwards)
-# ASVs.bkwd <- ALL.ASVs %>%
-#   filter(Sample_name %in% samples.backwards)
+ ASVs.fwd <- ALL.ASVs %>%
+   filter(Sample_name %in% samples.forwards)
+ ASVs.bkwd <- ALL.ASVs %>%
+   filter(Sample_name %in% samples.backwards)
 # 
-# Hash.fwds <- Hash %>%
-#   filter(Hash %in% ASVs.fwd$Hash)
-# Hash.bkwds <- Hash %>%
-#   filter(Hash %in% ASVs.bkwd$Hash)
+ Hash.fwds <- Hash %>%
+   filter(Hash %in% ASVs.fwd$Hash)
+ Hash.bkwds <- Hash %>%
+   filter(Hash %in% ASVs.bkwd$Hash)
 # 
-# # actually RC them
-# rc_seq <- vector(length = dim(Hash.bkwds)[1])
-# # this is ridiculous and shouldn't be for loop but wtf i can't get it to work
-# for (i in 1:dim(Hash.bkwds)[1]) {
-#   rc_seq[i] = rc(Hash.bkwds[i,2])
-# }
-# Hash.bkwds$Sequence <- rc_seq
-# Hash.bkwds <- Hash.bkwds %>%
-#   select(Hash, Sequence) %>% distinct()
-# 
-# Hash <- rbind(Hash.fwds, Hash.bkwds)
+ # actually RC them
+ rc_seq <- vector(length = dim(Hash.bkwds)[1])
+ # this is ridiculous and shouldn't be for loop but wtf i can't get it to work
+ for (i in 1:dim(Hash.bkwds)[1]) {
+   rc_seq[i] = rc(Hash.bkwds[i,2])
+ }
+ Hash.bkwds$Sequence <- rc_seq
+ Hash.bkwds <- Hash.bkwds %>%
+   select(Hash, Sequence) %>% distinct()
+ 
+ Hash <- rbind(Hash.fwds, Hash.bkwds)
 
 # comment these out if this is the first run and there is no previous effort or blast
 previous.effort <- read_rds(params$previous_effort)

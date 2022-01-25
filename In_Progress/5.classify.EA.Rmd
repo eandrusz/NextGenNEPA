@@ -7,21 +7,21 @@ output:
     toc: true
 params: 
   folder:
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/classification_output/run4_20211117/MiFish
+    value: C:\Users\erdag\github\NextGenNEPA-EA\Output\classification_output\run2_rerun\COI
   Hash_key:
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/dada2_output/run4_20211117/MiFish/hash_key.csv
+    value: C:\Users\erdag\github\NextGenNEPA-EA\Output\dada2_output\run2_20220124\COI\hash_key.csv
   ASVs: 
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/dada2_output/run4_20211117/MiFish/ASV_table.csv
+    value: C:\Users\erdag\github\NextGenNEPA-EA\Output\dada2_output\run2_20220124\COI\ASV_table.csv
   classifier:
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Input/classifiers/classifier_12S_MiFish.rds
+    value: C:\Users\erdag\NextGenNEPA_local\classifiers\classification.tree.coi.leray.v5.rds
   previous_effort: 
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/classification_output/MiFish.all.gs.previous.hashes.annotated.rds
+    value: C:\Users\erdag\github\NextGenNEPA-EA\Output\classification_output\COI.all.previous.hashes.annotated.rds
   local_blast: 
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/classification_output/MiFish.blast.previous.hashes.annotated.rds
+    value: C:\Users\erdag\github\NextGenNEPA-EA\Output\classification_output\COI.blast.previous.hashes.annotated.rds
   run:
-    value: 4
+    value: 2_rerun
   marker:
-    value: MiFish
+    value: COI
   
 ---
 
@@ -162,7 +162,7 @@ good.clasif.hashes <- readRDS(file=paste0(run_marker_output_folder,"/gs.new.hash
 write.csv(good.clasif.hashes, file=paste0(run_marker_output_folder,"/gs.new.hashes.annotated.csv"))
 
 # make and save combined rds file with the previous effort and the new one 
-combined <- rbind(previous.effort, all.clasif.hashes)
+combined <- rbind(previous.effort, clasif.hashes)
 saveRDS(combined, file=paste0(here("Output","classification_output"),"/", params$marker,".all.previous.hashes.annotated.rds"))
 
 combined.gs <- rbind(previous.effort,good.clasif.hashes)
