@@ -1,0 +1,8 @@
+"","representative","taxID","taxon","rank","score","kingdom","phylum","class","order","family","genus","species"
+"1","e90cb50c95abca6c27ea5a0ed733b60795c2bd88",8295,"Ambystoma","genus",1,"Metazoa","Chordata","Amphibia","Caudata","Ambystomatidae","Ambystoma",""
+"2","4cb29b180f75aa2df550a8296f2bd6da55a5fb1b",69292,"Gasterosteus","genus",0.9953,"Metazoa","Chordata","Actinopteri","Perciformes","Gasterosteidae","Gasterosteus",""
+"3","802298e4f140d8efd534000a3585dffe8b4571db",8295,"Ambystoma","genus",1,"Metazoa","Chordata","Amphibia","Caudata","Ambystomatidae","Ambystoma",""
+"4","cde98f040f3dbd3d3506b9e14e943629d362526c",8295,"Ambystoma","genus",1,"Metazoa","Chordata","Amphibia","Caudata","Ambystomatidae","Ambystoma",""
+"5","b55847e6698add0f1eb8f3dc1c940a0c8aa0fb22",9606,"Homo sapiens","species",0.9983,"Metazoa","Chordata","Mammalia","Primates","Hominidae","Homo","Homo sapiens"
+"6","2b727c93db24199728cd8aa8ca70fb81bd81fe3a",9606,"Homo sapiens","species",0.9983,"Metazoa","Chordata","Mammalia","Primates","Hominidae","Homo","Homo sapiens"
+"7","16c4ced5b5e20329565b8f2926295383d438c4be",9606,"Homo sapiens","species",0.9988,"Metazoa","Chordata","Mammalia","Primates","Hominidae","Homo","Homo sapiens"

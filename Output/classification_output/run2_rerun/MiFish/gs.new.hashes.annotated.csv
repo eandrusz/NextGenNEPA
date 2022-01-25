@@ -1,0 +1,4 @@
+"","representative","taxID","taxon","rank","score","kingdom","phylum","class","order","family","genus","species"
+"1","5bf8fae8add0deab0fceb092c159eec7ff13bbf1",69292,"Gasterosteus","genus",0.9992,"Metazoa","Chordata","Actinopteri","Perciformes","Gasterosteidae","Gasterosteus",""
+"2","412b103c5af2b14901ce28b2cdc4ff07464a3ead",8295,"Ambystoma","genus",1,"Metazoa","Chordata","Amphibia","Caudata","Ambystomatidae","Ambystoma",""
+"3","5367cb9300356e7d403a15b96f77df8c411cc082",69292,"Gasterosteus","genus",0.9988,"Metazoa","Chordata","Actinopteri","Perciformes","Gasterosteidae","Gasterosteus",""
