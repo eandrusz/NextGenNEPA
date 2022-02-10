@@ -1,0 +1,61 @@
+---
+title: "creek_metadata"
+author: "Eily Allan"
+date: "07/09/2021"
+output: html_document
+---
+
+This script takes in metadata from sampling: 
+-Creek/Station
+-Date and time of sampling
+-pH, temp, DO, turbidity
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+rm(list = ls())
+library(ggplot2)
+library(tidyverse)
+library(here)
+library(RColorBrewer)
+
+metadata <- read.csv(here("data","creek_metadata_to_plot.csv"), header=TRUE)
+c1 <- colorRampPalette(brewer.pal(5, 'Dark2'))(5)
+```
+
+## Plot metadata separated by creek/station, plotted over time
+
+```{r plots}
+
+# temp
+ggplot(metadata) +
+  geom_point(na.rm=TRUE, aes(x=month, y=temp.C, size = 2, color=as.factor(creek), shape = as.factor(station))) +
+  scale_color_manual(values = c1) +
+  scale_shape_manual(values = c(15, 16, 17, 18)) +
+  labs(x="Month", y="Temperature (C)", size="", color="Creek", shape="Station") +
+  guides(size = FALSE) +
+  theme_bw()
+
+# pH
+ggplot(metadata) +
+  geom_point(na.rm=TRUE, aes(x=month, y=pH, size = 2, color=as.factor(creek), shape = as.factor(station))) +
+  labs(x="Month", y="pH", size="", color="Creek", shape="Station") +
+  guides(size = FALSE) +
+  theme_bw()
+
+# DO
+ggplot(metadata) +
+  geom_point(na.rm=TRUE, aes(x=month, y=DO.p, size = 2, color=as.factor(creek), shape = as.factor(station))) +
+  labs(x="Month", y="DO (mg/L)", size="", color="Creek", shape="Station") +
+  guides(size = FALSE) +
+  theme_bw()
+
+# Turbidity
+ggplot(metadata) +
+  geom_point(na.rm=TRUE, aes(x=month, y=turb.ppm, size = 2, color=as.factor(creek), shape = as.factor(station))) +
+  labs(x="Month", y="Turbidity (ppm)", size="", color="Creek", shape="Station") +
+  guides(size = FALSE) +
+  theme_bw()
+```
+
+

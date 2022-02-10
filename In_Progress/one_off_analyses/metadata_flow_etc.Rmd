@@ -1,0 +1,249 @@
+---
+title: "creek_metadata"
+author: "Eily Allan"
+date: "11/8/2021"
+output: html_document
+---
+
+Read in metadata from City of Bellingham (flow, temperature, etc. and spawner surveys) and start to wrangle/plot. Later on, figure out how we want to pair some of this with metabarcoding data. For now, just wrangle data. 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(here)
+library(tidyverse)
+library(gridExtra)
+library(ggmap)
+```
+
+## Flow data
+
+```{r flow import and format data}
+flow <- list.files(path = here("Input", "metadata", "flow"), pattern = "*.csv", recursive = T, full.names = T)
+
+# not sure how to automate without manually checking when real data starts and only take first two columns (second are blank)
+chk_flow <- read.csv(flow[1], skip = 30, header=TRUE)[,1:2] # units of ft3/s 
+pad_flow <- read.csv(flow[2], skip=29, header=TRUE)[,1:2]
+sqm_flow <- read.csv(flow[3], skip=27, header=TRUE)[,1:2]
+
+## For each creek, make into a ts object
+chk_flow <- chk_flow %>% 
+  rename(Discharge = Discharge.Arroyo.Park..cfs.) %>% 
+  mutate(TimeStamp=as.Date(strptime(chk_flow$TimeStamp,format='%m/%d/%Y %H:%M'))) 
+chk_flow <- chk_flow %>% 
+  add_column(Year=format(chk_flow$TimeStamp, format = "%Y")) %>% 
+  add_column(Julian=format(chk_flow$TimeStamp, format = "%j"))
+
+pad_flow <- pad_flow %>% 
+  rename(Discharge = Discharge.Fairhaven.Park..cfs.)%>% 
+  mutate(TimeStamp=as.Date(strptime(pad_flow$TimeStamp,format='%m/%d/%Y %H:%M'))) 
+pad_flow <- pad_flow %>% 
+  add_column(Year=format(pad_flow$TimeStamp, format = "%Y")) %>% 
+  add_column(Julian=format(pad_flow$TimeStamp, format = "%j"))
+
+sqm_flow <- sqm_flow %>% 
+  rename(Discharge = Discharge.West.Street..cfs.) %>% 
+  mutate(TimeStamp=as.Date(strptime(sqm_flow$TimeStamp,format='%m/%d/%Y %H:%M'))) 
+sqm_flow <- sqm_flow %>% 
+  add_column(Year=format(sqm_flow$TimeStamp, format = "%Y")) %>% 
+  add_column(Julian=format(sqm_flow$TimeStamp, format = "%j"))
+```
+
+Now that the data are in and formatted, let's just start with some basic plots to get a sense of normal flow between years, within a year, and across creeks.
+
+```{r flow basic plotting, echo=FALSE}
+
+## first make a map of where these gauges are located vs where samples are taken
+
+# order is chk-gauge, chk-sample, pad-gauge, pad-sample, sqm-gauge, sqm-sample
+# used downstream locations for sampling lat/long
+lats<-c(48.70247, 48.68956, 48.71494, 48.71492, 48.76606, 48.80016)
+longs<-c(-122.4824,-122.4094,-122.4996, -122.4788, -122.4996, -122.40521)
+sitenames<-c("Chuckanut Creek Gauge","Chuckanut Creek Sampling","Padden Creek Gauge", "Padden Creek Sampling", "Squalicum Creek Gauge", "Squalicum Creek Sampling")
+
+lat_labels<-c(48.70247, 48.68956, 48.73, 48.71492, 48.76606, 48.80016)
+long_labels<-c(-122.415,-122.335,-122.4996, -122.41, -122.43, -122.33)
+
+
+# Get a map
+register_google(key = "AIzaSyD-_Nnel-29IzTHJ7shlDv3yBu3h6WgA-8", write = TRUE)
+map <- get_map(location = c(lon = mean(longs), lat = mean(lats)), zoom = 11,
+               maptype = "toner-lite", source = "google")
+plotmap<-ggmap(map)
+plotmap + 
+  geom_point(data=data.frame(lats,longs), aes(x=longs, y=lats), shape=c(15,16,15,16,15,16), color=c("darkorchid4","darkorchid4","seagreen4","seagreen4","steelblue4","steelblue4"), size=5) +
+  geom_text(data=data.frame(lats,longs, sitenames), x=long_labels, y=lat_labels, label=sitenames, fontface = "bold", size=2) +
+  ggtitle("Gauge versus Sampling Locations" , subtitle="Bellingham, Washington, USA") +
+  theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5)) +
+  xlab("Longitude")+
+  ylab("Latitude")
+ggsave("flow_gauge_sample_map.png", path=here("Output", "metadata"))
+
+
+## Next, let's plot flow data for all years for each creek
+chk_allyears <- 
+  chk_flow %>%
+  ggplot(aes(x = TimeStamp, y = Discharge)) +
+  geom_point(color = "darkorchid4") +
+  labs(title = "Chuckanut Creek @ Arroyo Park (2015-2021)",
+       y = "Flow (cfs)",
+       x = "Date") + theme_bw(base_size = 15) 
+
+pad_allyears <- 
+pad_flow %>%
+  ggplot(aes(x = TimeStamp, y = Discharge)) +
+  geom_point(color = "seagreen4") +
+  labs(title = "Padden Creek @ Fairhaven Park (2015-2021)",
+       y = "Flow (cfs)",
+       x = "Date") + theme_bw(base_size = 15)
+
+sqm_allyears <- 
+sqm_flow %>%
+  ggplot(aes(x = TimeStamp, y = Discharge)) +
+  geom_point(color = "steelblue4") +
+  labs(title = "Squalicum Creek @ West Street (2015-2021)",
+       y = "Flow (cfs)",
+       x = "Date") + theme_bw(base_size = 15)
+
+all_allyears <- grid.arrange(chk_allyears, pad_allyears, sqm_allyears, nrow = 3)
+ggsave("flow_allcreeks_allyears.png", path=here("Output", "metadata"), all_allyears, width = 8, height = 6)
+
+## Now, plot only 2021 for each creek
+
+# Let's add what times we sampled in 2021 
+sampling_metadata <- read.csv(here("Input","metadata","sampling_metadata.csv"),header=TRUE)
+sampling_metadata <- sampling_metadata %>% 
+  add_column(TimeStamp=as.Date(with(sampling_metadata, paste(year, month, day, sep="-")),"%Y-%m-%d")) 
+
+chk_2021 <- 
+chk_flow %>%
+  filter(Year>2020) %>%
+  ggplot(aes(x = TimeStamp, y = Discharge)) +
+  geom_point(color = "darkorchid4") +
+  labs(title = "Chuckanut Creek @ Arroyo Park (2021)",
+       y = "Flow (cfs)",
+       x = "Date") + theme_bw(base_size = 15) +
+  geom_point(data=sampling_metadata, x=sampling_metadata$TimeStamp, y=0, colour='black', shape=17, size=5)
+
+pad_2021 <- 
+pad_flow %>%
+  filter(Year>2020) %>%
+  ggplot(aes(x = TimeStamp, y = Discharge)) +
+  geom_point(color = "seagreen4") +
+  labs(title = "Padden Creek @ Fairhaven Park (2021)",
+       y = "Flow (cfs)",
+       x = "Date") + theme_bw(base_size = 15) +
+  geom_point(data=sampling_metadata, x=sampling_metadata$TimeStamp, y=0, colour='black', shape=17, size=5)
+
+sqm_2021 <- 
+sqm_flow %>%
+  filter(Year>2020) %>%
+  ggplot(aes(x = TimeStamp, y = Discharge)) +
+  geom_point(color = "steelblue4") +
+  labs(title = "Squalicum Creek @ West Street (2021)",
+       y = "Flow (cfs)",
+       x = "Date") + theme_bw(base_size = 15) +
+  geom_point(data=sampling_metadata, x=sampling_metadata$TimeStamp, y=0, colour='black', shape=17, size=5)
+
+# now put all 3 plots together
+all_2021 <- grid.arrange(chk_2021, pad_2021, sqm_2021, nrow = 3)
+ggsave("flow_allcreeks_2021.png", path=here("Output", "metadata"), all_2021, width = 6, height = 8)
+
+
+```
+
+Ok now we have a sense of what we are working with. BUT we only have data for 3 of our 5 creeks AND the data we have is not at the same location as sampling. Padden is pretty close, but Squalicum and Chuckanut are not... What should we do?
+
+Ryan says "model it, obvi". Great. 
+
+His suggestions: 
+"I'm thinking: there is some mean flow for any given day, and this mean is a linear correlate of rainfall (we can get rainfall data).  And plot the SD (across creeks, for any given day)  vs. the mean (among creeks, for any given day), and see what the trend looks like.  If there's no trend, SD is independent of mean, and we model the distribution w a single SD.  If there's a trend, we have SD depend on mean as a linear function, and fit the model.  Then we interpolate any other creek as having a flow that is drawn from the resulting (inferred) distribution."
+
+```{r flow advanced}
+# Let's start by finding the daily mean standard deviation of discharge at each creek - we are only using 2021 here.
+
+chk_2021_mean_sd <- 
+  chk_flow %>%
+  filter(Year>2020) %>%
+  group_by(Julian) %>%
+  summarize(mean = mean(Discharge), sd=sd(Discharge)) %>% 
+  add_column(Creek="Chuckanut")
+pad_2021_mean_sd <- 
+  pad_flow %>%
+  filter(Year>2020) %>%
+  group_by(Julian) %>%
+  summarize(mean = mean(Discharge), sd=sd(Discharge)) %>% 
+  add_column(Creek="Padden")
+sqm_2021_mean_sd <- 
+  sqm_flow %>%
+  filter(Year>2020) %>%
+  group_by(Julian) %>%
+  summarize(mean = mean(Discharge), sd=sd(Discharge)) %>% 
+  add_column(Creek="Squalicum")
+
+all_2021_mean_sd <- rbind(chk_2021_mean_sd,pad_2021_mean_sd, sqm_2021_mean_sd) #is there a better way to do this chunk?
+
+ggplot(all_2021_mean_sd, aes(x=mean, y=sd,color=factor(Creek))) + 
+  geom_point() +
+  scale_color_manual(values=c("darkorchid4","seagreen4","steelblue4")) +
+  labs(title = "Creek Discharge Data (2021)",
+       x = "Mean discharge (cfs)",
+       y = "Standard deviation deviation (cfs)",
+       color="Creek") + 
+  theme_bw(base_size = 15) +
+  facet_wrap(~ Creek, scales="free") +
+  theme(legend.position="none")
+ggsave("flow_allcreeks_meanvssd_2021.png", path=here("Output", "metadata"), width = 8, height = 4)
+
+# or do we want to look at the mean across ALL creeks for a given day? this is the mean of the 3 means and the sd of the 3 means?
+all_2021_mean_sd2 <- 
+  all_2021_mean_sd %>% 
+  group_by(Julian) %>%
+  summarize(mean_all_creeks = mean(mean), sd_all_creeks=sd(mean))
+
+plot(all_2021_mean_sd2$mean_all_creeks, all_2021_mean_sd2$sd_all_creeks)
+
+```
+
+Ok in the previous section we figured out how to get a flow rate for any given sampling day in any given creek. But now what do we do to actually "correct" our metabarcoding data for the flow rate in any given sample?
+
+Other people have thought of this. Two ideas here:
+1) Taylor Wilcox:
+2) Genidaqs: Artemis 
+
+Both of these are built for qPCR data, but since we feel confident (in Ryan) to get back to some proportion of biomass from sequencing data using fancy models with amplification efficiency and such, can we actually use the same models for qPCR? TECHNICALLY probably not because it is still compositional data as opposed to qPCR which is single species... but it is a place to start at least? Maybe we can run some qPCRs on certain samples and then come up with some kind of "correction factor" for metabarcoding data too? 
+
+```{r flow really advanced!}
+## Taylor Wilcox 
+
+
+
+## Genidaqs artemis package
+
+library(artemis)
+
+# fake data to test out the model
+Cq <- c(30,32,33,35,36,35,32,31,32)
+Distance_m <- c(10,10,10,20,20,20,30,30,30)
+Volume_mL <- c(490,490,490,510,510,510,480,480,480)
+eDNA_data <- data.frame(Cq,Distance_m, Volume_mL)
+
+# model_fit = eDNA_lm(Cq ~ scale(Distance_m) + scale(Volume_mL), 
+#                     data = eDNA_data,
+#                     std_curve_alpha = 21.2, std_curve_beta = -1.5)
+# 
+# model_fit2 = eDNA_lmer(Cq ~ scale(Distance_m) + scale(Volume_mL) + (1|FilterID),
+#                        eDNA_data,
+#                        std_curve_alpha = 21.2, std_curve_beta = -1.5)
+
+
+```
+
+## Spawner surveys
+
+```{r spawners}
+#spawner_folder <- here("Input", "metadata", "spawner_surveys")
+#spawners_2019 <- read.table(here("Input", "metadata", "spawner_surveys","2019-2020 COB Urban Spawner Surveys.xlsx"))
+
+```
+
