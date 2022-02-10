@@ -1,0 +1,141 @@
+---
+title: "merge_runs.Rmd"
+author: "Eily Allan"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: html_document
+---
+
+Last updated: 2/2/22
+
+# Overview
+
+We ran dada2 separately for each marker - and we have samples for each month split across multiple sequencing runs. So what we want to do is take the output from dada2 for each run and smash them together so we have one big ASV table for all the samples for a given marker. This means we are going to run this script each time we add another sequencing run. 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+# Check that here() starts at NextGenNEPA
+```
+
+# Load datasets and metadata
+
+The ASV tables and hash keys come from the output folder where each run has a subfolder for dada2 and then subfolders for each marker. The metadata actually is stored in the Input folder to keep all the columns that we want (not use dada2 generated metadata file). 
+
+
+```{r just file paths so far}
+
+# use the pattern to sort out the files - ^ means "starts with" 
+all.asvs <- list.files(path = here("Output","dada2_output"), pattern = "^ASV_table.csv", recursive = T, full.names = T)
+all.hashes <- list.files(path = here("Output","dada2_output"), pattern = "^Hash_key.csv", recursive = T, full.names = T,ignore.case = T)
+
+all.metadata <- read.csv(here("Input", "sequencing_metadata_files", "master_sequencing_datasheet_20211026.csv"))
+
+# now sort ASVs and hashes by marker
+COI.asvs <- str_subset(all.asvs, "COI")
+COI.hashes <- str_subset(all.hashes, "COI")
+
+MiFish.asvs <- str_subset(all.asvs, "MiFish")
+MiFish.hashes <- str_subset(all.hashes, "MiFish")
+
+MiMammal.asvs <- str_subset(all.asvs, "MiMammal")
+MiMammal.hashes <- str_subset(all.hashes, "MiMammal")
+
+```
+
+# Merge ASV and hash keys for each marker. 
+
+Now let's actually start pulling ASV and hash files together and merging them all - we will do the metadata after. For some of them, the metadata file names might be wrong and so we need to make sure all the columns and conventions are the same across all the runs we are trying to merge together. 
+
+## Merge COI runs
+
+```{r pull and merge ASV tables and hashes COI}
+
+# coi run 1 has sample as NGNX rather than sample name 
+COI.ASV.table <- bind_rows(map(COI.asvs[2:3], read_csv))
+COI1 <- read.csv(COI.asvs[1])
+COI1$Sample_name <- as.character(COI1$Sample_name)
+COI1 <- COI1 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") %>% select(Sample_ID,Locus,Hash,nReads) %>% rename("Sample_name" = "Sample_ID")
+COI4 <- read.csv(COI.asvs[4])
+COI4$Sample_name <- as.character(COI4$Sample_name)
+COI4 <- COI4 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") %>% select(Sample_ID,Locus,Hash,nReads) %>% rename("Sample_name" = "Sample_ID")
+COI6 <- read.csv(COI.asvs[5])
+COI6$Sample_name <- as.character(COI6$Sample_name)
+COI6 <- COI6 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") %>% select(Sample_ID,Locus,Hash,nReads) %>% rename("Sample_name" = "Sample_ID")
+
+COI.ASV.table <- bind_rows(COI.ASV.table, COI1, COI4, COI6)
+
+COI.hash.key <- bind_rows(map(COI.hashes, read_csv))
+COI.hash.key <- COI.hash.key %>% 
+  distinct(Hash, .keep_all = T) 
+
+```
+
+## Merge MiFish runs
+
+```{r pull and merge ASV tables and hashes MiFish}
+
+# mifish runs 1 and 4 have sample as NGNX rather than sample name so have to fix
+MiFish.ASV.table <- bind_rows(map(MiFish.asvs[2:3], read_csv))
+# we actually don't want to include run1 of mifish because we re-sequenced everything at 35 cycles instead of 40
+MiFish4 <- read.csv(MiFish.asvs[4])
+MiFish4$Sample_name <- as.character(MiFish4$Sample_name)
+MiFish4 <- MiFish4 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") %>% select(Sample_ID,Locus,Hash,nReads) %>% rename("Sample_name" = "Sample_ID")
+MiFish6 <- read.csv(MiFish.asvs[5])
+MiFish6$Sample_name <- as.character(MiFish6$Sample_name)
+MiFish6 <- MiFish6 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") %>% select(Sample_ID,Locus,Hash,nReads) %>% rename("Sample_name" = "Sample_ID")
+
+MiFish.ASV.table <- bind_rows(MiFish.ASV.table, MiFish4, MiFish6)
+
+MiFish.hash.key <- bind_rows(map(MiFish.hashes, read_csv))
+MiFish.hash.key <- MiFish.hash.key %>% 
+  distinct(Hash, .keep_all = T) 
+
+```
+
+## Merge MiMammal runs
+
+```{r pull and merge ASV tables and hashes MiMammal} 
+
+# mimammal runs 1 and 4 have sample as NGNX rather than sample name so have to fix
+MiMammal.ASV.table <- bind_rows(map(MiMammal.asvs[2:3], read_csv))
+MiMammal1 <- read.csv(MiMammal.asvs[1])
+MiMammal1$Sample_name <- as.character(MiMammal1$Sample_name)
+MiMammal1 <- MiMammal1 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") %>% select(Sample_ID,Locus,Hash,nReads) %>% rename("Sample_name" = "Sample_ID")
+MiMammal4 <- read.csv(MiMammal.asvs[4])
+MiMammal4$Sample_name <- as.character(MiMammal4$Sample_name)
+MiMammal4 <- MiMammal4 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") %>% select(Sample_ID,Locus,Hash,nReads) %>% rename("Sample_name" = "Sample_ID")
+MiMammal6 <- read.csv(MiMammal.asvs[5])
+MiMammal6$Sample_name <- as.character(MiMammal6$Sample_name)
+MiMammal6 <- MiMammal6 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") %>% select(Sample_ID,Locus,Hash,nReads) %>% rename("Sample_name" = "Sample_ID")
+
+MiMammal.ASV.table <- bind_rows(MiMammal.ASV.table, MiMammal1, MiMammal4, MiMammal6)
+
+MiMammal.hash.key <- bind_rows(map(MiMammal.hashes, read_csv))
+MiMammal.hash.key <- MiMammal.hash.key %>% 
+  distinct(Hash, .keep_all = T) 
+
+```
+
+# Write all the merged files for all markers
+
+```{r write combined files}
+
+# Write the Hash keys 
+COI.hash.key %>% 
+  write_csv(paste0(here("Output", "dada2_output"), "/", format(Sys.Date(), "%Y%m%d") , ".combined.COI.hash.key.csv"))
+MiFish.hash.key %>% 
+  write_csv(paste0(here("Output", "dada2_output"), "/", format(Sys.Date(), "%Y%m%d") , ".combined.MiFish.hash.key.csv"))
+MiMammal.hash.key %>% 
+  write_csv(paste0(here("Output", "dada2_output"), "/", format(Sys.Date(), "%Y%m%d") , ".combined.MiMammal.hash.key.csv"))
+
+# Write the merged ASV tables
+COI.ASV.table %>% 
+  write_csv(paste0(here("Output", "dada2_output"), "/", format(Sys.Date(), "%Y%m%d") , ".combined.COI.ASV.table.csv"))
+MiFish.ASV.table %>% 
+  write_csv(paste0(here("Output", "dada2_output"), "/", format(Sys.Date(), "%Y%m%d") , ".combined.MiFish.ASV.table.csv"))
+MiMammal.ASV.table %>% 
+  write_csv(paste0(here("Output", "dada2_output"), "/", format(Sys.Date(), "%Y%m%d") , ".combined.MiMammal.ASV.table.csv"))
+
+```
