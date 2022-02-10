@@ -1,0 +1,77 @@
+---
+title: "explore_delta_euks"
+author: "Eily Allan"
+date: "2/10/2022"
+output: html_document
+---
+
+Last modified 2/10/22
+
+
+# Overview
+
+Paper 2 explores the changes in eukaryotes *due to* culvert replacement. Here we are going to start exploring ways to do that. Basically here we want to see changes in community (as measured by our COI marker) in the target creek - Padden - and see how the culver replacement impacted these changes. 
+
+# Set Up
+
+## Load packages
+
+```{r set up}
+knitr::opts_chunk$set(echo = TRUE)
+library(here)
+library(tidyverse)
+library(vegan)
+library(reshape2)
+
+```
+
+## Import data
+
+For now, let's just focus on presence/absence data from our COI marker. Later we can go back and do MiFish/MiMammal (or try to make it quantitative if we can get the variable PCR model working.)
+
+We also have some finagling to do like removing technical replicates and positive controls (and Maya's samples). 
+
+```{r import data}
+
+COIdata <- read.csv(here("Output","combined_species_tables","20220210_COI.csv"))
+
+COI <- COIdata %>% 
+  select(-X) %>% 
+  separate(Sample_name, into=c("Marker","Date","Creek","Site","Bio_Rep"), extra="warn") %>% 
+  filter(Bio_Rep == "1" | Bio_Rep == "2" | Bio_Rep == "3") %>%  # things that don't have bio reps are kangaroo or maya's samples
+  filter(Creek != "Kangaroo")  # still some leftover kangaroos.. whoops 
+
+```
+
+# Data exploration! 
+
+Ok! What do we find?? Let's start by plotting some stuff and then figure out what we are working with. 
+
+## But first - kangaroo 
+
+How well did we do avoiding cross-contamination and tag jumping?
+
+```{r check kangaroo}
+COI_kangaroo <- COIdata %>% 
+  select(-X) %>% 
+  filter(str_detect(Sample_name, "Kangaroo"))
+
+# Wow. Only Kangaroo in there. Pretty amazing.. now quick check to see if the environmental samples have any kangaroo in them
+
+COI_kangaroo_in_samples <- COI %>% 
+  filter(str_detect(species, "Macropus") | str_detect(species, "Osphranter"))
+
+# Nothing! Yahoo! 
+```
+
+## Each creek over time
+
+```{r creeks over time}
+
+
+
+
+```
+
+
+

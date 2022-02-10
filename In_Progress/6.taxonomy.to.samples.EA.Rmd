@@ -69,7 +69,7 @@ MiMammal.by.species <- MiMammal.ASV.yes.taxon %>%
   group_by(Sample_name, species) %>% # for each sample that has multiple asvs that assign to the same taxa...
   summarise(tot = sum(nReads))
 
-write.csv(MiMammal.by.species, here("Output","combined_species_tables","20220210_MiMammal.csv"))
+write.csv(MiMammal.by.species, here("Output","combined_species_tables","20220210_MiMammal.csv"), row.names = FALSE)
 ```
 
 ```{r MiFish}
@@ -91,7 +91,7 @@ MiFish.by.species <- MiFish.ASV.yes.taxon %>%
   group_by(Sample_name, species) %>% # for each sample that has multiple asvs that assign to the same taxa...
   summarise(tot = sum(nReads))
 
-write.csv(MiFish.by.species, here("Output","combined_species_tables","20220210_MiFish.csv"))
+write.csv(MiFish.by.species, here("Output","combined_species_tables","20220210_MiFish.csv"), row.names = FALSE)
 
 ```
 
@@ -114,6 +114,6 @@ COI.by.species <- COI.ASV.yes.taxon %>%
   group_by(Sample_name, species) %>% # for each sample that has multiple asvs that assign to the same taxa...
   summarise(tot = sum(nReads))
 
-write.csv(COI.by.species, here("Output","combined_species_tables","20220210_COI.csv"))
+write.csv(COI.by.species, here("Output","combined_species_tables","20220210_COI.csv"), row.names = FALSE)
 
 ```
