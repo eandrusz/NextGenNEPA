@@ -2,7 +2,9 @@
 title: "explore_delta_euks"
 author: "Eily Allan"
 date: "2/10/2022"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 Last modified 2/10/22
@@ -33,7 +35,7 @@ Determine which marker and whether analyzing at species or ASV level.
 
 ## must choose if you want to analyze at species or ASV level
 datatype = "species" 
-#datatype = "ASVs"
+#datatype = "ASV"
 
 ## must choose marker 
 marker = "COI"
@@ -62,7 +64,7 @@ if(datatype=="species"){
     filter(Creek != "Kangaroo")  # still some leftover kangaroos.. whoops 
 }
 
-if(datatype=="ASVs"){
+if(datatype=="ASV"){
   filename <- paste0(mostrecent,".combined.",marker,".ASV.table.csv")
   filepath <- here("Output","dada2_output",filename)
   data <- read.csv(filepath)
@@ -163,21 +165,24 @@ make.rich.biorep.plot <- function(df, numreps){
   scale_fill_manual(values = c("#003333", "#CCFFFF", "#669999","#CCFFFF") ) +
   geom_bar(position="dodge", stat="identity", color="black") +
   theme_bw() + 
+  theme(axis.text.x = element_text(angle = 45)) +
   labs(title= titlelabel, y= ylabel, x= "Month")
   
   return(p)
 }
 
-p1 <- make.rich.biorep.plot(rich.123, 1)
+p1 <- make.rich.biorep.plot(rich.123, 1) + theme(legend.position = "none")
 p1file = paste0(marker,"_",datatype,"_richness_atleast1biorep.png")
-p2 <- make.rich.biorep.plot(rich.23, 2)
+p2 <- make.rich.biorep.plot(rich.23, 2) + theme(legend.position = "none")
 p2file = paste0(marker,"_",datatype,"_richness_atleast2biorep.png")
-p3 <- make.rich.biorep.plot(rich.3, 3)
+p3 <- make.rich.biorep.plot(rich.3, 3) 
 p3file = paste0(marker,"_",datatype,"_richness_atleast3biorep.png")
 
-ggsave(p1, filename= here("Output","figures",p1file))
-ggsave(p2, filename= here("Output","figures",p2file))
-ggsave(p3, filename= here("Output","figures",p3file))
+#ggsave(p1, filename= here("Output","figures",p1file))
+#ggsave(p2, filename= here("Output","figures",p2file))
+#ggsave(p3, filename= here("Output","figures",p3file))
+
+p1 + p2 + p3 + plot_layout(ncol = 3, nrow = 1, byrow = F)
 
 ```
 
@@ -186,34 +191,56 @@ ggsave(p3, filename= here("Output","figures",p3file))
 Let's only do this for the big richness (speices found in any replicate)
 
 ```{r delta richness}
-delta.rich.123 <- rich.123 %>% 
-  group_by(Date,Creek) %>% 
-  pivot_wider(names_from = Site, values_from = richness)
 
-# control creeks - we can bin together to make box plot
-delta.rich.123.controls <- delta.rich.123 %>% 
-  filter(Creek != "4Pad") %>% 
-  mutate(rich_up_minus_down = Up - Dn) %>% 
-  select(c(Date,Creek,rich_up_minus_down))
+# here df is rich.123
+calc.delta.rich <- function(df){
+  
+  p <- df %>% 
+    group_by(Date,Creek) %>% 
+    pivot_wider(names_from = Site, values_from = richness)
+  
+  # control creeks - we can bin together to make box plot
+  p.controls <- p %>% 
+    filter(Creek != "4Pad") %>% 
+    mutate(rich_up_minus_down = Up - Dn) %>% 
+    select(c(Date,Creek,rich_up_minus_down))
+  
+  # have to do padden separately to use up5 not up (ignore up11 for now)
+  p.intervention <- p %>% 
+    filter(Creek == "4Pad") %>% 
+    mutate(rich_up_minus_down = Up5 - Dn) %>% 
+    select(c(Date,Creek,rich_up_minus_down))
+  
+  pnew <- rbind(p.controls, p.intervention)
+  
+  return(pnew)
+}
 
-# have to do padden separately to use up5 not up (ignore up11 for now)
-delta.rich.123.intervention <- delta.rich.123 %>% 
-  filter(Creek == "4Pad") %>% 
-  mutate(rich_up_minus_down = Up5 - Dn) %>% 
-  select(c(Date,Creek,rich_up_minus_down))
-
-delta.rich.123 <- rbind(delta.rich.123.controls, delta.rich.123.intervention)
-
-delta.rich.plot <- delta.rich.123 %>% 
+plot.delta.rich <- function(df){
+  
+  p <- df %>% 
   ggplot(aes(x=Date, y= rich_up_minus_down, fill=Creek, shape=Creek)) +
   scale_fill_manual(values = c("#669999", "#669999", "#669999","#CC0066", "#669999") ) +
   scale_shape_manual(values=c(21:25)) +
   geom_point(color="black", size=4) +
   geom_hline(yintercept = 0, linetype="dashed") +
   theme_bw() + 
-  labs(title= "COI, species found in any replicate", y= "Richness Upstream - Richness Downstream", x= "Month")
+  labs(y= "Richness Upstream - Richness Downstream", x= "Month")
 
-ggsave(delta.rich.plot, filename = here("Output","figures","delta_richness_atleast1biorep.png"))
+return(p)
+}
+
+#ggsave(delta.rich.plot, filename = here("Output","figures","delta_asv_richness_atleast1biorep.png"))
+
+delta.rich.123 <- calc.delta.rich(rich.123)
+delta.rich.23 <- calc.delta.rich(rich.23)
+delta.rich.3 <- calc.delta.rich(rich.3)
+
+p1 <- plot.delta.rich(delta.rich.123) + theme(legend.position = "none") + ggtitle("COI, species level, found in any replicate")
+p2 <- plot.delta.rich(delta.rich.23) + theme(legend.position = "none") + ggtitle("COI, species level, found in at least 2 replicates")
+p3 <- plot.delta.rich(delta.rich.3) + ggtitle("COI, species level, found in all 3 replicates")
+
+p1 + p2 + p3 + plot_layout(ncol = 3, nrow = 1, byrow = F)
 
 ```
 
@@ -240,7 +267,6 @@ prepare.nmds <- function(df){
 visualize.nmds <- function(df,metadf){
   
   data.scores = as.data.frame(scores(df))
-  metadf <- metadf[1:537,]
   meta <- metadf %>% 
     select(c(Sample_name, Date, Creek, Site)) %>% 
     distinct()
@@ -252,83 +278,168 @@ visualize.nmds <- function(df,metadf){
     geom_point(size = 4, aes(shape = Creek, fill= Date), colour = "black" )+ 
     labs(x = "NMDS1", fill = "Date", y = "NMDS2", shape = "Creek") +
     scale_shape_manual(values=21:25) +
-    #scale_fill_manual(values = c("#99FF00","#33CC99","#99FFFF","#3399FF","#CC99FF","#FF99CC")) +
-    #guides(fill=guide_legend(override.aes=list(colour=c("0321"="#99FF00","0421"="#33CC99", "0521"="#99FFFF", "0621"="#3399FF", "0721"="#CC99FF", "0821"="#FF99CC")))) +
-    scale_fill_manual(values = c("#99FF00","#33CC99","#3399FF","#FF99CC")) +
-    guides(fill=guide_legend(override.aes=list(colour=c("0321"="#99FF00","0421"="#33CC99",  "0621"="#3399FF",  "0821"="#FF99CC")))) +
+    scale_fill_manual(values = c("#99FF00","#33CC99","#99FFFF","#3399FF","#CC99FF","#FF99CC")) +
+    guides(fill=guide_legend(override.aes=list(colour=c("0321"="#99FF00","0421"="#33CC99", "0521"="#99FFFF", "0621"="#3399FF", "0721"="#CC99FF", "0821"="#FF99CC")))) +
+    #scale_fill_manual(values = c("#99FF00","#33CC99","#3399FF","#FF99CC")) +
+    #guides(fill=guide_legend(override.aes=list(colour=c("0321"="#99FF00","0421"="#33CC99",  "0621"="#3399FF",  "0821"="#FF99CC")))) +
     theme_bw() 
   
   return(p)
 }
 
-coi.species.123.nmds <- metaMDS(prepare.nmds(data.123), distance = "bray")
-p.nmds.123 <- visualize.nmds(coi.species.123.nmds, data.123) + ggtitle("COI, species level, found in any replicate")
+# # MIFISH remove barnes march bc something weird driving nmds
+# data.123.mod <- data.123 %>% 
+#   unite("creek_month", c("Creek", "Date"),sep="_", remove=FALSE) %>% 
+#   filter(creek_month != "2Brn_0321") %>% 
+#   select(-creek_month)
+# data.23.mod <- data.23 %>% 
+#   unite("creek_month", c("Creek", "Date"),sep="_", remove=FALSE) %>% 
+#   filter(creek_month != "2Brn_0321") %>% 
+#   select(-creek_month)
+# data.3.mod <- data.3 %>% 
+#   unite("creek_month", c("Creek", "Date"),sep="_", remove=FALSE) %>% 
+#   filter(creek_month != "2Brn_0321") %>% 
+#   select(-creek_month)
+
+
+
+# COI: fuck at ASV level have to remove march and april bc they are RC'd
+
+coi.123.nmds <- metaMDS(prepare.nmds(data.123), distance = "bray")
+p.nmds.123 <- visualize.nmds(coi.123.nmds, data.123) + ggtitle("COI, ASV level, found in any replicate")
 #ggsave(p.nmds.1, filename = here("Output","figures","COI_species_nmds_123biorep.png"))
 
-coi.species.23.nmds <- metaMDS(prepare.nmds(data.23), distance = "bray")
-p.nmds.23 <- visualize.nmds(coi.species.23.nmds, data.23) + ggtitle("COI, species level, found in at least 2 replicates")
+coi.23.nmds <- metaMDS(prepare.nmds(data.23), distance = "bray")
+p.nmds.23 <- visualize.nmds(coi.23.nmds, data.23) + ggtitle("COI, ASV level, found in at least 2 replicates")
 #ggsave(p.nmds.1, filename = here("Output","figures","COI_species_nmds_23biorep.png"))
 
-# remove august squalicum bc its fucking shit up?
-coi.species.3.nmds <- metaMDS(prepare.nmds(data.3[1:537,]), distance = "bray")
-p.nmds.3 <- visualize.nmds(coi.species.3.nmds, data.3) + ggtitle("COI, species level, found in all 3 replicates")
+coi.3.nmds <- metaMDS(prepare.nmds(data.3), distance = "bray")
+p.nmds.3 <- visualize.nmds(coi.3.nmds, data.3) + ggtitle("COI, ASV level, found in all 3 replicates")
 #ggsave(p.nmds.1, filename = here("Output","figures","COI_species_nmds_3biorep.png"))
 
 p.nmds.123 + p.nmds.23 + p.nmds.3 + plot_layout(ncol = 3, nrow = 1, byrow = F)
 
 ```
 
-## Remove things just found in 1 replicate
+```{r nmds w species}
 
-This looks not great. So let's see what happens if we remove anything found in just one biological replicate...
+library(BiodiversityR) # also loads vegan
+library(ggplot2)
+library(readxl)
+library(ggsci)
+library(ggrepel)
+library(ggforce)
 
-```{r nmds}
+BioR.theme <- theme(
+        panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid = element_blank(),
+        axis.line = element_line("gray25"),
+        text = element_text(size = 12),
+        axis.text = element_text(size = 10, colour = "gray25"),
+        axis.title = element_text(size = 14, colour = "gray25"),
+        legend.title = element_text(size = 14),
+        legend.text = element_text(size = 14),
+        legend.key = element_blank())
 
-coi.species.atleast2 <- bysite %>% 
-  filter(n !=1) %>% 
-  unite("id", c(Date,Creek,Site,species), remove=FALSE)
+meta <- data.123.mod %>% 
+    select(c(Sample_name, Date, Creek, Site)) %>% 
+    distinct()
+
+Ordination.model1 <- metaMDS(prepare.nmds(data.123), distance='bray', k=2, trymax=1, 
+  autotransform=TRUE, noshare=0.1, expand=TRUE, trace=1, plot=FALSE)
+plot1 <- ordiplot(Ordination.model1, choices=c(1,2))
+
+sites.long1 <- sites.long(plot1, env.data=meta)
+head(sites.long1)
+
+plotgg1 <- ggplot() + 
+    geom_vline(xintercept = c(0), color = "grey70", linetype = 2) +
+    geom_hline(yintercept = c(0), color = "grey70", linetype = 2) +  
+    xlab("NMDS1") +
+    ylab("NMDS2") +  
+    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +
+    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    
+    geom_point(data=sites.long1, 
+               aes(x=axis1, y=axis2, colour=Creek, shape=Date), 
+               size=5) +
+    BioR.theme +
+    ggsci::scale_colour_npg() +
+    coord_fixed(ratio=1)
+
+plotgg1
+
+plotgg1 <- ggplot() + 
+    geom_vline(xintercept = c(0), color = "grey70", linetype = 2) +
+    geom_hline(yintercept = c(0), color = "grey70", linetype = 2) +  
+    xlab("NMDS1") +
+    ylab("NMDS2") +  
+    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +
+    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    
+    geom_point(data=sites.long(plot1, env.data=meta), 
+               aes(x=axis1, y=axis2, colour=Creek, shape=Date), 
+               size=5) +
+    BioR.theme +
+    ggsci::scale_colour_npg() +
+    coord_fixed(ratio=1)
+
+plotgg1
 
 
-coi.species.atleast2.for.nmds <- COI %>% 
-  select(-Marker) %>% 
-  unite("id", c(Date,Creek,Site,species), remove=FALSE) %>% 
-  filter(id %in% coi.species.atleast2$id) %>% 
-  select(c(Sample_name,species,tot)) %>% 
-  #pivot_wider(names_from = Sample_name, values_from = nReads) %>%
-  pivot_wider(names_from = Sample_name, values_from = tot) %>% 
-  #column_to_rownames(var="Hash")
-  column_to_rownames(var="species")
+Ordination.model2 <- rda(prepare.nmds(data.123) ~ Creek, data=meta, scaling="species")
+plot2 <- ordiplot(Ordination.model2, choices=c(1,2))
+sites.long2 <- sites.long(plot2, env.data=meta)
+head(sites.long1)
+species.long2 <- species.long(plot2)
+species.long2
+axis.long2 <- axis.long(Ordination.model2, choices=c(1, 2))
+axis.long2
 
-coi.species.atleast2.for.nmds[is.na(coi.species.atleast2.for.nmds)] <- 0
-coi.species.atleast2.nmds <- metaMDS(t(coi.species.atleast2.for.nmds), distance = "bray")
+plotgg2 <- ggplot() + 
+    geom_vline(xintercept = c(0), color = "grey70", linetype = 2) +
+    geom_hline(yintercept = c(0), color = "grey70", linetype = 2) +  
+    xlab(axis.long2[1, "label"]) +
+    ylab(axis.long2[2, "label"]) +  
+    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +
+    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    
+    geom_point(data=sites.long2, 
+               aes(x=axis1, y=axis2, colour=Creek, shape=Date), 
+               size=5) +
+    geom_point(data=species.long2, 
+               aes(x=axis1, y=axis2)) +
+    BioR.theme +
+    ggsci::scale_colour_npg() +
+    coord_fixed(ratio=1)
+plotgg2
 
-goodness(coi.species.atleast2.nmds) # Produces a results of test statistics for goodness of fit for each point
-stressplot(coi.species.atleast2.nmds) # Produces a Shepards diagram
-plot(coi.species.atleast2.nmds, "sites") 
-  
-data.scores = as.data.frame(scores(coi.species.atleast2.nmds))
-meta <- COI %>% 
-  select(-Marker) %>% 
-  unite("id", c(Date,Creek,Site,species), remove=FALSE) %>% 
-  filter(id %in% coi.species.atleast2$id) %>% 
-  select(c(Sample_name,Date,Creek,Site)) %>% 
-  distinct()
+spec.envfit <- envfit(plot2, env=prepare.nmds(data.123))
+spec.data.envfit <- data.frame(r=spec.envfit$vectors$r, p=spec.envfit$vectors$pvals)
+species.long2 <- species.long(plot2, spec.data=spec.data.envfit)
+species.long2
 
-data.scores$Sample = meta$Sample_name
-data.scores$Date = meta$Date
-data.scores$Creek = meta$Creek
-data.scores$Site = meta$Site
+species.long3 <- species.long2[species.long2$p <= 0.001, ]
+species.long3
 
+plotgg2 <- ggplot() + 
+    geom_vline(xintercept = c(0), color = "grey70", linetype = 2) +
+    geom_hline(yintercept = c(0), color = "grey70", linetype = 2) +  
+    xlab(axis.long2[1, "label"]) +
+    ylab(axis.long2[2, "label"]) +  
+    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +
+    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    
+    geom_point(data=sites.long2, 
+               aes(x=axis1, y=axis2, colour=Creek, shape=Date), 
+               size=5) +
+    geom_segment(data=species.long3, 
+                 aes(x=0, y=0, xend=axis1*4, yend=axis2*4), 
+                 colour="red", size=0.7, arrow=arrow()) +
+    geom_text_repel(data=species.long3, 
+                    aes(x=axis1*4, y=axis2*4, label=labels),
+                    colour="red") +
+    BioR.theme +
+    ggsci::scale_colour_npg() +
+    coord_fixed(ratio=1)
 
-ggplot(data.scores, aes(x = NMDS1, y = NMDS2)) + 
-    geom_point(size = 4, aes(shape = Creek, fill= Date), colour = "black" )+ 
-    labs(x = "NMDS1", fill = "Date", y = "NMDS2", shape = "Creek") +
-    scale_shape_manual(values=21:25) +
-  scale_fill_manual(values=c("blue","green","orange","yellow","grey","black")) +
-  guides(fill=guide_legend(override.aes=list(colour=c("0321"="blue","0421"="green", "0521"="orange", "0621"="yellow", "0721"="grey", "0821"="black"))))
- 
+plotgg2
 
 ```
-
-
-
