@@ -1,0 +1,334 @@
+---
+title: "explore_delta_euks"
+author: "Eily Allan"
+date: "2/10/2022"
+output: html_document
+---
+
+Last modified 2/10/22
+
+
+# Overview
+
+Paper 2 explores the changes in eukaryotes *due to* culvert replacement. Here we are going to start exploring ways to do that. Basically here we want to see changes in community (as measured by our COI marker) in the target creek - Padden - and see how the culver replacement impacted these changes. 
+
+# Set Up
+
+## Load packages
+
+```{r set up}
+knitr::opts_chunk$set(echo = TRUE)
+library(here)
+library(tidyverse)
+library(vegan)
+library(reshape2)
+library(patchwork)
+```
+
+## Import data
+
+Determine which marker and whether analyzing at species or ASV level.
+
+```{r which data}
+
+## must choose if you want to analyze at species or ASV level
+datatype = "species" 
+#datatype = "ASVs"
+
+## must choose marker 
+marker = "COI"
+
+```
+
+Now read it in and format it 
+
+```{r import data}
+
+# change to most recent date when files were created
+mostrecent <- "20220210"
+
+##
+if(datatype=="species"){
+  filename <- paste0(mostrecent,"_",marker,".csv")
+  filepath <- here("Output","combined_species_tables",filename)
+  rawdata <- read.csv(filepath)
+  data <- rawdata %>% 
+    select(-X) %>% 
+    rename(reads = tot) %>% 
+    rename(species_asv = species) %>% 
+    separate(Sample_name, into=c("Marker","Date","Creek","Site","Bio_Rep","extra"), extra="warn", remove=FALSE) %>% 
+    filter(is.na(extra)) %>% select(-extra) %>% # remove the "Barnes Up2 old" sample - shouldn't normally need this
+    filter(Bio_Rep == "1" | Bio_Rep == "2" | Bio_Rep == "3") %>%  # things that don't have bio reps are kangaroo or maya's samples
+    filter(Creek != "Kangaroo")  # still some leftover kangaroos.. whoops 
+}
+
+if(datatype=="ASVs"){
+  filename <- paste0(mostrecent,".combined.",marker,".ASV.table.csv")
+  filepath <- here("Output","dada2_output",filename)
+  data <- read.csv(filepath)
+  rawdata <- read.csv(filepath)
+  data <- rawdata %>% 
+    rename(reads = nReads) %>% 
+    rename(species_asv = Hash) %>% 
+    separate(Sample_name, into=c("Marker","Date","Creek","Site","Bio_Rep","extra"), extra="warn", remove=FALSE) %>% 
+    filter(is.na(extra)) %>% select(-extra) %>% # remove the "Barnes Up2 old" sample - shouldn't normally need this
+    filter(Bio_Rep == "1" | Bio_Rep == "2" | Bio_Rep == "3") %>%  # things that don't have bio reps are kangaroo or maya's samples
+    filter(Creek != "Kangaroo")  # still some leftover kangaroos.. whoops 
+}
+
+```
+
+We have 3 biological replicates for each site. Let's make three different versions that we can use to plot. One where we count only things found in all 3/3 replicates, one with anything found in at least 2 replicates, and one where we count all unique things found even if they were just in 1 replicate. This will give us a sense for how well our replicates match as well. 
+
+```{r different numbers of replicates}
+# this gives us the number of biological replicates that have a detection (presence/absence) for each species - at each site (up/down) within each creek (all 5) at each time point 
+bysite <- data %>% 
+  group_by(Date, Creek, Site) %>%
+  count(species_asv)
+
+# check to make sure that none of the samples have more than 3 (biological replicates)
+sum(bysite$n >3)
+
+# things found in any of replicates (1, 2, or 3/3)
+data.123 <- data 
+
+# things found in at least 2 replicates (2 or 3/3)
+reps.23 <- bysite %>% 
+  filter(n != 1) %>% 
+  unite("id", c(Date,Creek,Site,species_asv), remove=FALSE)
+
+data.23 <- data %>% 
+  unite("id", c(Date,Creek,Site,species_asv), remove=FALSE) %>% 
+  filter(id %in% reps.23$id)
+
+# things found in all 3 replicates 
+reps.3 <- bysite %>% 
+  filter(n == 3) %>% 
+  unite("id", c(Date,Creek,Site,species_asv), remove=FALSE)
+
+data.3 <- data %>% 
+  unite("id", c(Date,Creek,Site,species_asv), remove=FALSE) %>% 
+  filter(id %in% reps.3$id)
+
+```
+
+# Metrics and plotting 
+
+## Richness calculations
+
+We want to do this for all the different versions (1,2,3 bio reps). And then we can compare in each sample how many things are found in 1, 2, or all 3 replicates. 
+
+```{r richness calculations}
+
+# check richness at each time/site/creek 
+
+rich.123 <- data.123 %>% 
+  select(c(Date,Creek,Site,species_asv)) %>% 
+  group_by(Date, Creek, Site) %>%
+  summarise(richness = n_distinct(species_asv))
+
+rich.23 <- data.23 %>% 
+  select(c(Date,Creek,Site,species_asv)) %>% 
+  group_by(Date, Creek, Site) %>%
+  summarise(richness = n_distinct(species_asv))
+
+rich.3 <- data.3 %>% 
+  select(c(Date,Creek,Site,species_asv)) %>% 
+  group_by(Date, Creek, Site) %>%
+  summarise(richness = n_distinct(species_asv))
+
+
+biorep.richness <- rich.123 %>% 
+  rename(richness123 = richness) %>% 
+  left_join(rich.23, by = c("Date" = "Date", "Creek" = "Creek", "Site"="Site")) %>% 
+  rename(richness23 = richness) %>% 
+  left_join(rich.3, by = c("Date" = "Date", "Creek" = "Creek", "Site"="Site")) %>% 
+  rename(richness3 = richness)
+
+```
+
+
+## Richness plots
+
+```{r richness plots}
+
+# plot difference in richness when including things found in 1/2/3 biological replicates
+
+make.rich.biorep.plot <- function(df, numreps){
+  ylabel <- paste0("Number of unique ", datatype)
+  titlelabel <- paste0(marker, ": ", datatype, " found per site in at least ", as.character(numreps), "/3 biological replicates")
+  p <- df %>% 
+  ggplot(aes(x=Date, y= richness, fill=Site)) +
+  facet_wrap(~Creek) +
+  scale_fill_manual(values = c("#003333", "#CCFFFF", "#669999","#CCFFFF") ) +
+  geom_bar(position="dodge", stat="identity", color="black") +
+  theme_bw() + 
+  labs(title= titlelabel, y= ylabel, x= "Month")
+  
+  return(p)
+}
+
+p1 <- make.rich.biorep.plot(rich.123, 1)
+p1file = paste0(marker,"_",datatype,"_richness_atleast1biorep.png")
+p2 <- make.rich.biorep.plot(rich.23, 2)
+p2file = paste0(marker,"_",datatype,"_richness_atleast2biorep.png")
+p3 <- make.rich.biorep.plot(rich.3, 3)
+p3file = paste0(marker,"_",datatype,"_richness_atleast3biorep.png")
+
+ggsave(p1, filename= here("Output","figures",p1file))
+ggsave(p2, filename= here("Output","figures",p2file))
+ggsave(p3, filename= here("Output","figures",p3file))
+
+```
+
+## Difference in richness upstream and downstream 
+
+Let's only do this for the big richness (speices found in any replicate)
+
+```{r delta richness}
+delta.rich.123 <- rich.123 %>% 
+  group_by(Date,Creek) %>% 
+  pivot_wider(names_from = Site, values_from = richness)
+
+# control creeks - we can bin together to make box plot
+delta.rich.123.controls <- delta.rich.123 %>% 
+  filter(Creek != "4Pad") %>% 
+  mutate(rich_up_minus_down = Up - Dn) %>% 
+  select(c(Date,Creek,rich_up_minus_down))
+
+# have to do padden separately to use up5 not up (ignore up11 for now)
+delta.rich.123.intervention <- delta.rich.123 %>% 
+  filter(Creek == "4Pad") %>% 
+  mutate(rich_up_minus_down = Up5 - Dn) %>% 
+  select(c(Date,Creek,rich_up_minus_down))
+
+delta.rich.123 <- rbind(delta.rich.123.controls, delta.rich.123.intervention)
+
+delta.rich.plot <- delta.rich.123 %>% 
+  ggplot(aes(x=Date, y= rich_up_minus_down, fill=Creek, shape=Creek)) +
+  scale_fill_manual(values = c("#669999", "#669999", "#669999","#CC0066", "#669999") ) +
+  scale_shape_manual(values=c(21:25)) +
+  geom_point(color="black", size=4) +
+  geom_hline(yintercept = 0, linetype="dashed") +
+  theme_bw() + 
+  labs(title= "COI, species found in any replicate", y= "Richness Upstream - Richness Downstream", x= "Month")
+
+ggsave(delta.rich.plot, filename = here("Output","figures","delta_richness_atleast1biorep.png"))
+
+```
+
+
+## NMDS plots for sanity check    
+
+Biological replicates really don't match up well. So do things even cluster by creek, month, and station? 
+
+```{r nmds}
+
+prepare.nmds <- function(df){
+  p <- df %>%
+    select(c(Sample_name,species_asv,reads)) %>% 
+    pivot_wider(names_from = Sample_name, values_from = reads) %>% 
+    column_to_rownames(var="species_asv")
+  
+  p[is.na(p)] <- 0
+  
+  p <- t(p)
+  
+  return(p)
+}
+
+visualize.nmds <- function(df,metadf){
+  
+  data.scores = as.data.frame(scores(df))
+  metadf <- metadf[1:537,]
+  meta <- metadf %>% 
+    select(c(Sample_name, Date, Creek, Site)) %>% 
+    distinct()
+  data.scores$Sample = meta$Sample_name
+  data.scores$Date = meta$Date
+  data.scores$Creek = meta$Creek
+  
+  p <- ggplot(data.scores, aes(x = NMDS1, y = NMDS2)) + 
+    geom_point(size = 4, aes(shape = Creek, fill= Date), colour = "black" )+ 
+    labs(x = "NMDS1", fill = "Date", y = "NMDS2", shape = "Creek") +
+    scale_shape_manual(values=21:25) +
+    #scale_fill_manual(values = c("#99FF00","#33CC99","#99FFFF","#3399FF","#CC99FF","#FF99CC")) +
+    #guides(fill=guide_legend(override.aes=list(colour=c("0321"="#99FF00","0421"="#33CC99", "0521"="#99FFFF", "0621"="#3399FF", "0721"="#CC99FF", "0821"="#FF99CC")))) +
+    scale_fill_manual(values = c("#99FF00","#33CC99","#3399FF","#FF99CC")) +
+    guides(fill=guide_legend(override.aes=list(colour=c("0321"="#99FF00","0421"="#33CC99",  "0621"="#3399FF",  "0821"="#FF99CC")))) +
+    theme_bw() 
+  
+  return(p)
+}
+
+coi.species.123.nmds <- metaMDS(prepare.nmds(data.123), distance = "bray")
+p.nmds.123 <- visualize.nmds(coi.species.123.nmds, data.123) + ggtitle("COI, species level, found in any replicate")
+#ggsave(p.nmds.1, filename = here("Output","figures","COI_species_nmds_123biorep.png"))
+
+coi.species.23.nmds <- metaMDS(prepare.nmds(data.23), distance = "bray")
+p.nmds.23 <- visualize.nmds(coi.species.23.nmds, data.23) + ggtitle("COI, species level, found in at least 2 replicates")
+#ggsave(p.nmds.1, filename = here("Output","figures","COI_species_nmds_23biorep.png"))
+
+# remove august squalicum bc its fucking shit up?
+coi.species.3.nmds <- metaMDS(prepare.nmds(data.3[1:537,]), distance = "bray")
+p.nmds.3 <- visualize.nmds(coi.species.3.nmds, data.3) + ggtitle("COI, species level, found in all 3 replicates")
+#ggsave(p.nmds.1, filename = here("Output","figures","COI_species_nmds_3biorep.png"))
+
+p.nmds.123 + p.nmds.23 + p.nmds.3 + plot_layout(ncol = 3, nrow = 1, byrow = F)
+
+```
+
+## Remove things just found in 1 replicate
+
+This looks not great. So let's see what happens if we remove anything found in just one biological replicate...
+
+```{r nmds}
+
+coi.species.atleast2 <- bysite %>% 
+  filter(n !=1) %>% 
+  unite("id", c(Date,Creek,Site,species), remove=FALSE)
+
+
+coi.species.atleast2.for.nmds <- COI %>% 
+  select(-Marker) %>% 
+  unite("id", c(Date,Creek,Site,species), remove=FALSE) %>% 
+  filter(id %in% coi.species.atleast2$id) %>% 
+  select(c(Sample_name,species,tot)) %>% 
+  #pivot_wider(names_from = Sample_name, values_from = nReads) %>%
+  pivot_wider(names_from = Sample_name, values_from = tot) %>% 
+  #column_to_rownames(var="Hash")
+  column_to_rownames(var="species")
+
+coi.species.atleast2.for.nmds[is.na(coi.species.atleast2.for.nmds)] <- 0
+coi.species.atleast2.nmds <- metaMDS(t(coi.species.atleast2.for.nmds), distance = "bray")
+
+goodness(coi.species.atleast2.nmds) # Produces a results of test statistics for goodness of fit for each point
+stressplot(coi.species.atleast2.nmds) # Produces a Shepards diagram
+plot(coi.species.atleast2.nmds, "sites") 
+  
+data.scores = as.data.frame(scores(coi.species.atleast2.nmds))
+meta <- COI %>% 
+  select(-Marker) %>% 
+  unite("id", c(Date,Creek,Site,species), remove=FALSE) %>% 
+  filter(id %in% coi.species.atleast2$id) %>% 
+  select(c(Sample_name,Date,Creek,Site)) %>% 
+  distinct()
+
+data.scores$Sample = meta$Sample_name
+data.scores$Date = meta$Date
+data.scores$Creek = meta$Creek
+data.scores$Site = meta$Site
+
+
+ggplot(data.scores, aes(x = NMDS1, y = NMDS2)) + 
+    geom_point(size = 4, aes(shape = Creek, fill= Date), colour = "black" )+ 
+    labs(x = "NMDS1", fill = "Date", y = "NMDS2", shape = "Creek") +
+    scale_shape_manual(values=21:25) +
+  scale_fill_manual(values=c("blue","green","orange","yellow","grey","black")) +
+  guides(fill=guide_legend(override.aes=list(colour=c("0321"="blue","0421"="green", "0521"="orange", "0621"="yellow", "0721"="grey", "0821"="black"))))
+ 
+
+```
+
+
+

@@ -1,0 +1,528 @@
+"","Sample_name","species","tot"
+"1","MiFish.0321.1Prt.Dn.1","Oncorhynchus kisutch",5174
+"2","MiFish.0321.1Prt.Dn.1TR2","Didelphis virginiana",119
+"3","MiFish.0321.1Prt.Dn.1TR3","",245
+"4","MiFish.0321.1Prt.Dn.1TR3","Didelphis virginiana",827
+"5","MiFish.0321.1Prt.Dn.1TR3","Oncorhynchus clarkii",3957
+"6","MiFish.0321.1Prt.Dn.2","Lampetra sp. CBM:ZF:17561",6624
+"7","MiFish.0321.1Prt.Dn.3","Oncorhynchus kisutch",1578
+"8","MiFish.0321.1Prt.Up.1","",1046
+"9","MiFish.0321.1Prt.Up.1","Didelphis virginiana",8
+"10","MiFish.0321.1Prt.Up.1","Lampetra sp. CBM:ZF:17561",1475
+"11","MiFish.0321.1Prt.Up.1","Oncorhynchus clarkii",20364
+"12","MiFish.0321.1Prt.Up.1","Oncorhynchus kisutch",3018
+"13","MiFish.0321.1Prt.Up.2","",39
+"14","MiFish.0321.1Prt.Up.2","Oncorhynchus clarkii",2480
+"15","MiFish.0321.1Prt.Up.2","Oncorhynchus kisutch",1846
+"16","MiFish.0321.1Prt.Up.3","Oncorhynchus clarkii",3166
+"17","MiFish.0321.1Prt.Up.3","Oncorhynchus kisutch",3477
+"18","MiFish.0321.2Brn.Dn.1","",120
+"19","MiFish.0321.2Brn.Dn.1","Canis lupus",14
+"20","MiFish.0321.2Brn.Dn.1","Lampetra sp. CBM:ZF:17561",1824
+"21","MiFish.0321.2Brn.Dn.1","Oncorhynchus clarkii",17814
+"22","MiFish.0321.2Brn.Dn.2","Lampetra sp. CBM:ZF:17561",3403
+"23","MiFish.0321.2Brn.Dn.2","Oncorhynchus clarkii",2732
+"24","MiFish.0321.2Brn.Dn.3","",349
+"25","MiFish.0321.2Brn.Dn.3","Lampetra sp. CBM:ZF:17561",1530
+"26","MiFish.0321.2Brn.Dn.3","Oncorhynchus clarkii",51449
+"27","MiFish.0321.2Brn.Up.1","",75
+"28","MiFish.0321.2Brn.Up.1","Lynx rufus",9859
+"29","MiFish.0321.2Brn.Up.2","",1558
+"30","MiFish.0321.2Brn.Up.2","Lynx rufus",889
+"31","MiFish.0321.2Brn.Up.2","Oncorhynchus clarkii",2220
+"32","MiFish.0321.2Brn.Up.2","Oncorhynchus mykiss",1042
+"33","MiFish.0321.2Brn.Up.3","Lynx rufus",414
+"34","MiFish.0321.3Chk.Dn.1","",662
+"35","MiFish.0321.3Chk.Dn.1","Didelphis virginiana",244
+"36","MiFish.0321.3Chk.Dn.1","Oncorhynchus clarkii",3108
+"37","MiFish.0321.3Chk.Dn.2","",5898
+"38","MiFish.0321.3Chk.Dn.2","Canis lupus",5
+"39","MiFish.0321.3Chk.Dn.2","Oncorhynchus clarkii",4955
+"40","MiFish.0321.3Chk.Dn.2","Oncorhynchus kisutch",189
+"41","MiFish.0321.3Chk.Dn.2","Oncorhynchus mykiss",3932
+"42","MiFish.0321.3Chk.Dn.2","Perca flavescens",930
+"43","MiFish.0321.3Chk.Dn.3","",1034
+"44","MiFish.0321.3Chk.Dn.3","Oncorhynchus clarkii",92579
+"45","MiFish.0321.3Chk.Up.2","",54
+"46","MiFish.0321.3Chk.Up.2","Oncorhynchus clarkii",19484
+"47","MiFish.0321.3Chk.Up.3","Oncorhynchus clarkii",5171
+"48","MiFish.0321.4Pad.Dn.1","",9957
+"49","MiFish.0321.4Pad.Dn.1","Oncorhynchus clarkii",7229
+"50","MiFish.0321.4Pad.Dn.1","Oncorhynchus kisutch",966
+"51","MiFish.0321.4Pad.Dn.1","Oncorhynchus mykiss",4879
+"52","MiFish.0321.4Pad.Dn.1","Turdus migratorius",794
+"53","MiFish.0321.4Pad.Dn.2","",61991
+"54","MiFish.0321.4Pad.Dn.2","Oncorhynchus clarkii",10661
+"55","MiFish.0321.4Pad.Dn.2","Oncorhynchus kisutch",9637
+"56","MiFish.0321.4Pad.Dn.2","Oncorhynchus mykiss",20029
+"57","MiFish.0321.4Pad.Dn.2","Turdus migratorius",124
+"58","MiFish.0321.4Pad.Dn.3","",40370
+"59","MiFish.0321.4Pad.Dn.3","Oncorhynchus clarkii",20199
+"60","MiFish.0321.4Pad.Dn.3","Oncorhynchus kisutch",2663
+"61","MiFish.0321.4Pad.Dn.3","Oncorhynchus mykiss",26897
+"62","MiFish.0321.4Pad.Dn.3","Perca flavescens",1672
+"63","MiFish.0321.4Pad.Dn.3","Sus scrofa",349
+"64","MiFish.0321.4Pad.Dn.3","Turdus migratorius",421
+"65","MiFish.0321.4Pad.Up11.1","",14606
+"66","MiFish.0321.4Pad.Up11.1","Oncorhynchus clarkii",5945
+"67","MiFish.0321.4Pad.Up11.1","Oncorhynchus mykiss",28536
+"68","MiFish.0321.4Pad.Up11.2","",6977
+"69","MiFish.0321.4Pad.Up11.2","Oncorhynchus clarkii",2029
+"70","MiFish.0321.4Pad.Up11.2","Oncorhynchus mykiss",567
+"71","MiFish.0321.4Pad.Up11.2","Oncorhynchus nerka",563
+"72","MiFish.0321.4Pad.Up11.2","Perca flavescens",5744
+"73","MiFish.0321.4Pad.Up11.3","",65274
+"74","MiFish.0321.4Pad.Up11.3","Oncorhynchus clarkii",11544
+"75","MiFish.0321.4Pad.Up11.3","Oncorhynchus mykiss",18415
+"76","MiFish.0321.4Pad.Up11.3","Turdus migratorius",404
+"77","MiFish.0321.4Pad.Up5.1","",30176
+"78","MiFish.0321.4Pad.Up5.1","Oncorhynchus mykiss",927
+"79","MiFish.0321.4Pad.Up5.1","Perca flavescens",1003
+"80","MiFish.0321.4Pad.Up5.2","",23786
+"81","MiFish.0321.4Pad.Up5.2","Oncorhynchus clarkii",1040
+"82","MiFish.0321.4Pad.Up5.2","Oncorhynchus kisutch",997
+"83","MiFish.0321.4Pad.Up5.2","Perca flavescens",38
+"84","MiFish.0321.4Pad.Up5.3","",26450
+"85","MiFish.0321.5Sqm.Dn.1","",146
+"86","MiFish.0321.5Sqm.Dn.1","Ameiurus nebulosus",577
+"87","MiFish.0321.5Sqm.Dn.1","Lampetra sp. CBM:ZF:17561",699
+"88","MiFish.0321.5Sqm.Dn.1","Oncorhynchus clarkii",19556
+"89","MiFish.0321.5Sqm.Dn.1","Pimephales promelas",12015
+"90","MiFish.0321.5Sqm.Dn.2","",58
+"91","MiFish.0321.5Sqm.Dn.2","Lampetra sp. CBM:ZF:17561",214
+"92","MiFish.0321.5Sqm.Dn.2","Oncorhynchus clarkii",15461
+"93","MiFish.0321.5Sqm.Dn.2","Oncorhynchus mykiss",588
+"94","MiFish.0321.5Sqm.Dn.2","Pimephales promelas",12081
+"95","MiFish.0321.5Sqm.Dn.2","Turdus migratorius",142
+"96","MiFish.0321.5Sqm.Dn.3","",515
+"97","MiFish.0321.5Sqm.Dn.3","Ameiurus nebulosus",8861
+"98","MiFish.0321.5Sqm.Dn.3","Oncorhynchus clarkii",90754
+"99","MiFish.0321.5Sqm.Dn.3","Oncorhynchus mykiss",6213
+"100","MiFish.0321.5Sqm.Dn.3","Pimephales promelas",45535
+"101","MiFish.0321.5Sqm.Up.1","",583
+"102","MiFish.0321.5Sqm.Up.1","Ameiurus nebulosus",1377
+"103","MiFish.0321.5Sqm.Up.1","Oncorhynchus clarkii",39434
+"104","MiFish.0321.5Sqm.Up.1","Oncorhynchus mykiss",8749
+"105","MiFish.0321.5Sqm.Up.1","Pimephales promelas",71573
+"106","MiFish.0321.5Sqm.Up.2","",802
+"107","MiFish.0321.5Sqm.Up.2","Lampetra sp. CBM:ZF:17561",87
+"108","MiFish.0321.5Sqm.Up.2","Oncorhynchus clarkii",14271
+"109","MiFish.0321.5Sqm.Up.2","Oncorhynchus kisutch",2093
+"110","MiFish.0321.5Sqm.Up.2","Oncorhynchus mykiss",496
+"111","MiFish.0321.5Sqm.Up.2","Pimephales promelas",7562
+"112","MiFish.0321.5Sqm.Up.2","Turdus migratorius",225
+"113","MiFish.0321.5Sqm.Up.3","",1113
+"114","MiFish.0321.5Sqm.Up.3","Ameiurus nebulosus",790
+"115","MiFish.0321.5Sqm.Up.3","Oncorhynchus clarkii",25063
+"116","MiFish.0321.5Sqm.Up.3","Oncorhynchus kisutch",697
+"117","MiFish.0321.5Sqm.Up.3","Pimephales promelas",8083
+"118","MiFish.0421.1Prt.Dn.1","",8046
+"119","MiFish.0421.1Prt.Dn.1","Oncorhynchus clarkii",30903
+"120","MiFish.0421.1Prt.Dn.1","Oncorhynchus kisutch",20450
+"121","MiFish.0421.1Prt.Dn.1","Turdus migratorius",3723
+"122","MiFish.0421.1Prt.Dn.2","Oncorhynchus clarkii",3827
+"123","MiFish.0421.1Prt.Dn.2","Oncorhynchus kisutch",4196
+"124","MiFish.0421.1Prt.Dn.3","",897
+"125","MiFish.0421.1Prt.Dn.3","Aix sponsa",11
+"126","MiFish.0421.1Prt.Dn.3","Lampetra sp. CBM:ZF:17561",21512
+"127","MiFish.0421.1Prt.Dn.3","Oncorhynchus clarkii",52476
+"128","MiFish.0421.1Prt.Dn.3","Oncorhynchus kisutch",57273
+"129","MiFish.0421.1Prt.Dn.3","Turdus migratorius",845
+"130","MiFish.0421.1Prt.Up.1","",1096
+"131","MiFish.0421.1Prt.Up.1","Lampetra sp. CBM:ZF:17561",1154
+"132","MiFish.0421.1Prt.Up.1","Oncorhynchus clarkii",12483
+"133","MiFish.0421.1Prt.Up.1","Oncorhynchus kisutch",12885
+"134","MiFish.0421.1Prt.Up.2","",2127
+"135","MiFish.0421.1Prt.Up.2","Aix sponsa",27
+"136","MiFish.0421.1Prt.Up.2","Lampetra sp. CBM:ZF:17561",9717
+"137","MiFish.0421.1Prt.Up.2","Melospiza melodia",32
+"138","MiFish.0421.1Prt.Up.2","Oncorhynchus clarkii",36453
+"139","MiFish.0421.1Prt.Up.2","Oncorhynchus kisutch",32605
+"140","MiFish.0421.1Prt.Up.3","",3032
+"141","MiFish.0421.1Prt.Up.3","Lampetra sp. CBM:ZF:17561",2403
+"142","MiFish.0421.1Prt.Up.3","Oncorhynchus clarkii",17980
+"143","MiFish.0421.1Prt.Up.3","Oncorhynchus kisutch",13231
+"144","MiFish.0421.2Brn.Dn.1","",3372
+"145","MiFish.0421.2Brn.Dn.1","Oncorhynchus clarkii",3859
+"146","MiFish.0421.2Brn.Dn.1","Oncorhynchus kisutch",14042
+"147","MiFish.0421.2Brn.Dn.2","",5190
+"148","MiFish.0421.2Brn.Dn.2","Canis lupus",7
+"149","MiFish.0421.2Brn.Dn.2","Oncorhynchus clarkii",24447
+"150","MiFish.0421.2Brn.Dn.3","Oncorhynchus clarkii",37921
+"151","MiFish.0421.2Brn.Dn.3","Oncorhynchus kisutch",27370
+"152","MiFish.0421.2Brn.Up.1","Turdus migratorius",931
+"153","MiFish.0421.3Chk.Dn.1","",7159
+"154","MiFish.0421.3Chk.Dn.1","Oncorhynchus clarkii",88741
+"155","MiFish.0421.3Chk.Dn.2","",16897
+"156","MiFish.0421.3Chk.Dn.2","Oncorhynchus clarkii",75608
+"157","MiFish.0421.3Chk.Dn.3","",152
+"158","MiFish.0421.3Chk.Dn.3","Oncorhynchus clarkii",1953
+"159","MiFish.0421.3Chk.Dn.3","Turdus migratorius",14
+"160","MiFish.0421.3Chk.Dn.3TR2","",389
+"161","MiFish.0421.3Chk.Dn.3TR2","Oncorhynchus clarkii",22611
+"162","MiFish.0421.3Chk.Dn.3TR2","Turdus migratorius",591
+"163","MiFish.0421.3Chk.Dn.3TR3","",508
+"164","MiFish.0421.3Chk.Dn.3TR3","Oncorhynchus clarkii",16698
+"165","MiFish.0421.3Chk.Dn.3TR3","Turdus migratorius",295
+"166","MiFish.0421.3Chk.Up.1","",4277
+"167","MiFish.0421.3Chk.Up.1","Didelphis virginiana",6
+"168","MiFish.0421.3Chk.Up.1","Oncorhynchus clarkii",108602
+"169","MiFish.0421.3Chk.Up.2","",15914
+"170","MiFish.0421.3Chk.Up.2","Didelphis virginiana",22
+"171","MiFish.0421.3Chk.Up.2","Oncorhynchus clarkii",22619
+"172","MiFish.0421.3Chk.Up.2","Turdus migratorius",1775
+"173","MiFish.0421.3Chk.Up.3","",5902
+"174","MiFish.0421.3Chk.Up.3","Oncorhynchus clarkii",22033
+"175","MiFish.0421.4Pad.Dn.1","",2314
+"176","MiFish.0421.4Pad.Dn.1","Oncorhynchus clarkii",4780
+"177","MiFish.0421.4Pad.Dn.1","Oncorhynchus kisutch",578
+"178","MiFish.0421.4Pad.Dn.1","Oncorhynchus mykiss",3060
+"179","MiFish.0421.4Pad.Dn.1","Perca flavescens",7554
+"180","MiFish.0421.4Pad.Dn.1","Turdus migratorius",86
+"181","MiFish.0421.4Pad.Dn.2","",10736
+"182","MiFish.0421.4Pad.Dn.2","Oncorhynchus clarkii",5455
+"183","MiFish.0421.4Pad.Dn.2","Oncorhynchus keta",122
+"184","MiFish.0421.4Pad.Dn.2","Oncorhynchus kisutch",3075
+"185","MiFish.0421.4Pad.Dn.2","Oncorhynchus mykiss",6459
+"186","MiFish.0421.4Pad.Dn.2","Perca flavescens",5526
+"187","MiFish.0421.4Pad.Dn.2","Regulus calendula",309
+"188","MiFish.0421.4Pad.Dn.3","",22339
+"189","MiFish.0421.4Pad.Dn.3","Canis lupus",59
+"190","MiFish.0421.4Pad.Dn.3","Oncorhynchus clarkii",6400
+"191","MiFish.0421.4Pad.Dn.3","Oncorhynchus keta",1214
+"192","MiFish.0421.4Pad.Dn.3","Oncorhynchus kisutch",3366
+"193","MiFish.0421.4Pad.Dn.3","Oncorhynchus mykiss",6414
+"194","MiFish.0421.4Pad.Dn.3","Perca flavescens",11346
+"195","MiFish.0421.4Pad.Up11.1","",20900
+"196","MiFish.0421.4Pad.Up11.1","Canis lupus",6
+"197","MiFish.0421.4Pad.Up11.1","Oncorhynchus clarkii",3267
+"198","MiFish.0421.4Pad.Up11.1","Oncorhynchus kisutch",494
+"199","MiFish.0421.4Pad.Up11.1","Oncorhynchus mykiss",9507
+"200","MiFish.0421.4Pad.Up11.1","Perca flavescens",7039
+"201","MiFish.0421.4Pad.Up11.2","",67701
+"202","MiFish.0421.4Pad.Up11.2","Oncorhynchus clarkii",9135
+"203","MiFish.0421.4Pad.Up11.2","Oncorhynchus kisutch",1551
+"204","MiFish.0421.4Pad.Up11.2","Oncorhynchus mykiss",4984
+"205","MiFish.0421.4Pad.Up11.2","Perca flavescens",30919
+"206","MiFish.0421.4Pad.Up11.2","Turdus migratorius",2376
+"207","MiFish.0421.4Pad.Up11.3","",6544
+"208","MiFish.0421.4Pad.Up11.3","Oncorhynchus clarkii",753
+"209","MiFish.0421.4Pad.Up11.3","Oncorhynchus mykiss",5463
+"210","MiFish.0421.4Pad.Up11.3","Perca flavescens",5264
+"211","MiFish.0421.4Pad.Up11.3","Turdus migratorius",62
+"212","MiFish.0421.4Pad.Up5.1","",30376
+"213","MiFish.0421.4Pad.Up5.1","Canis lupus",47
+"214","MiFish.0421.4Pad.Up5.1","Oncorhynchus clarkii",5553
+"215","MiFish.0421.4Pad.Up5.1","Oncorhynchus mykiss",9377
+"216","MiFish.0421.4Pad.Up5.1","Perca flavescens",45626
+"217","MiFish.0421.4Pad.Up5.1","Sus scrofa",225
+"218","MiFish.0421.4Pad.Up5.2","",53710
+"219","MiFish.0421.4Pad.Up5.2","Canis lupus",7
+"220","MiFish.0421.4Pad.Up5.2","Neurotrichus gibbsii",689
+"221","MiFish.0421.4Pad.Up5.2","Oncorhynchus clarkii",11385
+"222","MiFish.0421.4Pad.Up5.2","Oncorhynchus mykiss",2152
+"223","MiFish.0421.4Pad.Up5.2","Perca flavescens",53029
+"224","MiFish.0421.4Pad.Up5.3","",27105
+"225","MiFish.0421.4Pad.Up5.3","Oncorhynchus clarkii",1894
+"226","MiFish.0421.4Pad.Up5.3","Oncorhynchus mykiss",7080
+"227","MiFish.0421.4Pad.Up5.3","Perca flavescens",17965
+"228","MiFish.0421.5Sqm.Dn.1","",23
+"229","MiFish.0421.5Sqm.Dn.1","Ameiurus nebulosus",2146
+"230","MiFish.0421.5Sqm.Dn.1","Lampetra sp. CBM:ZF:17561",573
+"231","MiFish.0421.5Sqm.Dn.1","Oncorhynchus clarkii",18386
+"232","MiFish.0421.5Sqm.Dn.1","Oncorhynchus kisutch",713
+"233","MiFish.0421.5Sqm.Dn.1","Oncorhynchus mykiss",644
+"234","MiFish.0421.5Sqm.Dn.1","Pimephales promelas",18629
+"235","MiFish.0421.5Sqm.Dn.1","Turdus migratorius",75
+"236","MiFish.0421.5Sqm.Dn.2","",1354
+"237","MiFish.0421.5Sqm.Dn.2","Ameiurus nebulosus",5543
+"238","MiFish.0421.5Sqm.Dn.2","Lampetra sp. CBM:ZF:17561",164
+"239","MiFish.0421.5Sqm.Dn.2","Oncorhynchus clarkii",54116
+"240","MiFish.0421.5Sqm.Dn.2","Oncorhynchus kisutch",5577
+"241","MiFish.0421.5Sqm.Dn.2","Pimephales promelas",50907
+"242","MiFish.0421.5Sqm.Dn.3","",204
+"243","MiFish.0421.5Sqm.Dn.3","Ameiurus nebulosus",4227
+"244","MiFish.0421.5Sqm.Dn.3","Lampetra sp. CBM:ZF:17561",20
+"245","MiFish.0421.5Sqm.Dn.3","Oncorhynchus clarkii",41486
+"246","MiFish.0421.5Sqm.Dn.3","Oncorhynchus kisutch",2698
+"247","MiFish.0421.5Sqm.Dn.3","Oncorhynchus mykiss",1252
+"248","MiFish.0421.5Sqm.Dn.3","Pimephales promelas",48495
+"249","MiFish.0421.5Sqm.Dn.3","Turdus migratorius",22
+"250","MiFish.0421.5Sqm.Up.1","",111
+"251","MiFish.0421.5Sqm.Up.1","Ameiurus nebulosus",823
+"252","MiFish.0421.5Sqm.Up.1","Lampetra sp. CBM:ZF:17561",148
+"253","MiFish.0421.5Sqm.Up.1","Oncorhynchus clarkii",12271
+"254","MiFish.0421.5Sqm.Up.1","Oncorhynchus kisutch",743
+"255","MiFish.0421.5Sqm.Up.1","Oncorhynchus mykiss",439
+"256","MiFish.0421.5Sqm.Up.1","Pimephales promelas",13761
+"257","MiFish.0421.5Sqm.Up.1","Turdus migratorius",38
+"258","MiFish.0421.5Sqm.Up.2","",516
+"259","MiFish.0421.5Sqm.Up.2","Ameiurus nebulosus",5565
+"260","MiFish.0421.5Sqm.Up.2","Lampetra sp. CBM:ZF:17561",1244
+"261","MiFish.0421.5Sqm.Up.2","Oncorhynchus clarkii",64261
+"262","MiFish.0421.5Sqm.Up.2","Oncorhynchus kisutch",2808
+"263","MiFish.0421.5Sqm.Up.2","Oncorhynchus mykiss",5102
+"264","MiFish.0421.5Sqm.Up.2","Pimephales promelas",65793
+"265","MiFish.0421.5Sqm.Up.3","",66
+"266","MiFish.0421.5Sqm.Up.3","Ameiurus nebulosus",1575
+"267","MiFish.0421.5Sqm.Up.3","Lampetra sp. CBM:ZF:17561",677
+"268","MiFish.0421.5Sqm.Up.3","Oncorhynchus clarkii",65174
+"269","MiFish.0421.5Sqm.Up.3","Oncorhynchus kisutch",7593
+"270","MiFish.0421.5Sqm.Up.3","Oncorhynchus mykiss",2482
+"271","MiFish.0421.5Sqm.Up.3","Pimephales promelas",62664
+"272","MiFish.0421.5Sqm.Up.3","Salmo trutta",471
+"273","MiFish.0421.5Sqm.Up.3","Turdus migratorius",45
+"274","MiFish.0521.1Prt.Dn.2","",293
+"275","MiFish.0521.1Prt.Dn.2","Lampetra sp. CBM:ZF:17561",10902
+"276","MiFish.0521.1Prt.Dn.2","Oncorhynchus clarkii",14824
+"277","MiFish.0521.1Prt.Dn.2","Oncorhynchus kisutch",6623
+"278","MiFish.0521.1Prt.Dn.2","Turdus migratorius",389
+"279","MiFish.0521.1Prt.Dn.3","",211
+"280","MiFish.0521.1Prt.Dn.3","Lampetra sp. CBM:ZF:17561",32328
+"281","MiFish.0521.1Prt.Dn.3","Oncorhynchus clarkii",28997
+"282","MiFish.0521.1Prt.Dn.3","Oncorhynchus kisutch",8896
+"283","MiFish.0521.1Prt.Dn.3","Perca flavescens",6
+"284","MiFish.0521.1Prt.Up.3","Lampetra sp. CBM:ZF:17561",11003
+"285","MiFish.0521.1Prt.Up.3","Oncorhynchus clarkii",13960
+"286","MiFish.0521.1Prt.Up.3","Oncorhynchus kisutch",7471
+"287","MiFish.0521.2Brn.Dn.2","Oncorhynchus clarkii",13759
+"288","MiFish.0521.2Brn.Dn.2","Oncorhynchus kisutch",21024
+"289","MiFish.0521.3Chk.Up.2","Oncorhynchus clarkii",37532
+"290","MiFish.0521.5Sqm.Dn.3","Lampetra sp. CBM:ZF:17561",3117
+"291","MiFish.0521.5Sqm.Dn.3","Oncorhynchus clarkii",23506
+"292","MiFish.0521.5Sqm.Dn.3","Oncorhynchus kisutch",10562
+"293","MiFish.0521.5Sqm.Dn.3","Oncorhynchus mykiss",780
+"294","MiFish.0521.5Sqm.Dn.3","Pimephales promelas",866
+"295","MiFish.0621.1Prt.Dn.1","Lampetra sp. CBM:ZF:17561",7780
+"296","MiFish.0621.1Prt.Dn.1","Oncorhynchus clarkii",15887
+"297","MiFish.0621.1Prt.Dn.1","Oncorhynchus kisutch",6040
+"298","MiFish.0621.2Brn.Dn.1","Oncorhynchus clarkii",16450
+"299","MiFish.0621.2Brn.Dn.1","Oncorhynchus kisutch",17342
+"300","MiFish.0621.2Brn.Dn.2","Lampetra sp. CBM:ZF:17561",27
+"301","MiFish.0621.2Brn.Dn.2","Oncorhynchus clarkii",18865
+"302","MiFish.0621.2Brn.Dn.2","Oncorhynchus kisutch",14449
+"303","MiFish.0621.2Brn.Up.1","",89
+"304","MiFish.0621.3Chk.Dn.1","Oncorhynchus clarkii",32767
+"305","MiFish.0621.3Chk.Dn.1","Oncorhynchus mykiss",1038
+"306","MiFish.0621.3Chk.Dn.1","Turdus migratorius",45
+"307","MiFish.0621.3Chk.Dn.2","Oncorhynchus clarkii",36295
+"308","MiFish.0621.3Chk.Dn.2","Oncorhynchus mykiss",3293
+"309","MiFish.0621.3Chk.Dn.2","Perca flavescens",11
+"310","MiFish.0621.3Chk.Dn.2","Turdus migratorius",17
+"311","MiFish.0621.3Chk.Up.3","",15
+"312","MiFish.0621.3Chk.Up.3","Oncorhynchus clarkii",39758
+"313","MiFish.0621.3Chk.Up.3","Oncorhynchus mykiss",77
+"314","MiFish.0621.3Chk.Up.3","Turdus migratorius",167
+"315","MiFish.0621.4Pad.Dn.1","",8762
+"316","MiFish.0621.4Pad.Dn.1","Gasterosteus aculeatus",1849
+"317","MiFish.0621.4Pad.Dn.1","Oncorhynchus clarkii",1859
+"318","MiFish.0621.4Pad.Dn.1","Oncorhynchus kisutch",22989
+"319","MiFish.0621.4Pad.Dn.1","Oncorhynchus mykiss",8239
+"320","MiFish.0621.4Pad.Dn.2","",217
+"321","MiFish.0621.4Pad.Dn.2","Gasterosteus aculeatus",61
+"322","MiFish.0621.4Pad.Dn.2","Oncorhynchus clarkii",47
+"323","MiFish.0621.4Pad.Dn.2","Oncorhynchus kisutch",473
+"324","MiFish.0621.4Pad.Dn.2","Oncorhynchus mykiss",209
+"325","MiFish.0621.4Pad.Dn.3","",6716
+"326","MiFish.0621.4Pad.Dn.3","Gasterosteus aculeatus",1699
+"327","MiFish.0621.4Pad.Dn.3","Oncorhynchus clarkii",1171
+"328","MiFish.0621.4Pad.Dn.3","Oncorhynchus kisutch",17329
+"329","MiFish.0621.4Pad.Dn.3","Oncorhynchus mykiss",6844
+"330","MiFish.0621.4Pad.Up5.1","",11810
+"331","MiFish.0621.4Pad.Up5.1","Oncorhynchus kisutch",26474
+"332","MiFish.0621.4Pad.Up5.1","Perca flavescens",1045
+"333","MiFish.0621.4Pad.Up5.1","Turdus migratorius",135
+"334","MiFish.0621.4Pad.Up5.2","",41
+"335","MiFish.0621.4Pad.Up5.2","Oncorhynchus kisutch",1262
+"336","MiFish.0621.4Pad.Up5.2","Turdus migratorius",31
+"337","MiFish.0621.4Pad.Up5.3","",5469
+"338","MiFish.0621.4Pad.Up5.3","Oncorhynchus kisutch",19176
+"339","MiFish.0621.4Pad.Up5.3","Perca flavescens",654
+"340","MiFish.0621.4Pad.Up5.3","Sus scrofa",45
+"341","MiFish.0621.4Pad.Up5.3","Turdus migratorius",1897
+"342","MiFish.0621.5Sqm.Dn.2","Ameiurus nebulosus",1396
+"343","MiFish.0621.5Sqm.Dn.2","Lampetra sp. CBM:ZF:17561",3808
+"344","MiFish.0621.5Sqm.Dn.2","Melospiza melodia",23
+"345","MiFish.0621.5Sqm.Dn.2","Oncorhynchus clarkii",23839
+"346","MiFish.0621.5Sqm.Dn.2","Oncorhynchus kisutch",5703
+"347","MiFish.0621.5Sqm.Dn.2","Turdus migratorius",246
+"348","MiFish.0621.5Sqm.Up.1","Lampetra sp. CBM:ZF:17561",953
+"349","MiFish.0621.5Sqm.Up.1","Oncorhynchus clarkii",19777
+"350","MiFish.0621.5Sqm.Up.1","Oncorhynchus kisutch",5061
+"351","MiFish.0721.1Prt.Up.2","",21
+"352","MiFish.0721.1Prt.Up.2","Didelphis virginiana",386
+"353","MiFish.0721.1Prt.Up.2","Lampetra sp. CBM:ZF:17561",10983
+"354","MiFish.0721.1Prt.Up.2","Oncorhynchus clarkii",35701
+"355","MiFish.0721.1Prt.Up.2","Oncorhynchus kisutch",13027
+"356","MiFish.0721.2Brn.Dn.2","Oncorhynchus clarkii",36398
+"357","MiFish.0721.2Brn.Dn.2","Oncorhynchus kisutch",11916
+"358","MiFish.0721.3Chk.Up.1","Didelphis virginiana",48
+"359","MiFish.0721.3Chk.Up.1","Oncorhynchus clarkii",38178
+"360","MiFish.0721.3Chk.Up.1","Oncorhynchus mykiss",528
+"361","MiFish.0721.3Chk.Up.2","",14
+"362","MiFish.0721.3Chk.Up.2","Didelphis virginiana",132
+"363","MiFish.0721.3Chk.Up.2","Oncorhynchus clarkii",29624
+"364","MiFish.0721.3Chk.Up.2","Oncorhynchus mykiss",452
+"365","MiFish.0721.3Chk.Up.2","Turdus migratorius",29
+"366","MiFish.0721.4Pad.Up11.3","",2677
+"367","MiFish.0721.4Pad.Up11.3","Melospiza melodia",10
+"368","MiFish.0721.4Pad.Up11.3","Oncorhynchus clarkii",4775
+"369","MiFish.0721.4Pad.Up11.3","Oncorhynchus kisutch",4318
+"370","MiFish.0721.4Pad.Up11.3","Oncorhynchus mykiss",19978
+"371","MiFish.0721.4Pad.Up11.3","Perca flavescens",234
+"372","MiFish.0721.5Sqm.Dn.3","Lampetra sp. CBM:ZF:17561",10
+"373","MiFish.0721.5Sqm.Dn.3","Oncorhynchus clarkii",31179
+"374","MiFish.0721.5Sqm.Dn.3","Oncorhynchus kisutch",9010
+"375","MiFish.0721.5Sqm.Dn.3","Turdus migratorius",13
+"376","MiFish.0721.5Sqm.Up.2","",38
+"377","MiFish.0721.5Sqm.Up.2","Lampetra sp. CBM:ZF:17561",3319
+"378","MiFish.0721.5Sqm.Up.2","Oncorhynchus clarkii",23453
+"379","MiFish.0721.5Sqm.Up.2","Oncorhynchus kisutch",10459
+"380","MiFish.0721.5Sqm.Up.2","Turdus migratorius",2453
+"381","MiFish.0821.1Prt.Dn.1","",5
+"382","MiFish.0821.1Prt.Dn.1","Lampetra sp. CBM:ZF:17561",3236
+"383","MiFish.0821.1Prt.Dn.1","Oncorhynchus clarkii",18132
+"384","MiFish.0821.1Prt.Dn.1","Oncorhynchus kisutch",5289
+"385","MiFish.0821.1Prt.Dn.1","Oncorhynchus nerka",88
+"386","MiFish.0821.1Prt.Dn.1","Turdus migratorius",41
+"387","MiFish.0821.1Prt.Dn.2","",8
+"388","MiFish.0821.1Prt.Dn.2","Lampetra sp. CBM:ZF:17561",5148
+"389","MiFish.0821.1Prt.Dn.2","Oncorhynchus clarkii",14682
+"390","MiFish.0821.1Prt.Dn.2","Oncorhynchus kisutch",5765
+"391","MiFish.0821.1Prt.Dn.3","",146
+"392","MiFish.0821.1Prt.Dn.3","Lampetra sp. CBM:ZF:17561",12732
+"393","MiFish.0821.1Prt.Dn.3","Oncorhynchus clarkii",75416
+"394","MiFish.0821.1Prt.Dn.3","Oncorhynchus kisutch",42718
+"395","MiFish.0821.1Prt.Dn.3","Turdus migratorius",161
+"396","MiFish.0821.1Prt.Up.1","",101
+"397","MiFish.0821.1Prt.Up.1","Lampetra sp. CBM:ZF:17561",1126
+"398","MiFish.0821.1Prt.Up.1","Oncorhynchus clarkii",3636
+"399","MiFish.0821.1Prt.Up.1","Oncorhynchus kisutch",1162
+"400","MiFish.0821.1Prt.Up.1","Turdus migratorius",265
+"401","MiFish.0821.1Prt.Up.2","",976
+"402","MiFish.0821.1Prt.Up.2","Didelphis virginiana",145
+"403","MiFish.0821.1Prt.Up.2","Lampetra sp. CBM:ZF:17561",4532
+"404","MiFish.0821.1Prt.Up.2","Oncorhynchus clarkii",18341
+"405","MiFish.0821.1Prt.Up.2","Oncorhynchus kisutch",7871
+"406","MiFish.0821.1Prt.Up.2","Pipilo maculatus",8
+"407","MiFish.0821.1Prt.Up.2","Turdus migratorius",3063
+"408","MiFish.0821.1Prt.Up.3","",1650
+"409","MiFish.0821.1Prt.Up.3","Didelphis virginiana",16
+"410","MiFish.0821.1Prt.Up.3","Lampetra sp. CBM:ZF:17561",6396
+"411","MiFish.0821.1Prt.Up.3","Oncorhynchus clarkii",61744
+"412","MiFish.0821.1Prt.Up.3","Oncorhynchus kisutch",27220
+"413","MiFish.0821.2Brn.Dn.1","",12
+"414","MiFish.0821.2Brn.Dn.1","Oncorhynchus clarkii",32568
+"415","MiFish.0821.2Brn.Dn.1","Oncorhynchus kisutch",8742
+"416","MiFish.0821.2Brn.Dn.2","",68
+"417","MiFish.0821.2Brn.Dn.2","Oncorhynchus clarkii",94002
+"418","MiFish.0821.2Brn.Dn.2","Oncorhynchus kisutch",33770
+"419","MiFish.0821.2Brn.Dn.2TR2","",36
+"420","MiFish.0821.2Brn.Dn.2TR2","Canis lupus",127
+"421","MiFish.0821.2Brn.Dn.2TR2","Oncorhynchus clarkii",51348
+"422","MiFish.0821.2Brn.Dn.2TR2","Oncorhynchus kisutch",16839
+"423","MiFish.0821.2Brn.Dn.2TR2","Oncorhynchus mykiss",163
+"424","MiFish.0821.2Brn.Dn.2TR2","Sus scrofa",24
+"425","MiFish.0821.2Brn.Dn.2TR3","",33
+"426","MiFish.0821.2Brn.Dn.2TR3","Oncorhynchus clarkii",64537
+"427","MiFish.0821.2Brn.Dn.2TR3","Oncorhynchus kisutch",20488
+"428","MiFish.0821.2Brn.Dn.3","",138
+"429","MiFish.0821.2Brn.Dn.3","Oncorhynchus clarkii",26859
+"430","MiFish.0821.2Brn.Dn.3","Oncorhynchus kisutch",9983
+"431","MiFish.0821.2Brn.Up.1","",103
+"432","MiFish.0821.2Brn.Up.1","Oncorhynchus mykiss",1782
+"433","MiFish.0821.2Brn.Up.2","",15
+"434","MiFish.0821.2Brn.Up.2","Turdus migratorius",188
+"435","MiFish.0821.2Brn.Up.3","",859
+"436","MiFish.0821.2Brn.Up.3","Turdus migratorius",3742
+"437","MiFish.0821.3Chk.Dn.1","",17
+"438","MiFish.0821.3Chk.Dn.1","Oncorhynchus clarkii",9584
+"439","MiFish.0821.3Chk.Dn.1","Oncorhynchus mykiss",173
+"440","MiFish.0821.3Chk.Dn.2","",5
+"441","MiFish.0821.3Chk.Dn.2","Oncorhynchus clarkii",15983
+"442","MiFish.0821.3Chk.Dn.2","Oncorhynchus mykiss",397
+"443","MiFish.0821.3Chk.Dn.3","",288
+"444","MiFish.0821.3Chk.Dn.3","Oncorhynchus clarkii",25280
+"445","MiFish.0821.3Chk.Up.1","Oncorhynchus clarkii",14211
+"446","MiFish.0821.3Chk.Up.2","Oncorhynchus clarkii",45329
+"447","MiFish.0821.3Chk.Up.3","",7
+"448","MiFish.0821.3Chk.Up.3","Oncorhynchus clarkii",47251
+"449","MiFish.0821.4Pad.Dn.1","",72362
+"450","MiFish.0821.4Pad.Dn.1","Gasterosteus aculeatus",2956
+"451","MiFish.0821.4Pad.Dn.1","Oncorhynchus clarkii",1651
+"452","MiFish.0821.4Pad.Dn.1","Oncorhynchus mykiss",845
+"453","MiFish.0821.4Pad.Dn.2","",24120
+"454","MiFish.0821.4Pad.Dn.2","Gasterosteus aculeatus",1317
+"455","MiFish.0821.4Pad.Dn.2","Oncorhynchus clarkii",1175
+"456","MiFish.0821.4Pad.Dn.2","Oncorhynchus kisutch",176
+"457","MiFish.0821.4Pad.Dn.2","Oncorhynchus mykiss",686
+"458","MiFish.0821.4Pad.Dn.3","",36999
+"459","MiFish.0821.4Pad.Dn.3","Gasterosteus aculeatus",1720
+"460","MiFish.0821.4Pad.Dn.3","Oncorhynchus clarkii",1264
+"461","MiFish.0821.4Pad.Dn.3","Oncorhynchus kisutch",69
+"462","MiFish.0821.4Pad.Dn.3","Oncorhynchus mykiss",1067
+"463","MiFish.0821.4Pad.Dn.3","Sus scrofa",12
+"464","MiFish.0821.4Pad.Up11.1","",3968
+"465","MiFish.0821.4Pad.Up11.1","Oncorhynchus clarkii",1356
+"466","MiFish.0821.4Pad.Up11.1","Oncorhynchus kisutch",2217
+"467","MiFish.0821.4Pad.Up11.1","Oncorhynchus mykiss",25905
+"468","MiFish.0821.4Pad.Up11.2","",2642
+"469","MiFish.0821.4Pad.Up11.2","Oncorhynchus clarkii",1760
+"470","MiFish.0821.4Pad.Up11.2","Oncorhynchus kisutch",1905
+"471","MiFish.0821.4Pad.Up11.2","Oncorhynchus mykiss",18423
+"472","MiFish.0821.4Pad.Up11.3","",2312
+"473","MiFish.0821.4Pad.Up11.3","Oncorhynchus clarkii",1637
+"474","MiFish.0821.4Pad.Up11.3","Oncorhynchus kisutch",1951
+"475","MiFish.0821.4Pad.Up11.3","Oncorhynchus mykiss",19624
+"476","MiFish.0821.4Pad.Up11.3","Pimephales promelas",7
+"477","MiFish.0821.4Pad.Up11.3","Sus scrofa",897
+"478","MiFish.0821.4Pad.Up11.3","Turdus migratorius",61
+"479","MiFish.0821.4Pad.Up5.1","",2176
+"480","MiFish.0821.4Pad.Up5.1","Melospiza melodia",40
+"481","MiFish.0821.4Pad.Up5.1","Oncorhynchus kisutch",8727
+"482","MiFish.0821.4Pad.Up5.1","Perca flavescens",1612
+"483","MiFish.0821.4Pad.Up5.1","Poecile atricapillus",32
+"484","MiFish.0821.4Pad.Up5.2","",4357
+"485","MiFish.0821.4Pad.Up5.2","Melospiza melodia",10
+"486","MiFish.0821.4Pad.Up5.2","Oncorhynchus kisutch",4729
+"487","MiFish.0821.4Pad.Up5.3","",447
+"488","MiFish.0821.4Pad.Up5.3","Oncorhynchus kisutch",3938
+"489","MiFish.0821.4Pad.Up5.3","Perca flavescens",949
+"490","MiFish.0821.4Pad.Up5.3","Pimephales promelas",18
+"491","MiFish.0821.5Sqm.Dn.1","",471
+"492","MiFish.0821.5Sqm.Dn.1","Lampetra sp. CBM:ZF:17561",960
+"493","MiFish.0821.5Sqm.Dn.1","Oncorhynchus clarkii",142817
+"494","MiFish.0821.5Sqm.Dn.1","Oncorhynchus kisutch",4437
+"495","MiFish.0821.5Sqm.Dn.1","Turdus migratorius",146
+"496","MiFish.0821.5Sqm.Dn.2","Lampetra sp. CBM:ZF:17561",294
+"497","MiFish.0821.5Sqm.Dn.2","Oncorhynchus clarkii",21446
+"498","MiFish.0821.5Sqm.Dn.2","Oncorhynchus kisutch",702
+"499","MiFish.0821.5Sqm.Dn.2","Turdus migratorius",85
+"500","MiFish.0821.5Sqm.Dn.3","Lampetra sp. CBM:ZF:17561",92
+"501","MiFish.0821.5Sqm.Dn.3","Oncorhynchus clarkii",47824
+"502","MiFish.0821.5Sqm.Dn.3","Oncorhynchus kisutch",1565
+"503","MiFish.0821.5Sqm.Dn.3","Turdus migratorius",28
+"504","MiFish.0821.5Sqm.Up.1","Lampetra sp. CBM:ZF:17561",6678
+"505","MiFish.0821.5Sqm.Up.1","Oncorhynchus clarkii",29361
+"506","MiFish.0821.5Sqm.Up.1","Oncorhynchus kisutch",11248
+"507","MiFish.0821.5Sqm.Up.1","Turdus migratorius",200
+"508","MiFish.0821.5Sqm.Up.2","",5
+"509","MiFish.0821.5Sqm.Up.2","Lampetra sp. CBM:ZF:17561",8670
+"510","MiFish.0821.5Sqm.Up.2","Oncorhynchus clarkii",29964
+"511","MiFish.0821.5Sqm.Up.2","Oncorhynchus kisutch",10498
+"512","MiFish.0821.5Sqm.Up.2","Turdus migratorius",155
+"513","MiFish.0821.5Sqm.Up.3","Lampetra sp. CBM:ZF:17561",6555
+"514","MiFish.0821.5Sqm.Up.3","Oncorhynchus clarkii",26118
+"515","MiFish.0821.5Sqm.Up.3","Oncorhynchus kisutch",10050
+"516","MiFish.0821.5Sqm.Up.3","Turdus migratorius",161
+"517","MiFish.Kangaroo.Run.2","",723
+"518","MiFish.Kangaroo.Run.2","Osphranter rufus",128818
+"519","MiFish.Kangaroo.Run.3","",160
+"520","MiFish.Kangaroo.Run.3","Lampetra sp. CBM:ZF:17561",4
+"521","MiFish.Kangaroo.Run.3","Oncorhynchus clarkii",10
+"522","MiFish.Kangaroo.Run.3","Oncorhynchus kisutch",8
+"523","MiFish.Kangaroo.Run.3","Osphranter rufus",36682
+"524","MiFish.Kangaroo.Run.4","",617
+"525","MiFish.Kangaroo.Run.4","Osphranter rufus",48396
+"526","MiFish.Kangaroo.Run.6","",231
+"527","MiFish.Kangaroo.Run.6","Osphranter rufus",53345

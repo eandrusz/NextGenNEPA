@@ -2,22 +2,35 @@
 title: "Dada2_report"
 author: "Eily via Moncho"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
-output: html_document
+output: html_document:
+  toc: true
+  toc_float: true
 params:
   noprimerfolder: 
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run4_20211117/noprimers/MiMammal
+    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run6_20220127/noprimers/Ac16S
   hash: TRUE
-  trimming.length.Read1: 150
+  trimming.length.Read1: 250
   trimming.length.Read2: 150
-  metadata: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run4_20211117/noprimers/MiMammal/cutadapt_output_metadata_MiMammal.csv
-  output.folder: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/dada2_output/run4_20211117/MiMammal_truncq10 
+  metadata: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run6_20220127/noprimers/Ac16S/cutadapt_output_metadata_Ac16S.csv
+  output.folder: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/dada2_output/run6_20220127/Ac16S
   keep.mid.files: FALSE
 
 ---
 
-### MiFish / MiMammal: 150/150
-### COI: 250/200
-### but double check them with quality plot visualizations
+Last updated: 2/2/22
+
+# Overview
+
+After removing primers by cutadapt and splitting primers into subfolder, we are going to apply a denoising algorithm `DADA2`, https://github.com/benjjneb/dada2 to generate ASV tables and hash keys. On the parameters section you have chosen a trimming length for each of the two files, whether to use Hashes or not, and a folder where to drop the output files. 
+
+The trimming length depends on the marker and the run. In general, for a paired end 2x300 run, we use trimming lengths of:
+MiFish/MiMammal: 150/150
+COI: 250/200
+
+This is because our 12S (MF/MM) fragment is only ~170 bp long and our COI (Leray XT) fragment is ~313 bp long. These should not be blindly used, but instead, after plotting the Q score plots for a subset (or aggregate) samples they should be revisited. The Q score plots vary for each run and if the run is poor you should adjust to have these be shorter and if it is a great run you can extend the trimming lengths for the COI marker to get more overlap. The rule of thumb is to trim when Q scores drop below 30. So go back to the parameters after running the chunk of plotting Q scores. 
+
+
+# Set up
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -25,11 +38,8 @@ knitr::opts_knit$set(root.dir = params$noprimerfolder)
 
 ```
 
-## Dada2 report
+## Load packages and set file paths 
 
-You have successfully used `cutadapt` to split the .FASTQ files by locus and remove the primer sequence. Not a small feat. Now we are going to apply a denoising algorithm `DADA2`, https://github.com/benjjneb/dada2, and estimate the original sample composition. On the parameters section you have chosen a trimming length for each of the two files, whether to use Hashes or not, and a folder where to drop the output files
-
-First load the packages. And let's update the parameters we need
 ```{r loading packages, echo=TRUE ,message=FALSE}
 library(here)
 library (tidyverse)
@@ -40,7 +50,7 @@ library (knitr)
 library (kableExtra)
 
 sample.metadata <- read_csv(params$metadata)
-filt_path <- file.path(params$folder, "filtered")
+filt_path <- file.path(params$noprimerfolder, "filtered")
 getwd()
 filt_path
 # Check if output directory exists - if not create as a subfolder of input dir
@@ -54,12 +64,30 @@ output.dir
 # Write the parameters in a file to the output dir
 tibble(Parameters = names(params), Values = unlist(params)) %>% write_csv(file.path(output.dir,paste0("parameters_", Sys.Date(), ".csv")))
 
-## NGN0299 was removed during filtering so edit metadata file to remove it
-sample.metadata <- sample.metadata[-23,]
+```
+
+## QC - remove any bad samples 
+
+*Be careful here to make sure you comment out and don't by accident drop good samples!*
+
+We need to remove samples that didn't get past cutadapt - have to change this EACH TIME and you don't want it uncommented if you don't need it!! 
+
+```{r remove any that didnt get past cutadapt}
+
+## removed any samples removed during filtering so edit metadata file to remove it
+#sample.metadata <- sample.metadata[-10,]
 
 ```
 
+## QC - check quality score plots and change trimming lengths as needed
+
+*Also important to make sure you go back and change the parameters if you need to* 
+
+It is probably fine to just plot a subset of you samples (4) and check Q score plots. You can also plot the whole aggregate R1 and R2 Q scores (this will take longer to run.) See where Q scores start dropping below 30 to determine trimming length. Change parameters if you need to!! 
+
 ```{r check quality trim point, message=FALSE, warning=FALSE}
+
+# create a subset of four files to plot Q scores for
 ifelse(nrow(sample.metadata)>4,
        subset <- sample.metadata %>%  sample_n(4),
        subset <- sample.metadata)
@@ -72,19 +100,21 @@ subset %>% pull(file2) %>%
   plotQualityProfile(.)
 ggsave(file.path(output.dir,"R2_subset.png"))
 
-# plot aggregate
+# plot aggregate - takes a while so comment out if you don't want
 
-# sample.metadata %>% pull(file1) %>%
-#   plotQualityProfile(., aggregate=TRUE)
-# 
-# sample.metadata %>% pull(file2) %>%
-#   plotQualityProfile(., aggregate=TRUE)
+sample.metadata %>% pull(file1) %>%
+  plotQualityProfile(., aggregate=TRUE)
+ggsave(file.path(output.dir,"R1_aggregate.png"))
 
-
+sample.metadata %>% pull(file2) %>%
+ plotQualityProfile(., aggregate=TRUE)
+ggsave(file.path(output.dir,"R2_aggregate.png"))
 
 ```
 
-The most common Amplicon length is 302, so trimming to 200 bp each read should give us enough overlap to successfully merge Forward and Reverse reads. Based on the drop of quality from the reverse read, you might choose to make them shorter on the R2. In that case, rerun the script setting the trimming differently.
+# Run dada2 
+
+## 
 
 ```{r dadaing}
 

@@ -1,0 +1,236 @@
+---
+title: "explore_delta_euks"
+author: "Eily Allan"
+date: "2/10/2022"
+output: html_document
+---
+
+Last modified 2/10/22
+
+
+# Overview
+
+Paper 2 explores the changes in eukaryotes *due to* culvert replacement. Here we are going to start exploring ways to do that. Basically here we want to see changes in community (as measured by our COI marker) in the target creek - Padden - and see how the culver replacement impacted these changes. 
+
+# Set Up
+
+## Load packages
+
+```{r set up}
+knitr::opts_chunk$set(echo = TRUE)
+library(here)
+library(tidyverse)
+library(vegan)
+library(reshape2)
+
+```
+
+## Import data
+
+For now, let's just focus on presence/absence data from our COI marker. Later we can go back and do COI/COI (or try to make it quantitative if we can get the variable PCR model working.)
+
+We also have some finagling to do like removing technical replicates and positive controls (and Maya's samples). 
+
+```{r import data}
+
+COIdata <- read.csv(here("Output","combined_species_tables","20220210_COI.csv"))
+
+# what if we use ASVs instead of species
+COIdata <- read.csv(here("Output","dada2_output","20220210.combined.COI.ASV.table.csv"))
+
+COI <- COIdata %>% 
+  select(-X) %>% 
+  #select(-Locus) %>% 
+  separate(Sample_name, into=c("Marker","Date","Creek","Site","Bio_Rep","extra"), extra="warn", remove=FALSE) %>% 
+  filter(is.na(extra)) %>% select(-extra) %>% # remove the "Barnes Up2 old" sample - shouldn't normally need this
+  filter(Bio_Rep == "1" | Bio_Rep == "2" | Bio_Rep == "3") %>%  # things that don't have bio reps are kangaroo or maya's samples
+  filter(Creek != "Kangaroo")  # still some leftover kangaroos.. whoops 
+
+```
+
+# Data exploration! 
+
+Ok! What do we find?? Let's start by plotting some stuff and then figure out what we are working with. 
+
+## But first - kangaroo 
+
+How well did we do avoiding cross-contamination and tag jumping?
+
+```{r check kangaroo}
+COI_kangaroo <- COIdata %>% 
+  select(-X) %>% 
+  filter(str_detect(Sample_name, "Kangaroo"))
+
+# Wow. Only Kangaroo in there. Pretty amazing.. now quick check to see if the environmental samples have any kangaroo in them
+
+COI_kangaroo_in_samples <- COI %>% 
+  filter(str_detect(species, "Macropus") | str_detect(species, "Osphranter"))
+
+# Nothing! Yahoo! 
+```
+
+## Richness of each creek over time
+
+```{r creeks over time}
+
+# this gives us the number of biological replicates that have a detection (presence/absence) for each species - at each site (up/down) within each creek (all 5) at each time point 
+
+bysite <- COI %>% 
+  group_by(Date, Creek, Site) %>%
+  count(Hash)
+  #count(species)
+
+asv_in_1 <- bysite %>% 
+  filter(n==1)
+asv_in_2 <- bysite %>% 
+  filter(n==2)
+asv_in_3 <- bysite %>% 
+  filter(n==3)
+
+# check to make sure that none of the samples have more than 3 (biological replicates)
+sum(bysite$n >3)
+
+# check richness at each time/site/creek 
+rich <- bysite
+rich$n <- 1
+
+richness <- rich %>% 
+  group_by(Date, Creek, Site) %>%
+  summarize(richness = sum(n))
+
+# plot it
+ggplot(richness, aes(x=Date, y=richness, color=Site)) +
+  facet_wrap(~Creek) +
+  geom_point() +
+  theme_bw() + 
+  labs(title="COI: ASVs found in any replicate", y="Number of unique ASVs", x= "Month")
+
+
+richness_all3 <- bysite %>% 
+  filter(n == 3) %>% 
+  group_by(Date, Creek, Site) %>%
+  summarize(richness = sum(n)/3)
+
+# plot it
+ggplot(richness_all3, aes(x=Date, y=richness, color=Site)) +
+  facet_wrap(~Creek) +
+  geom_point() +
+  theme_bw() +
+  labs(title="Found in all 3 replicates", y="Number of unique ASVs", x= "Month")
+
+```
+
+## Difference in richness upstream and downstream 
+
+```{r delta richness}
+delta_rich <- richness %>% 
+  group_by(Date,Creek) %>% 
+  pivot_wider(names_from = Site, values_from = richness)
+
+richplot <- delta_rich %>% 
+  filter(Creek != "4Pad") %>% 
+  mutate(rich_up_minus_down = Up - Dn) %>% 
+  select(c(Date,Creek,rich_up_minus_down))
+
+# plot it
+controlsbox <- ggplot(richplot, aes(x=Date, y=rich_up_minus_down)) +
+  geom_boxplot(fill="#00BFC4") +
+  theme_bw() +
+  labs(title="COI: All Control Creeks", y="ASV Richness Upstream - ASV Richness Downstream", x= "Month")
+
+# now go back and do padden
+padden_richplot <- delta_rich %>% 
+  filter(Creek == "4Pad") %>% 
+  mutate(rich_up_minus_down = Up5 - Dn) %>% 
+  select(c(Date,Creek,rich_up_minus_down))
+
+# plot it
+interventionbox <- ggplot(padden_richplot, aes(x=Date, y=rich_up_minus_down)) +
+  geom_boxplot(fill="#F8766D") +
+  theme_bw() +
+  labs(title="COI: Intervention Creek", y="ASV Richness Upstream - ASV Richness Downstream", x= "Month")
+
+controlsbox + interventionbox + plot_layout(ncol = 2, nrow = 1, byrow = F)
+```
+
+## Different way of looking at richness
+
+What if instead of counting each unique thing in all three replicates towards one estimate of richness, instead we calculate three richnesses (one from each bio rep) and box plot it 
+
+```{r different way of looking at richness}
+
+new_rich <- COI %>% 
+  group_by(Date, Creek, Site, Bio_Rep) %>%
+  tally()
+
+delta_new_rich <- new_rich %>% 
+  group_by(Date,Creek,,Bio_Rep) %>% 
+  pivot_wider(names_from = Site, values_from = n)
+
+newrichplot <- delta_new_rich %>% 
+  filter(Creek != "4Pad") %>% 
+  mutate(rich_up_minus_down = Up - Dn) %>% 
+  select(c(Date,Creek,rich_up_minus_down))
+
+# plot it
+newcontrolsbox <- ggplot(newrichplot, aes(x=Date, y=rich_up_minus_down)) +
+  geom_boxplot(fill="#00BFC4") +
+  theme_bw() +
+  labs(title="COI: All Control Creeks (sep bio reps)", y="ASV Richness Upstream - ASV Richness Downstream", x= "Month")
+
+# now go back and do padden
+newpadden_richplot <- delta_new_rich %>% 
+  filter(Creek == "4Pad") %>% 
+  mutate(rich_up_minus_down = Up5 - Dn) %>% 
+  select(c(Date,Creek,rich_up_minus_down))
+
+# plot it
+newinterventionbox <- ggplot(newpadden_richplot, aes(x=Date, y=rich_up_minus_down)) +
+  geom_boxplot(fill="#F8766D") +
+  theme_bw() +
+  labs(title="COI: Intervention Creek (sep bio reps)", y="ASV Richness Upstream - ASV Richness Downstream", x= "Month")
+
+newcontrolsbox + newinterventionbox + plot_layout(ncol = 2, nrow = 1, byrow = F)
+
+```
+
+## NMDS plots for sanity check    
+
+Biological replicates really don't match up well. So do things even cluster by creek, month, and station? 
+
+```{r nmds}
+
+coi.asv.for.nmds <- COI %>% 
+  #select(-Locus) %>% 
+  select(c(Sample_name,species,tot)) %>% 
+  #pivot_wider(names_from = Sample_name, values_from = nReads) %>%
+  pivot_wider(names_from = Sample_name, values_from = tot) %>% 
+  #column_to_rownames(var="Hash")
+  column_to_rownames(var="species")
+
+coi.asv.for.nmds[is.na(coi.asv.for.nmds)] <- 0
+  
+coi.asv.nmds <- metaMDS(t(coi.asv.for.nmds), distance = "bray")
+
+goodness(coi.asv.nmds) # Produces a results of test statistics for goodness of fit for each point
+stressplot(coi.asv.nmds) # Produces a Shepards diagram
+plot(coi.asv.nmds, "sites") 
+  
+data.scores = as.data.frame(scores(coi.asv.nmds))
+meta <- unique(COI[,1:6])
+
+data.scores$Sample = meta$Sample_name
+data.scores$Date = meta$Date
+data.scores$Creek = meta$Creek
+
+
+ggplot(data.scores, aes(x = NMDS1, y = NMDS2)) + 
+    geom_point(size = 4, aes(shape = Creek, fill= Date), colour = "black" )+ 
+    labs(x = "NMDS1", fill = "Date", y = "NMDS2", shape = "Creek") +
+    scale_shape_manual(values=21:25) +
+  scale_fill_brewer(palette = "Pastel2") +
+  guides(fill=guide_legend(override.aes=list(colour=c("0321"="azure","0421"="red", "0521"="black", "0621"="black", "0721"="black", "0821"="black"))))
+ 
+
+```
+

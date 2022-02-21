@@ -10,7 +10,17 @@ params:
     value: 100
 ---
 
-## *IMPORTANT* won't work unless manually put in full file path to params.txt file at bottom - do that then knit.
+Last updated: 2/2/22
+
+# Overview 
+
+This is an R Markdown document. It is just a means to passing the parameters from the metadata file into a bash script
+
+*IMPORTANT* won't work unless manually put in full file path to params.txt file at bottom - do that then you can run this by just clicking knit.
+
+# Set up
+
+## R set up packages and file paths, etc.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -24,17 +34,17 @@ setwd("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/In_Pr
 
 # hard code in fastq folder to come from local hard drive NOT the github folder because the files are too big to host on Github
 fastqfolder <- paste0("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Input/fastq_files","/run",params$run.num)
+
 sequencingmetadatafile <- paste0(here("Input","sequencing_metadata_files/"),"metadata-input-run",params$run.num, ".csv") 
+
 outputfolder <- paste0("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/","cutadapt_output","/run",params$run.num,"_",format(Sys.Date(), "%Y%m%d"))
+
 paramsfile <- paste0(outputfolder,"/params.txt")
 
 ```
 
-## Cutadapt wrapper
 
-This is an R Markdown document. It is just a means to passing the parameters from the metadata file into a bash script
-
-## Step0: Check the metadata colnames.
+## Check the metadata colnames.
 
 The minimum info needed must have the following column names:
 
@@ -47,7 +57,7 @@ The minimum info needed must have the following column names:
         
 Does not matter if you bring more columns - good. But these are the minimum
 
-## Step1: Params into a file for your records
+## Create a folder for output and a parameter file for your records
 
 ```{r}
 dir.create(outputfolder)
@@ -64,13 +74,19 @@ tibble(values = as.character(params2), names = c("fastqfolder", "sequencingmetad
 
 ```
 
+## Check the version of cutadapt 
+
 ```{bash}
 cutadapt --version
 ```
 
+# Remove primers via cutadapt  
+
+Run the bash script via R to actually use cutadapt 
+
+*IMPORTANT* won't work unless manually put in full file path to params.txt file.
 
 ```{bash}
-
-bash test.bash.sh /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run6_20211229/params.txt
+bash test.bash.sh "/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run6_20220127/params.txt"
 ```
 

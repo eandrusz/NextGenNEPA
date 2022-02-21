@@ -1,0 +1,119 @@
+---
+title: "add_taxonomy_to_samples"
+author: "Eily Allan"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: html_document
+---
+
+Last updated: 2/10/22
+
+# Overview
+
+After merging all the ASV tables and hash keys, let's pair them together with taxonomy - and also go from ASV tables to taxa tables and collapse to different taxonomic ranks depending on what types of analyses we want to do. 
+
+# Set up
+
+## Load libraries
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(here)
+library(tidyverse)
+library(vegan)
+library(reshape2)
+```
+
+## Read in files for all ASV tables, annotations, and metadata. 
+
+We probably just want "good" annotations, which is family level annotations for COI and species level annotations for 12S. If you want to look at classification to any level, change the file paths for the classification outputs to all hashes. 
+
+```{r read in files}
+
+# Read the merged ASV tables
+COI.ASV.table <- read_csv(paste0(here("Output", "dada2_output", "20220210.combined.COI.ASV.table.csv")))
+MiFish.ASV.table <- read_csv(paste0(here("Output", "dada2_output", "20220210.combined.MiFish.ASV.table.csv")))
+MiMammal.ASV.table <- read_csv(paste0(here("Output", "dada2_output", "20220210.combined.MiMammal.ASV.table.csv")))
+
+# Read in the classification output for each run 
+# the files written to the general folder (not run specific) should have everything classified from all runs because they are our "databases" to use for future runs - we want to use the "DATE.MARKER.all.good.previous.hashes.annotated.rds" file 
+COI.annotations <- readRDS(file=paste0(here("Output","classification_output"),"/COI.all.gs.previous.hashes.annotated.rds"))
+MiFish.annotations <- readRDS(file=paste0(here("Output","classification_output"),"/MiFish.all.gs.previous.hashes.annotated.rds"))
+MiMammal.annotations <- readRDS(file=paste0(here("Output","classification_output"),"/MiMammal.all.gs.previous.hashes.annotated.rds"))
+
+all.metadata <- read.csv(here("Input", "sequencing_metadata_files", "master_sequencing_datasheet_20211026.csv"))
+
+```
+
+# Combine ASV tables with taxonomy files 
+
+We need to do this for each marker. 
+
+## MiMammal
+
+```{r ASV and taxonomy for MiMammal}
+
+# this taxonomy file is the "good" annotations to species and genus level so let's get rid of the other junk for right now 
+MiMammal.simple.annotations <- MiMammal.annotations %>% select(representative, taxon, species) %>% rename(Hash = representative)
+
+MiMammal.ASV.taxon <- MiMammal.ASV.table %>% 
+  left_join(MiMammal.simple.annotations, by = "Hash") %>% 
+  select(-Locus)
+
+# and same - keep things that do have an annotation (reminder to species or genus level so "good" annotation)
+MiMammal.ASV.yes.taxon <- MiMammal.ASV.taxon[! is.na(MiMammal.ASV.taxon$taxon),]
+
+# we can also do this at the species level 
+MiMammal.by.species <- MiMammal.ASV.yes.taxon %>% 
+  select(-Hash) %>% # we don't need the hash identifier anymore
+  filter(species != "") %>% 
+  group_by(Sample_name, species) %>% # for each sample that has multiple asvs that assign to the same taxa...
+  summarise(tot = sum(nReads))
+
+write.csv(MiMammal.by.species, here("Output","combined_species_tables","20220210_MiMammal.csv"), row.names = FALSE)
+```
+
+```{r MiFish}
+
+# this taxonomy file is the "good" annotations to species and genus level so let's get rid of the other junk for right now 
+MiFish.simple.annotations <- MiFish.annotations %>% select(representative, taxon, species) %>% rename(Hash = representative)
+
+MiFish.ASV.taxon <- MiFish.ASV.table %>% 
+  left_join(MiFish.simple.annotations, by = "Hash") %>% 
+  select(-Locus)
+
+# and same - keep things that do have an annotation (reminder to species or genus level so "good" annotation)
+MiFish.ASV.yes.taxon <- MiFish.ASV.taxon[! is.na(MiFish.ASV.taxon$taxon),]
+
+# we can also do this at the species level 
+MiFish.by.species <- MiFish.ASV.yes.taxon %>% 
+  select(-Hash) %>% # we don't need the hash identifier anymore
+  filter(species != "") %>% 
+  group_by(Sample_name, species) %>% # for each sample that has multiple asvs that assign to the same taxa...
+  summarise(tot = sum(nReads))
+
+write.csv(MiFish.by.species, here("Output","combined_species_tables","20220210_MiFish.csv"), row.names = FALSE)
+
+```
+
+```{r COI}
+
+# this taxonomy file is the "good" annotations to species and genus level so let's get rid of the other junk for right now 
+COI.simple.annotations <- COI.annotations %>% select(representative, taxon, species) %>% rename(Hash = representative)
+
+COI.ASV.taxon <- COI.ASV.table %>% 
+  left_join(COI.simple.annotations, by = "Hash") %>% 
+  select(-Locus)
+
+# and same - keep things that do have an annotation (reminder to species or genus level so "good" annotation)
+COI.ASV.yes.taxon <- COI.ASV.taxon[! is.na(COI.ASV.taxon$taxon),]
+
+# we can also do this at the species level 
+COI.by.species <- COI.ASV.yes.taxon %>% 
+  select(-Hash) %>% # we don't need the hash identifier anymore
+  filter(species != "") %>% 
+  group_by(Sample_name, species) %>% # for each sample that has multiple asvs that assign to the same taxa...
+  summarise(tot = sum(nReads))
+
+write.csv(COI.by.species, here("Output","combined_species_tables","20220210_COI.csv"), row.names = FALSE)
+
+```
