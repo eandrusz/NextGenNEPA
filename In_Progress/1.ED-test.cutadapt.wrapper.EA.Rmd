@@ -28,16 +28,16 @@ library(here)
 
 # if this doesn't work (command not found), use the following:
 old_path <- Sys.getenv("PATH")
-Sys.setenv(PATH = paste(old_path, "C:/Users/erdag/AppData/Local/Programs/Python/Python39/Scripts", sep = ":"))
+Sys.setenv(PATH = paste(old_path, "/Users/erdag/AppData/Local/Programs/Python/Python39/Scripts", sep = ":"))
 
-setwd("C:/Users/erdag/github/NextGenNEPA-EA/In_Progress")
+setwd("/Users/erdag/github/NextGenNEPA-EA/In_Progress")
 
 # hard code in fastq folder to come from local hard drive NOT the github folder because the files are too big to host on Github
-fastqfolder <- paste0("C:/Users/erdag/NextGenNEPA_local/Input/fastq_files","/run",params$run.num)
+fastqfolder <- paste0("/Users/erdag/NextGenNEPA_local/Input/fastq_files","/run",params$run.num)
 
 sequencingmetadatafile <- paste0(here("Input","sequencing_metadata_files/"),"/metadata-input-run",params$run.num, ".csv") 
 
-outputfolder <- paste0("C:/Users/erdag/NextGenNEPA_local/Output/","cutadapt_output","/run",params$run.num,"_",format(Sys.Date(), "%Y%m%d"))
+outputfolder <- paste0("/Users/erdag/NextGenNEPA_local/Output/","cutadapt_output","/run",params$run.num,"_",format(Sys.Date(), "%Y%m%d"))
 
 paramsfile <- paste0(outputfolder,"/params.txt")
 
@@ -87,6 +87,6 @@ Run the bash script via R to actually use cutadapt
 *IMPORTANT* won't work unless manually put in full file path to params.txt file.
 
 ```{bash}
-bash test.bash.sh "C:/Users/erdag/NextGenNEPA_local/Output/cutadapt_output/run5_20220221/params.txt"
+bash test.bash.win.sh "C:/Users/erdag/NextGenNEPA_local/Output/cutadapt_output/run5_20220221/params.txt"
 ```
 

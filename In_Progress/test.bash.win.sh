@@ -1,3 +1,4 @@
+!/usr/bin/env bash
 echo "The scripts works"
 # usage bash test.bash.sh {folder}
 MAIN_DIR="$(dirname "$0")"
