@@ -4,17 +4,17 @@ author: "Eily Allan - modified from Erin D'Agnese and Ramon Gallego"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: html_document
 params: 
-  folder:
+  folder: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/
   run:
-    value: 6
+    value: 5
   Hash_key:
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/dada2_output/run6_20211229/MiFish/hash_key.csv
+    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/dada2_output/run5_20220226/MiFish/hash_key.csv
   ASVs: 
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/dada2_output/run6_20211229/MiFish/ASV_table.csv
+    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/dada2_output/run5_20220226/MiFish/ASV_table.csv
   previous_good_effort: 
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/classification_output/MiFish.all.good.previous.hashes.annotated.rds
+    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/classification_output/MiFish.all.good.previous.hashes.annotated.rds
   previous_effort: 
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/classification_output/MiFish.all.previous.hashes.annotated.rds
+    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/classification_output/MiFish.all.previous.hashes.annotated.rds
 ---
 
 Last updated: 2/2/22
@@ -51,7 +51,7 @@ library (here)
 library(taxonomizr)
 
 # note that the classifier is stored LOCALLY so need to change file path 
-classifier <- "/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Input/classifiers/classifier_MiFish_v1.rds"
+classifier <- "/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Input/classifiers/classifier_12S_v1.rds"
 
 run_output_folder <- paste0(here("Output","classification_output"),"/run",params$run) 
 dir.create(path = run_output_folder)
@@ -70,7 +70,7 @@ Hash     <- read_csv(params$Hash_key) %>%
   select(Hash, Sequence) %>% distinct()
 ALL.ASVs <- read_csv(params$ASVs)
 
-previous.good.effort <- read_rds(params$previous_good_effort)
+#previous.good.effort <- read_rds(params$previous_good_effort)
 previous.effort <- read_rds(params$previous_effort)
 
 tree <- read_rds(classifier)
@@ -97,7 +97,7 @@ We expect to find hashes that are the same as some of our previous runs - so we 
 
 ## here we are going to separate out the ASVs that are NOT in our previous effort file (i.e., only classify things that did not get a good classification previously)
 # we probably only want to use the good classifications from previous - but you could change this to params$previous_effort
-new.set <- anti_join(Hash, previous.good.effort, by = c("Hash" = "representative")) # remove anything previously classified
+new.set <- anti_join(Hash, previous.effort, by = c("Hash" = "representative")) # remove anything previously classified
 new.hashes.insect <- char2dna(new.set$Sequence)
 names(new.hashes.insect) <- new.set$Hash
 

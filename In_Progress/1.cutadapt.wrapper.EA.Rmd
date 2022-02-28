@@ -5,7 +5,7 @@ date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: html_document
 params:
   run.num:
-    value: 6
+    value: 5
   minlength:
     value: 100
 ---
@@ -30,7 +30,7 @@ library(here)
 old_path <- Sys.getenv("PATH")
 Sys.setenv(PATH = paste(old_path, "/Users/elizabethandruszkiewicz/opt/anaconda2/bin/", sep = ":"))
 
-setwd("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/In_Progress")
+setwd("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/In_Progress")
 
 # hard code in fastq folder to come from local hard drive NOT the github folder because the files are too big to host on Github
 fastqfolder <- paste0("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Input/fastq_files","/run",params$run.num)
@@ -87,6 +87,6 @@ Run the bash script via R to actually use cutadapt
 *IMPORTANT* won't work unless manually put in full file path to params.txt file.
 
 ```{bash}
-bash test.bash.sh "/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run6_20220127/params.txt"
+bash test.bash.sh "/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run5_20220226/params.txt"
 ```
 

@@ -1,18 +1,18 @@
 ---
 title: "Dada2_report"
 author: "Eily via Moncho"
-date: "`r format(Sys.time(), '%B %d, %Y')`"
-output: html_document:
-  toc: true
-  toc_float: true
+date: "2/26/2022`"
+output:
+  html_notebook:
+    toc: true
 params:
   noprimerfolder: 
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run6_20220127/noprimers/Ac16S
+    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run5_20220226/noprimers/Ac16S
   hash: TRUE
   trimming.length.Read1: 250
-  trimming.length.Read2: 150
-  metadata: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run6_20220127/noprimers/Ac16S/cutadapt_output_metadata_Ac16S.csv
-  output.folder: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_EA/Output/dada2_output/run6_20220127/Ac16S
+  trimming.length.Read2: 200
+  metadata: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run5_20220226/noprimers/Ac16S/cutadapt_output_metadata_Ac16S.csv
+  output.folder: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/dada2_output/run5_20220226/Ac16S
   keep.mid.files: FALSE
 
 ---
@@ -75,7 +75,10 @@ We need to remove samples that didn't get past cutadapt - have to change this EA
 ```{r remove any that didnt get past cutadapt}
 
 ## removed any samples removed during filtering so edit metadata file to remove it
-#sample.metadata <- sample.metadata[-10,]
+#Locus_MiFish_MiFish-0621-4Pad-Up11-3_S45_L001_R1_001.fastq)
+#Locus_MiMammal_MiMammal-0721-4Pad-Up11-2_S19_L001_R1_001.fastq
+#Locus_Ac16S_Ac16S-PadUp11-4-0321_S113_F1_filt.fastq.gz
+sample.metadata <- sample.metadata[-1,]
 
 ```
 
