@@ -1,0 +1,9 @@
+Parameters,Values
+noprimerfolder,C:/Users/erdag/NextGenNEPA_local/Output/cutadapt_output/run5_20220221/noprimers/MiFish
+hash,TRUE
+trimming.length.Read1,150
+trimming.length.Read2,150
+merge.overlap,100
+metadata,C:/Users/erdag/NextGenNEPA_local/Output/cutadapt_output/run5_20220221/noprimers/MiFish/cutadapt_output_metadata_MiFish.csv
+output.folder,C:/Users/erdag/github/NextGenNEPA-EA/Output/dada2_output/run5_20220221/MiFish
+keep.mid.files,FALSE

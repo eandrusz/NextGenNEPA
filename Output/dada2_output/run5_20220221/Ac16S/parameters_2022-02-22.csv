@@ -1,0 +1,8 @@
+Parameters,Values
+noprimerfolder,C:/Users/erdag/NextGenNEPA_local/Output/cutadapt_output/run5_20220221/noprimers/Ac16S
+hash,TRUE
+trimming.length.Read1,250
+trimming.length.Read2,150
+metadata,C:/Users/erdag/NextGenNEPA_local/Output/cutadapt_output/run5_20220221/noprimers/Ac16S/cutadapt_output_metadata_Ac16S.csv
+output.folder,C:/Users/erdag/github/NextGenNEPA-EA/Output/dada2_output/run5_20220221/Ac16S
+keep.mid.files,FALSE
