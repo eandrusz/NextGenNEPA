@@ -3,20 +3,15 @@ title: "cutadapt.wrapper"
 author: "Eily via Moncho"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: html_document
-params:
-  run.num:
-    value: 5
-  minlength:
-    value: 100
 ---
 
-Last updated: 2/2/22
+Last updated: 2/28/22
 
 # Overview 
 
-This is an R Markdown document. It is just a means to passing the parameters from the metadata file into a bash script
+This script is to remove primers via Cutadapt. Input of this file is fastq files straight off the sequencer. The output is still a fastq file but with the primers used for PCR removed. The script passes the parameters from the metadata file into a bash script to use cutadapt in R.
 
-*IMPORTANT* won't work unless manually put in full file path to params.txt file at bottom - do that then you can run this by just clicking knit.
+*IMPORTANT* this script won't work unless manually put in full file path to params.txt file at bottom - do that then you can run this by just clicking knit.
 
 # Set up
 
@@ -25,19 +20,39 @@ This is an R Markdown document. It is just a means to passing the parameters fro
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(here)
+library(tidyverse)
+```
 
-# if this doesn't work (command not found), use the following:
+THESE VALUES CHANGE FOR EACH RUN NUMBER AND FOR YOUR COMPUTER / FILE PATH
+
+Note that the input and output files are too big to be on Github so you *must* hardcode them to your hard drive.
+
+```{r setup2}
+
+## CHANGE THESE FOR EACH RUN 
+run.num = 5
+
+# probably don't need to change this, leave at 100 unless you have an issue
+minlength = 100
+
+## CHANGE THESE FOR YOUR FILE PATHS
+
+# you should only need to do this one, but if the you get an error (command not found), use the following:
 old_path <- Sys.getenv("PATH")
 Sys.setenv(PATH = paste(old_path, "/Users/elizabethandruszkiewicz/opt/anaconda2/bin/", sep = ":"))
 
-setwd("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/In_Progress")
+# set working directory to "In_Progress"
+#setwd("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/In_Progress")
+setwd(here("In_Progress"))
 
 # hard code in fastq folder to come from local hard drive NOT the github folder because the files are too big to host on Github
-fastqfolder <- paste0("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Input/fastq_files","/run",params$run.num)
+fastqfolder <- paste0("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Input/fastq_files","/run",run.num)
 
-sequencingmetadatafile <- paste0(here("Input","sequencing_metadata_files/"),"metadata-input-run",params$run.num, ".csv") 
+# create variable for the filepath for the metadata file
+sequencingmetadatafile <- paste0(here("Input","sequencing_metadata_files/"),"metadata-input-run",run.num, ".csv") 
 
-outputfolder <- paste0("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/","cutadapt_output","/run",params$run.num,"_",format(Sys.Date(), "%Y%m%d"))
+# hard code output folder to local hard drive NOT the github folder because the files are too big to host on Github
+outputfolder <- paste0("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/","cutadapt_output","/run",run.num,"_",format(Sys.Date(), "%Y%m%d"))
 
 paramsfile <- paste0(outputfolder,"/params.txt")
 
@@ -62,19 +77,18 @@ Does not matter if you bring more columns - good. But these are the minimum
 ```{r}
 dir.create(outputfolder)
 
-library(tidyverse)
-
-params2 <- c(fastqfolder,sequencingmetadatafile, outputfolder, params$minlength)
+params2 <- c(fastqfolder,sequencingmetadatafile, outputfolder, minlength)
 
 tibble(values = as.character(params2), names = c("fastqfolder", "sequencingmetadatafile", "outputfolder", "minlength")) %>% 
   pivot_wider(names_from = names,
               values_from = values) %>%
   write_csv(paramsfile)
 
-
 ```
 
 ## Check the version of cutadapt 
+
+EA: This works for me using version 1.18 
 
 ```{bash}
 cutadapt --version
@@ -87,6 +101,6 @@ Run the bash script via R to actually use cutadapt
 *IMPORTANT* won't work unless manually put in full file path to params.txt file.
 
 ```{bash}
-bash test.bash.sh "/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run5_20220226/params.txt"
+bash test.bash.sh "/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run5_20220228/params.txt"
 ```
 

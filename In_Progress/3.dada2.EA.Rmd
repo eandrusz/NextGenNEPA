@@ -1,18 +1,15 @@
 ---
 title: "Dada2_report"
 author: "Eily via Moncho"
-date: "2/26/2022`"
-output:
-  html_notebook:
-    toc: true
+date: "`r format(Sys.time(), '%B %d, %Y')`"
 params:
   noprimerfolder: 
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run5_20220226/noprimers/Ac16S
+    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run5_20220226/noprimers/MiFish
   hash: TRUE
-  trimming.length.Read1: 250
-  trimming.length.Read2: 200
-  metadata: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run5_20220226/noprimers/Ac16S/cutadapt_output_metadata_Ac16S.csv
-  output.folder: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/dada2_output/run5_20220226/Ac16S
+  trimming.length.Read1: 150
+  trimming.length.Read2: 150
+  metadata: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run5_20220226/noprimers/MiFish/cutadapt_output_metadata_MiFish.csv
+  output.folder: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/dada2_output/run5_20220228/MiFish
   keep.mid.files: FALSE
 
 ---
@@ -32,37 +29,76 @@ This is because our 12S (MF/MM) fragment is only ~170 bp long and our COI (Leray
 
 # Set up
 
+## Load packages and set file paths 
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_knit$set(root.dir = params$noprimerfolder)
 
 ```
 
-## Load packages and set file paths 
-
 ```{r loading packages, echo=TRUE ,message=FALSE}
-library(here)
+library (here)
 library (tidyverse)
 library (dada2)
 library (digest)
 library (seqinr)
 library (knitr)
 library (kableExtra)
+```
 
-sample.metadata <- read_csv(params$metadata)
-filt_path <- file.path(params$noprimerfolder, "filtered")
+## Set parameters - run number, marker, etc. - NEEDS HUMAN INPUT
+
+```{r set parameters by HUMAN}
+
+## CHANGE EACH TIME - run number and marker 
+run.num = 5
+marker = "MiFish"
+
+## THE NO PRIMER FOLDER MUST BE HARDCODED TO LOCAL HARD DRIVE BECAUSE IT IS TOO BIG FOR GITHUB
+# also note that if you run this on a different day than when you did cutadapt change to the actual date rather than sys.date()
+#noprimerfolder = paste0("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run",run.num,"_",format(Sys.Date(), "%Y%m%d"), "/noprimers/", marker)
+noprimerfolder = paste0("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run",run.num,"_","20220226", "/noprimers/", marker)
+
+# set parameters that don't change usually
+hash = TRUE  # you rarely do NOT want to hash
+keep.mid.files = FALSE  # I find I never look at these / use these and they just take up space 
+```
+
+## Continue setting parameters automatically based on human input
+
+```{r set parameters automatically}
+# set working directory to no primer folder
+knitr::opts_knit$set(root.dir = noprimerfolder)
+
+# set file paths based on run and marker 
+metadata = paste0(noprimerfolder,"/cutadapt_output_metadata_",marker,".csv")
+output.folder = paste0(here("Output","dada2_output"),"/run",run.num,"_",format(Sys.Date(), "%Y%m%d"), "/", marker)
+
+# set trimming lengths based on marker 
+if(marker == "MiFish" | marker == "MiMammal") {
+trimming.length.Read1 = 150
+trimming.length.Read2 = 150 
+} else if ( marker == "COI" | marker == "Ac16S") {
+  trimming.length.Read1 = 250
+  trimming.length.Read2 = 200
+} else {
+print("Different marker -- set for trimming lengths.")
+}
+
+# read in file paths, set up output file paths
+sample.metadata <- read_csv(metadata)
+filt_path <- file.path(noprimerfolder, "filtered")
 getwd()
 filt_path
 # Check if output directory exists - if not create as a subfolder of input dir
-if(!dir.exists(file.path(params$output.folder))){
-  dir.create(path = file.path(params$output.folder),recursive = T)
-  output.dir <- file.path(params$output.folder)
+if(!dir.exists(file.path(output.folder))){
+  dir.create(path = file.path(output.folder),recursive = T)
+  output.dir <- file.path(output.folder)
 }else{
-  output.dir <- file.path(params$output.folder)
+  output.dir <- file.path(output.folder)
 }
 output.dir
-# Write the parameters in a file to the output dir
-tibble(Parameters = names(params), Values = unlist(params)) %>% write_csv(file.path(output.dir,paste0("parameters_", Sys.Date(), ".csv")))
 
 ```
 
@@ -78,7 +114,7 @@ We need to remove samples that didn't get past cutadapt - have to change this EA
 #Locus_MiFish_MiFish-0621-4Pad-Up11-3_S45_L001_R1_001.fastq)
 #Locus_MiMammal_MiMammal-0721-4Pad-Up11-2_S19_L001_R1_001.fastq
 #Locus_Ac16S_Ac16S-PadUp11-4-0321_S113_F1_filt.fastq.gz
-sample.metadata <- sample.metadata[-1,]
+#sample.metadata <- sample.metadata[-1,]
 
 ```
 
@@ -115,9 +151,16 @@ ggsave(file.path(output.dir,"R2_aggregate.png"))
 
 ```
 
+## CHANGE TRIMMING LENGTHS IF YOU NEED TO AFTER LOOKING AT Q SCORE PLOT
+
+```{r change trimming lengths if needed}
+trimming.length.Read1 = trimming.length.Read1
+trimming.length.Read2 = trimming.length.Read2 
+```
+
 # Run dada2 
 
-## 
+You should not need to change *anything* below this point - it should run perfectly. It is broken up into different chunks so you can see it as you go along, but just run each chunk sequentially. For reference, it usually takes on the order of minutes for 12S and Ac16S and on the order of hours for COI data.
 
 ```{r dadaing}
 

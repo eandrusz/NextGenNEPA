@@ -1,11 +1,7 @@
 ---
 title: "split_markers.Rmd"
 author: "Eily Allan"
-date: "2/22/22"
-output: html_document
-params:
-  run.num:
-    value: 6
+date: "`r format(Sys.time(), '%B %d, %Y')`"
 ---
 
 Last updated: 2/2/22
@@ -17,12 +13,21 @@ Cutadapt can be run with several different primer sets because we tell the softw
 # Set up
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-
 library(filesstrings)
 library(here)
+```
 
-fastq_noprimers_folder <- paste0("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/","cutadapt_output","/run",params$run.num,"_",format(Sys.Date(), "%Y%m%d"), "/noprimers")
+THESE VALUES CHANGE FOR EACH RUN NUMBER AND FOR YOUR COMPUTER / FILE PATH
+
+Note that the input and output files are too big to be on Github so you *must* hardcode them to your hard drive.
+
+```{r setup2}
+# what run is this
+run.num = 5
+
+# NOTE HAVE TO HARDCODE becuase files are too big to be on github 
+# also note that if you run this on a different day than when you did cutadapt change to the actual date rather than sys.date()
+fastq_noprimers_folder <- paste0("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/","cutadapt_output","/run",run.num,"_",format(Sys.Date(), "%Y%m%d"), "/noprimers")
 
 ```
 
