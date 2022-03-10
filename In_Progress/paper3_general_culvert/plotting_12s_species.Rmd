@@ -1,0 +1,167 @@
+---
+title: "visualizing_12s"
+author: "Eily Allan"
+date: "3/4/2022"
+output: html_document
+---
+
+
+```{r set up}
+library(here)
+library(tidyverse)
+library(ggplot2)
+
+mimam <- read.csv(here("Output","combined_species_tables","20220210_MiMammal.csv"))
+mifish <- read.csv(here("Output","combined_species_tables","20220210_MiFish.csv"))
+combo <- rbind(mimam,mifish)
+```
+
+```{r salmonid plot function}
+# make it a function and do it for mifish, mimammal, and combo 
+
+makeplot <- function(df, whichpadexclude){
+salmonids <- df %>% 
+  filter(str_detect(species,"Oncorhynchus")) %>% 
+  filter(!str_detect(Sample_name,"Kangaroo")) %>% 
+  separate(Sample_name, into=c("marker","date","creek","site","bio_rep"), remove = TRUE) %>% 
+  select(-1) 
+
+# for now, just combine reads from all replicates  
+salmonids.bysite <- salmonids %>%
+  filter(site != whichpadexclude) %>% 
+  group_by(date,creek,site,species) %>% 
+  summarize(totreads = sum(tot)) %>% 
+  mutate(pa = 1)
+salmonids.bysite2 <- salmonids.bysite %>% 
+  group_by(date,creek,species) %>% 
+  mutate(sitekey = sum(pa)) %>% 
+  mutate(creek = recode(creek, "1Prt" = "Portage", "2Brn" = "Barnes", "3Chk" = "Chuckanut", "4Pad" = "Padden", "5Sqm" = "Squalicum")) %>% 
+  mutate(plotsite = case_when(sitekey == 2 ~ "Down and Up",
+                          sitekey == 1 & site == "Dn" ~ "Down only",
+                          sitekey == 1 & site == "Up" ~ "Up only",
+                          sitekey == 1 & site == "Up11" ~ "Up only",
+                          sitekey == 1 & site == "Up5" ~ "Up only"))
+
+p <- ggplot(salmonids.bysite2, aes(date, species, fill=as.factor(plotsite), width=0.7, height=0.7)) + 
+  geom_tile(size=1) +
+  theme_bw() +
+  labs(x="Month", y="Species", fill = "Sites Present") +
+  facet_wrap(~creek) +
+  scale_fill_manual(values=c("#000000","#99CCCC","#9999CC")) +
+  scale_x_discrete(guide = guide_axis(angle = 45))
+
+return(p)
+}
+
+```
+
+```{r plot plots}
+mf.omitup5 <- makeplot(mifish, "Up5") + ggtitle("MiFish Data, Padden Dn/Up11, missing some May/June/July")
+mf.omitup11 <- makeplot(mifish, "Up11") + ggtitle("MiFish Data, Padden Dn/Up5, missing some May/June/July")
+
+mm.omitup5 <- makeplot(mimam, "Up5") + ggtitle("MiMammal Data, Padden Dn/Up11, missing some May/June/July")
+mm.omitup11 <- makeplot(mimam, "Up11") + ggtitle("MiMammal Data, Padden Dn/Up5, missing some May/June/July")
+
+combo.omitup5 <- makeplot(combo, "Up5") + ggtitle("All 12S Data, Padden Dn/Up11, missing some May/June/July")
+combo.omitup11 <- makeplot(combo, "Up11") + ggtitle("All 12S Data, Padden Dn/Up5, missing some May/June/July")
+
+```
+
+## ONLY Padden salmonids -- and compare Dn/Up11, Dn/Up5, Up11/Up5
+
+```{r salmon in padden}
+
+makepadplot <- function(df, paddn, padup){
+  
+salmonids <- df %>% 
+  filter(str_detect(species,"Oncorhynchus")) %>% 
+  filter(!str_detect(Sample_name,"Kangaroo")) %>% 
+  separate(Sample_name, into=c("marker","date","creek","site","bio_rep"), remove = TRUE) %>% 
+  filter(creek == "4Pad") %>% 
+  select(-1) %>% 
+  filter(site == paddn | site == padup) %>% 
+  mutate(newsite = case_when(site == paddn ~ "Dn",
+                             site == padup ~ "Up"))
+
+# for now, just combine reads from all replicates  
+salmonids.bysite <- salmonids %>% 
+  group_by(date,creek,newsite,species) %>% 
+  summarize(totreads = sum(tot)) %>% 
+  mutate(pa = 1)
+salmonids.bysite2 <- salmonids.bysite %>% 
+  group_by(date,creek,species) %>% 
+  mutate(sitekey = sum(pa)) %>% 
+  mutate(plotsite = case_when(sitekey == 2 ~ "Down and Up",
+                          sitekey == 1 & newsite == "Dn" ~ "Down only",
+                          sitekey == 1 & newsite == "Up" ~ "Up only"))
+
+p <- ggplot(salmonids.bysite2, aes(date, species, fill=as.factor(plotsite), width=0.7, height=0.7)) + 
+  geom_tile(size=1) +
+  theme_bw() +
+  labs(x="Month", y="Species", fill = "Sites Present") +
+  scale_fill_manual(values=c("#000000","#99CCCC","#9999CC")) +
+  scale_x_discrete(guide = guide_axis(angle = 45))
+
+return(p)
+}
+
+```
+
+```{r plot padden plots}
+
+combo.dn.up11 <- makepadplot(combo,"Dn", "Up11") + ggtitle("All 12S Data, Padden Dn/Up11, missing some May/June/July")
+combo.dn.up5 <- makepadplot(combo, "Dn", "Up5") + ggtitle("All 12S Data, Padden Dn/Up5, missing some May/June/July")
+combo.up11.up5 <- makepadplot(combo, "Up11", "Up5") + ggtitle("All 12S Data, Padden Up11/Up5, missing some May/June/July")
+
+combo.dn.up11 + combo.dn.up5 + combo.up11.up5 + plot_layout(ncol = 1, nrow = 3, byrow = F)
+```
+
+
+## NON SALMONIDS 
+
+```{r salmonid plot function}
+# make it a function and do it for mifish, mimammal, and combo 
+
+makeplot_class <- function(df, whichclass, whichpadexclude){
+alldata <- df %>% 
+  filter(class == whichclass) %>% 
+  filter(!str_detect(Sample_name,"Kangaroo")) %>% 
+  separate(Sample_name, into=c("marker","date","creek","site","bio_rep"), remove = TRUE) %>% 
+  select(-1) 
+
+# for now, just combine reads from all replicates  
+bysite <- alldata %>%
+  filter(site != whichpadexclude) %>% 
+  group_by(date,creek,site,species) %>% 
+  summarize(totreads = sum(tot)) %>% 
+  mutate(pa = 1)
+bysite2 <- bysite %>% 
+  group_by(date,creek,species) %>% 
+  mutate(sitekey = sum(pa)) %>% 
+  mutate(creek = recode(creek, "1Prt" = "Portage", "2Brn" = "Barnes", "3Chk" = "Chuckanut", "4Pad" = "Padden", "5Sqm" = "Squalicum")) %>% 
+  mutate(plotsite = case_when(sitekey == 2 ~ "Down and Up",
+                          sitekey == 1 & site == "Dn" ~ "Down only",
+                          sitekey == 1 & site == "Up" ~ "Up only",
+                          sitekey == 1 & site == "Up11" ~ "Up only",
+                          sitekey == 1 & site == "Up5" ~ "Up only"))
+
+p <- ggplot(bysite2, aes(date, species, fill=as.factor(plotsite), width=0.7, height=0.7)) + 
+  geom_tile(size=1) +
+  theme_bw() +
+  labs(x="Month", y="Species", fill = "Sites Present") +
+  facet_wrap(~creek) +
+  scale_fill_manual(values=c("#000000","#99CCCC","#9999CC")) +
+  scale_x_discrete(guide = guide_axis(angle = 45))
+
+return(p)
+}
+
+```
+
+```{r plot plots}
+combo.fish.omitup11 <- makeplot_class(combo, "Actinopteri", "Up11") + ggtitle("Actinopteri, Padden Dn/Up5, missing some May/June/July")
+combo.mammals.omitup11 <- makeplot_class(combo, "Mammalia", "Up11") + ggtitle("Mammalia, Padden Dn/Up5, missing some May/June/July")
+combo.lamprey.omitup11 <- makeplot_class(combo, "Hyperoartia", "Up11") + ggtitle("Hyperoartia, Padden Dn/Up5, missing some May/June/July")
+combo.birds.omitup11 <- makeplot_class(combo, "Aves", "Up11") + ggtitle("Aves, Padden Dn/Up5, missing some May/June/July")
+
+```

@@ -2,7 +2,6 @@
 title: "merge_runs.Rmd"
 author: "Eily Allan"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
-output: html_document
 ---
 
 Last updated: 2/2/22
@@ -82,11 +81,12 @@ MiFish.ASV.table <- bind_rows(map(MiFish.asvs[2:3], read_csv))
 MiFish4 <- read.csv(MiFish.asvs[4])
 MiFish4$Sample_name <- as.character(MiFish4$Sample_name)
 MiFish4 <- MiFish4 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") %>% select(Sample_ID,Locus,Hash,nReads) %>% rename("Sample_name" = "Sample_ID")
-MiFish6 <- read.csv(MiFish.asvs[5])
+MiFish5 <- read.csv(MiFish.asvs[5])
+MiFish6 <- read.csv(MiFish.asvs[6])
 MiFish6$Sample_name <- as.character(MiFish6$Sample_name)
 MiFish6 <- MiFish6 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") %>% select(Sample_ID,Locus,Hash,nReads) %>% rename("Sample_name" = "Sample_ID")
 
-MiFish.ASV.table <- bind_rows(MiFish.ASV.table, MiFish4, MiFish6)
+MiFish.ASV.table <- bind_rows(MiFish.ASV.table, MiFish4, MiFish5, MiFish6)
 
 MiFish.hash.key <- bind_rows(map(MiFish.hashes, read_csv))
 MiFish.hash.key <- MiFish.hash.key %>% 
@@ -106,11 +106,12 @@ MiMammal1 <- MiMammal1 %>% select(-Locus) %>% left_join(all.metadata, by = "Samp
 MiMammal4 <- read.csv(MiMammal.asvs[4])
 MiMammal4$Sample_name <- as.character(MiMammal4$Sample_name)
 MiMammal4 <- MiMammal4 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") %>% select(Sample_ID,Locus,Hash,nReads) %>% rename("Sample_name" = "Sample_ID")
-MiMammal6 <- read.csv(MiMammal.asvs[5])
+MiMammal5 <- read.csv(MiMammal.asvs[5])
+MiMammal6 <- read.csv(MiMammal.asvs[6])
 MiMammal6$Sample_name <- as.character(MiMammal6$Sample_name)
 MiMammal6 <- MiMammal6 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") %>% select(Sample_ID,Locus,Hash,nReads) %>% rename("Sample_name" = "Sample_ID")
 
-MiMammal.ASV.table <- bind_rows(MiMammal.ASV.table, MiMammal1, MiMammal4, MiMammal6)
+MiMammal.ASV.table <- bind_rows(MiMammal.ASV.table, MiMammal1, MiMammal4, MiMammal5, MiMammal6)
 
 MiMammal.hash.key <- bind_rows(map(MiMammal.hashes, read_csv))
 MiMammal.hash.key <- MiMammal.hash.key %>% 

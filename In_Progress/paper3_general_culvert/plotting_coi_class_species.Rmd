@@ -1,0 +1,129 @@
+---
+title: "visualizing_coi"
+author: "Eily Allan"
+date: "3/4/2022"
+output: html_document
+---
+
+
+```{r set up}
+library(here)
+library(tidyverse)
+library(ggplot2)
+
+coi <- read.csv(here("Output","combined_species_tables","20220210_COI.csv"))
+```
+
+```{r plot by class}
+
+alldata <- coi %>% 
+  filter(!str_detect(Sample_name,"Kangaroo")) %>% 
+  separate(Sample_name, into=c("marker","date","creek","site","bio_rep"), remove = TRUE) %>% 
+  filter(marker == "COI") %>%  
+  select(-1) 
+
+# for now, just combine reads from all replicates, use class level, use pad dn and up5 (skip up11)  
+alldata.bysite <- alldata %>%
+  filter(site != "Up11") %>% 
+  filter(class != "") %>% 
+  group_by(date,creek,site,class) %>% 
+  summarize(totreads = sum(tot)) %>% 
+  mutate(pa = 1)
+
+alldata.bysite2 <- alldata.bysite %>% 
+  group_by(date,creek,class) %>% 
+  mutate(sitekey = sum(pa)) %>% 
+  mutate(creek = recode(creek, "1Prt" = "Portage", "2Brn" = "Barnes", "3Chk" = "Chuckanut", "4Pad" = "Padden", "5Sqm" = "Squalicum")) %>% 
+  mutate(plotsite = case_when(sitekey == 2 ~ "Down and Up",
+                          sitekey == 1 & site == "Dn" ~ "Down only",
+                          sitekey == 1 & site == "Up" ~ "Up only",
+                          sitekey == 1 & site == "Up5" ~ "Up only"))
+
+ggplot(alldata.bysite2, aes(date, class, fill=as.factor(plotsite), width=0.7, height=0.7)) + 
+  geom_tile(size=1) +
+  theme_bw() +
+  labs(x="Month", y="Class", fill = "Sites Present") +
+  facet_wrap(~creek) +
+  ggtitle("COI by Class, Padden Dn/Up5, missing some May/June/July") +
+  scale_fill_manual(values=c("#000000","#99CCCC","#9999CC")) +
+  scale_x_discrete(guide = guide_axis(angle = 45))
+
+
+```
+
+```{r insects}
+
+insects <- coi %>% 
+  filter(!str_detect(Sample_name,"Kangaroo")) %>% 
+  separate(Sample_name, into=c("marker","date","creek","site","bio_rep"), remove = TRUE) %>% 
+  filter(marker == "COI") %>%  
+  filter(class == "Insecta") %>% 
+  select(-1) 
+
+# for now, just combine reads from all replicates, use class level, use pad dn and up5 (skip up11)  
+insects.bysite <- insects %>%
+  filter(site != "Up11") %>% 
+  filter(order == "Diptera" | order == "Ephemeroptera" | order == "Plecoptera" | order == "Trichoptera") %>%
+  group_by(date,creek,site,order) %>% 
+  summarize(totreads = sum(tot)) %>% 
+  mutate(pa = 1)
+
+insects.bysite2 <- insects.bysite %>% 
+  group_by(date,creek,order) %>% 
+  mutate(sitekey = sum(pa)) %>% 
+  mutate(creek = recode(creek, "1Prt" = "Portage", "2Brn" = "Barnes", "3Chk" = "Chuckanut", "4Pad" = "Padden", "5Sqm" = "Squalicum")) %>% 
+  mutate(plotsite = case_when(sitekey == 2 ~ "Down and Up",
+                          sitekey == 1 & site == "Dn" ~ "Down only",
+                          sitekey == 1 & site == "Up" ~ "Up only",
+                          sitekey == 1 & site == "Up5" ~ "Up only"))
+
+ggplot(insects.bysite2, aes(date, order, fill=as.factor(plotsite), width=0.7, height=0.7)) + 
+  geom_tile(size=1) +
+  theme_bw() +
+  labs(x="Month", y="Class", fill = "Sites Present") +
+  facet_wrap(~creek) +
+  ggtitle("COI - EPTD Insects only, Padden Dn/Up5, missing some May/June/July") +
+  scale_fill_manual(values=c("#000000","#99CCCC","#9999CC")) +
+  scale_x_discrete(guide = guide_axis(angle = 45))
+
+
+```
+
+```{r plotting beta diversity w coi}
+
+class.table <- alldata.bysite %>% 
+  unite("Sample_name", c("date", "creek","site"),sep=".", remove = T) %>%  
+  select(c(Sample_name,class,totreads)) %>% 
+  #pivot_wider(names_from = Sample_name, values_from = nReads) %>%
+  pivot_wider(names_from = Sample_name, values_from = totreads) %>% 
+  #column_to_rownames(var="Hash")
+  column_to_rownames(var="class")
+
+class.table[is.na(class.table)] <- 0
+  
+class.nmds <- metaMDS(t(class.table), distance = "bray")
+
+goodness(class.nmds) # Produces a results of test statistics for goodness of fit for each point
+stressplot(class.nmds) # Produces a Shepards diagram
+plot(class.nmds, "sites") 
+  
+data.scores = as.data.frame(scores(class.nmds))
+meta <- unique(alldata.bysite[,1:3])
+
+#data.scores$Sample = meta$Sample_name
+data.scores$Date = meta$date
+data.scores$Creek = meta$creek
+
+
+ggplot(data.scores, aes(x = NMDS1, y = NMDS2)) + 
+    geom_point(size = 4, aes(shape = Creek, fill= Date), colour = "black" )+ 
+    labs(x = "NMDS1", fill = "Date", y = "NMDS2", shape = "Creek") +
+    scale_shape_manual(values=21:25) +
+  scale_fill_brewer(palette = "Pastel2") +
+  guides(fill=guide_legend(override.aes=list(colour=c("0321"="azure","0421"="red", "0521"="black", "0621"="black", "0721"="black", "0821"="black"))))
+ 
+
+
+
+
+```

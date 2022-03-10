@@ -39,7 +39,7 @@ COIdata <- read.csv(here("Output","combined_species_tables","20220210_COI.csv"))
 COIdata <- read.csv(here("Output","dada2_output","20220210.combined.COI.ASV.table.csv"))
 
 COI <- COIdata %>% 
-  select(-X) %>% 
+  #select(-X) %>% 
   #select(-Locus) %>% 
   separate(Sample_name, into=c("Marker","Date","Creek","Site","Bio_Rep","extra"), extra="warn", remove=FALSE) %>% 
   filter(is.na(extra)) %>% select(-extra) %>% # remove the "Barnes Up2 old" sample - shouldn't normally need this
@@ -77,7 +77,7 @@ COI_kangaroo_in_samples <- COI %>%
 
 bysite <- COI %>% 
   group_by(Date, Creek, Site) %>%
-  count(Hash)
+  tally(Hash)
   #count(species)
 
 asv_in_1 <- bysite %>% 
@@ -202,11 +202,12 @@ Biological replicates really don't match up well. So do things even cluster by c
 
 coi.asv.for.nmds <- COI %>% 
   #select(-Locus) %>% 
-  select(c(Sample_name,species,tot)) %>% 
-  #pivot_wider(names_from = Sample_name, values_from = nReads) %>%
-  pivot_wider(names_from = Sample_name, values_from = tot) %>% 
-  #column_to_rownames(var="Hash")
-  column_to_rownames(var="species")
+  #select(c(Sample_name,species,tot)) %>% 
+  select(c(Sample_name,species,nReads)) %>%
+  pivot_wider(names_from = Sample_name, values_from = nReads) %>%
+  #pivot_wider(names_from = Sample_name, values_from = tot) %>% 
+  column_to_rownames(var="Hash")
+  #column_to_rownames(var="species")
 
 coi.asv.for.nmds[is.na(coi.asv.for.nmds)] <- 0
   
