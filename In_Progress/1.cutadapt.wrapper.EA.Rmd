@@ -18,7 +18,6 @@ This script is to remove primers via Cutadapt. Input of this file is fastq files
 ## R set up packages and file paths, etc.
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 library(here)
 library(tidyverse)
 ```
@@ -30,7 +29,7 @@ Note that the input and output files are too big to be on Github so you *must* h
 ```{r setup2}
 
 ## CHANGE THESE FOR EACH RUN 
-run.num = 5
+run.num = 7
 
 # probably don't need to change this, leave at 100 unless you have an issue
 minlength = 100
@@ -101,6 +100,6 @@ Run the bash script via R to actually use cutadapt
 *IMPORTANT* won't work unless manually put in full file path to params.txt file.
 
 ```{bash}
-bash test.bash.sh "/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run5_20220228/params.txt"
+bash test.bash.sh "/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run7_20220314/params.txt"
 ```
 

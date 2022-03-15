@@ -1,0 +1,47 @@
+---
+title: "simple_up_down"
+author: "Eily Allan"
+date: "3/10/2022"
+output: html_document
+---
+
+Simply looking at upstream vs. downstream starting with 12S data - both markers combined - species level- use # reads - drop padden up 5.
+
+```{r set up}
+library(here)
+library(tidyverse)
+library(ggplot2)
+library(mvabund)
+
+mimam <- read.csv(here("Output","combined_species_tables","20220210_MiMammal.csv"))
+mifish <- read.csv(here("Output","combined_species_tables","20220210_MiFish.csv"))
+combo <- rbind(mimam,mifish)
+```
+
+Combine reads by species 
+
+```{r data wrangle}
+df <- combo %>% 
+  filter(!str_detect(Sample_name,"Kangaroo")) %>% # remove kangaroo 
+  separate(Sample_name, into=c("marker","date","creek","site","bio_rep"), remove = TRUE) %>%  # separate sample names 
+  filter(site != "Up5") %>% # for now, just look at padden down and padden up 11 (drop padden up 5)
+  group_by(date,creek,site,species) %>% 
+  summarize(totreads = sum(tot)) %>% # sum reads per species
+  mutate(creek = recode(creek, "1Prt" = "Portage", "2Brn" = "Barnes", "3Chk" = "Chuckanut", "4Pad" = "Padden", "5Sqm" = "Squalicum")) %>% 
+  mutate(site = recode(site, "Up11" = "Up")) #change names so all up/down
+
+# warning is because some have TR afterwards (technical replicates)
+```
+
+Try multivariate glm 
+
+```{r multivariate glm}
+df.pivot <- df %>% 
+  unite("Sample_name", c("date", "creek","site"),sep=".", remove = T) %>%  
+  select(c(Sample_name,class,totreads)) %>% 
+  #pivot_wider(names_from = Sample_name, values_from = nReads) %>%
+  pivot_wider(names_from = Sample_name, values_from = totreads) %>% 
+  #column_to_rownames(var="Hash")
+  column_to_rownames(var="class")
+
+```

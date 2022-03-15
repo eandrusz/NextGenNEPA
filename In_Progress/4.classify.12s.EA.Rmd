@@ -6,13 +6,13 @@ output: html_document
 params: 
   folder: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/
   run:
-    value: 5
+    value: 7
   Hash_key:
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/dada2_output/run5_20220226/MiFish/hash_key.csv
+    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/dada2_output/run7_20220314/MiMammal/hash_key.csv
   ASVs: 
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/dada2_output/run5_20220226/MiFish/ASV_table.csv
+    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/dada2_output/run7_20220314/MiMammal/ASV_table.csv
   previous_good_effort: 
-    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/classification_output/MiFish.all.gs.previous.hashes.annotated.rds
+    value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/classification_output/MiFish.all.good.previous.hashes.annotated.rds
   previous_effort: 
     value: /Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/classification_output/MiFish.all.previous.hashes.annotated.rds
 ---
@@ -38,7 +38,7 @@ knitr::opts_knit$set(root.dir = params$folder)
 This code is for 12S - but either MiFish or MiMammal because we use the same classifier for both. 
 
 ```{r which 12s marker}
-marker <- "MiFish"
+marker <- "MiMammal"
 ```
 
 ## Load libraries and set file paths, etc.
@@ -204,10 +204,10 @@ combined.taxtable <- tax.table(combined)
 
 # so here we are going to change the file path - and the file name to say "all.previous.hashes" - and let's also add the date on the end of the file name so we know when it was last updated - this will be slightly annoying later when we have to change the file name when we read in the classifications, but probably worth it so we keep track of things
 # save it again as an rds and then also as a csv - and tax table
-saveRDS(combined, file=paste0(here("Output","classification_output"),"/",format(Sys.Date(), "%Y%m%d"), ".", params$marker,".all.previous.hashes.annotated.rds"))
-combined <- readRDS(file=paste0(here("Output","classification_output"),"/",format(Sys.Date(), "%Y%m%d"), ".", params$marker,".all.previous.hashes.annotated.rds"))
-write.csv(combined, file=paste0(here("Output","classification_output"),"/",format(Sys.Date(), "%Y%m%d"), ".", params$marker,".all.previous.hashes.annotated.csv"))
-write.csv(combined.taxtable,file=paste0(here("Output","classification_output"),"/",format(Sys.Date(), "%Y%m%d"), ".", params$marker,"combined.tax.table.csv"))
+saveRDS(combined, file=paste0(here("Output","classification_output"),"/",params$marker,".all.previous.hashes.annotated.rds"))
+combined <- readRDS(file=paste0(here("Output","classification_output"),"/", params$marker,".all.previous.hashes.annotated.rds"))
+write.csv(combined, file=paste0(here("Output","classification_output"),"/", params$marker,".all.previous.hashes.annotated.csv"))
+write.csv(combined.taxtable,file=paste0(here("Output","classification_output"),"/", params$marker,"combined.tax.table.csv"))
 
 ```
 
@@ -222,10 +222,10 @@ combined.good.taxtable <- tax.table(combined.good)
 
 # so here we are going to change the file path - and the file name to say "all.previous.hashes" - and let's also add the date on the end of the file name so we know when it was last updated - this will be slightly annoying later when we have to change the file name when we read in the classifications, but probably worth it so we keep track of things
 # save it again as an rds and then also as a csv - and tax table
-saveRDS(combined.good, file=paste0(here("Output","classification_output"),"/",format(Sys.Date(), "%Y%m%d"), ".", params$marker,".all.good.previous.hashes.annotated.rds"))
-combined.good <- readRDS(file=paste0(here("Output","classification_output"),"/",format(Sys.Date(), "%Y%m%d"), ".", params$marker,".all.good.previous.hashes.annotated.rds"))
-write.csv(combined.good, file=paste0(here("Output","classification_output"),"/",format(Sys.Date(), "%Y%m%d"), ".", params$marker,".all.good.previous.hashes.annotated.csv"))
-write.csv(combined.good.taxtable,file=paste0(here("Output","classification_output"),"/",format(Sys.Date(), "%Y%m%d"), ".", params$marker,"combined.good.tax.table.csv"))
+saveRDS(combined.good, file=paste0(here("Output","classification_output"),"/", params$marker,".all.good.previous.hashes.annotated.rds"))
+combined.good <- readRDS(file=paste0(here("Output","classification_output"),"/", params$marker,".all.good.previous.hashes.annotated.rds"))
+write.csv(combined.good, file=paste0(here("Output","classification_output"),"/", params$marker,".all.good.previous.hashes.annotated.csv"))
+write.csv(combined.good.taxtable,file=paste0(here("Output","classification_output"),"/", params$marker,"combined.good.tax.table.csv"))
 
 ```
 
