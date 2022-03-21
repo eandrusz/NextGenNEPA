@@ -62,8 +62,12 @@ COI4 <- COI4 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") 
 COI6 <- read.csv(COI.asvs[5])
 COI6$Sample_name <- as.character(COI6$Sample_name)
 COI6 <- COI6 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") %>% select(Sample_ID,Locus,Hash,nReads) %>% rename("Sample_name" = "Sample_ID")
+COI7 <- read.csv(COI.asvs[7])
+COI7 <- COI7 %>% 
+  separate(Sample_name, into=c("marker","date","creek","site","bio_rep"), remove = TRUE) %>%  # separate sample names 
+  unite("Sample_name", c("marker","date","creek","site","bio_rep"), sep=".", remove=TRUE)
 
-COI.ASV.table <- bind_rows(COI.ASV.table, COI1, COI4, COI6)
+COI.ASV.table <- bind_rows(COI.ASV.table, COI1, COI4, COI6, COI7)
 
 COI.hash.key <- bind_rows(map(COI.hashes, read_csv))
 COI.hash.key <- COI.hash.key %>% 
@@ -85,8 +89,13 @@ MiFish5 <- read.csv(MiFish.asvs[5])
 MiFish6 <- read.csv(MiFish.asvs[6])
 MiFish6$Sample_name <- as.character(MiFish6$Sample_name)
 MiFish6 <- MiFish6 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") %>% select(Sample_ID,Locus,Hash,nReads) %>% rename("Sample_name" = "Sample_ID")
+MiFish7 <- read.csv(MiFish.asvs[7])
+MiFish7 <- MiFish7 %>% 
+  separate(Sample_name, into=c("marker","date","creek","site","bio_rep"), remove = TRUE) %>%  # separate sample names 
+  unite("Sample_name", c("marker","date","creek","site","bio_rep"), sep=".", remove=TRUE)
+  
 
-MiFish.ASV.table <- bind_rows(MiFish.ASV.table, MiFish4, MiFish5, MiFish6)
+MiFish.ASV.table <- bind_rows(MiFish.ASV.table, MiFish4, MiFish5, MiFish6, MiFish7)
 
 MiFish.hash.key <- bind_rows(map(MiFish.hashes, read_csv))
 MiFish.hash.key <- MiFish.hash.key %>% 
@@ -110,8 +119,13 @@ MiMammal5 <- read.csv(MiMammal.asvs[5])
 MiMammal6 <- read.csv(MiMammal.asvs[6])
 MiMammal6$Sample_name <- as.character(MiMammal6$Sample_name)
 MiMammal6 <- MiMammal6 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") %>% select(Sample_ID,Locus,Hash,nReads) %>% rename("Sample_name" = "Sample_ID")
+MiMammal7 <- read.csv(MiMammal.asvs[7])
+MiMammal7 <- MiMammal7 %>% 
+  separate(Sample_name, into=c("marker","date","creek","site","bio_rep"), remove = TRUE) %>%  # separate sample names 
+  unite("Sample_name", c("marker","date","creek","site","bio_rep"), sep=".", remove=TRUE)
 
-MiMammal.ASV.table <- bind_rows(MiMammal.ASV.table, MiMammal1, MiMammal4, MiMammal5, MiMammal6)
+
+MiMammal.ASV.table <- bind_rows(MiMammal.ASV.table, MiMammal1, MiMammal4, MiMammal5, MiMammal6, MiMammal7)
 
 MiMammal.hash.key <- bind_rows(map(MiMammal.hashes, read_csv))
 MiMammal.hash.key <- MiMammal.hash.key %>% 

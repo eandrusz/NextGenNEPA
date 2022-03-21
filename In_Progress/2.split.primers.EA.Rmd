@@ -23,7 +23,7 @@ Note that the input and output files are too big to be on Github so you *must* h
 
 ```{r setup2}
 # what run is this
-run.num = 5
+run.num = 1
 
 # NOTE HAVE TO HARDCODE becuase files are too big to be on github 
 # also note that if you run this on a different day than when you did cutadapt change to the actual date rather than sys.date()

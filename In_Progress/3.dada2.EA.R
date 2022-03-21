@@ -25,13 +25,13 @@ library (kableExtra)
 
 ## Set parameters - run number, marker, etc. - NEEDS HUMAN INPUT
 ### CHANGE EACH TIME - run number and marker 
-run.num = 5
-marker = "COI"
+run.num = 1
+marker = "Ac16S"
 
 ### CHANGE EACH TIME: THE NO PRIMER FOLDER MUST BE HARDCODED TO LOCAL HARD DRIVE BECAUSE IT IS TOO BIG FOR GITHUB
 # also note that if you run this on a different day than when you did cutadapt change to the actual date rather than sys.date()
 #noprimerfolder = paste0("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run",run.num,"_",format(Sys.Date(), "%Y%m%d"), "/noprimers/", marker)
-noprimerfolder = paste0("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run",run.num,"_","20220226", "/noprimers/", marker)
+noprimerfolder = paste0("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run",run.num,"_","20220321", "/noprimers/", marker)
 
 ### set parameters that don't change usually
 hash = TRUE  # you rarely do NOT want to hash
@@ -103,10 +103,8 @@ ggsave(file.path(output.dir,"R2_aggregate.png"))
 
 ## REMOVE ANY BAD SAMPLES - if the aggregate *doesn't run*, some files are bad in there so we need to remove them
 ## removed any samples removed during filtering so edit metadata file to remove it
-#Locus_MiFish_MiFish-0621-4Pad-Up11-3_S45_L001_R1_001.fastq)
-#Locus_MiMammal_MiMammal-0721-4Pad-Up11-2_S19_L001_R1_001.fastq
-#Locus_Ac16S_Ac16S-PadUp11-4-0321_S113_F1_filt.fastq.gz
-#sample.metadata <- sample.metadata[-5,]
+# Locus_Ac16S_Ac16S-PadUp11-4-0321_S109
+#sample.metadata <- sample.metadata[-1,]
 
 
 ## CHANGE TRIMMING LENGTHS IF YOU NEED TO AFTER LOOKING AT Q SCORE PLOT - REQUIRES HUMAN INPUT

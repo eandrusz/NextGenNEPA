@@ -28,7 +28,7 @@ library(taxonomizr)
 ## REQUIRES HUMAN INPUT 
 #marker <- "MiFish"
 marker <- "MiMammal"
-run.num <- "6"
+run.num <- "7"
 
 # manually change file path because of the date in the folder for the dada2 output 
 Hash_key <- here("Output", "dada2_output", "run6_20220127", marker, "hash_key.csv")

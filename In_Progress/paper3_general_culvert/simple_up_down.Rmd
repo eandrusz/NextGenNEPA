@@ -13,8 +13,8 @@ library(tidyverse)
 library(ggplot2)
 library(mvabund)
 
-mimam <- read.csv(here("Output","combined_species_tables","20220210_MiMammal.csv"))
-mifish <- read.csv(here("Output","combined_species_tables","20220210_MiFish.csv"))
+mimam <- read.csv(here("Output","combined_species_tables","20220314_MiMammal.csv"))
+mifish <- read.csv(here("Output","combined_species_tables","20220314_MiFish.csv"))
 combo <- rbind(mimam,mifish)
 ```
 

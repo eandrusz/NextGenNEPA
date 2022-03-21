@@ -31,8 +31,8 @@ We probably just want "good" annotations, which is family level annotations for 
 
 # Read the merged ASV tables
 COI.ASV.table <- read_csv(paste0(here("Output", "dada2_output", "20220210.combined.COI.ASV.table.csv")))
-MiFish.ASV.table <- read_csv(paste0(here("Output", "dada2_output", "20220210.combined.MiFish.ASV.table.csv")))
-MiMammal.ASV.table <- read_csv(paste0(here("Output", "dada2_output", "20220210.combined.MiMammal.ASV.table.csv")))
+MiFish.ASV.table <- read_csv(paste0(here("Output", "dada2_output", "20220314.combined.MiFish.ASV.table.csv")))
+MiMammal.ASV.table <- read_csv(paste0(here("Output", "dada2_output", "20220314.combined.MiMammal.ASV.table.csv")))
 
 # Read in the classification output for each run 
 # the files written to the general folder (not run specific) should have everything classified from all runs because they are our "databases" to use for future runs - we want to use the "DATE.MARKER.all.good.previous.hashes.annotated.rds" file 
@@ -71,7 +71,7 @@ MiMammal.by.species <- MiMammal.ASV.yes.taxon %>%
   group_by(Sample_name, class, species) %>% # for each sample that has multiple asvs that assign to the same taxa...
   summarise(tot = sum(nReads))
 
-write.csv(MiMammal.by.species, here("Output","combined_species_tables","20220210_MiMammal.csv"), row.names = FALSE)
+write.csv(MiMammal.by.species, here("Output","combined_species_tables","20220314_MiMammal.csv"), row.names = FALSE)
 ```
 
 ```{r MiFish}
@@ -95,7 +95,7 @@ MiFish.by.species <- MiFish.ASV.yes.taxon %>%
   group_by(Sample_name, class, species) %>% # for each sample that has multiple asvs that assign to the same taxa...
   summarise(tot = sum(nReads))
 
-write.csv(MiFish.by.species, here("Output","combined_species_tables","20220210_MiFish.csv"), row.names = FALSE)
+write.csv(MiFish.by.species, here("Output","combined_species_tables","20220314_MiFish.csv"), row.names = FALSE)
 
 ```
 
