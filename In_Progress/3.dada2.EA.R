@@ -26,12 +26,14 @@ library (kableExtra)
 ## Set parameters - run number, marker, etc. - NEEDS HUMAN INPUT
 ### CHANGE EACH TIME - run number and marker 
 run.num = 1
-marker = "Ac16S"
+marker = "COI"
 
 ### CHANGE EACH TIME: THE NO PRIMER FOLDER MUST BE HARDCODED TO LOCAL HARD DRIVE BECAUSE IT IS TOO BIG FOR GITHUB
 # also note that if you run this on a different day than when you did cutadapt change to the actual date rather than sys.date()
 #noprimerfolder = paste0("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run",run.num,"_",format(Sys.Date(), "%Y%m%d"), "/noprimers/", marker)
 noprimerfolder = paste0("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run",run.num,"_","20220321", "/noprimers/", marker)
+noprimerfolder = paste0("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/rs_20220404", "/noprimers/", marker)
+
 
 ### set parameters that don't change usually
 hash = TRUE  # you rarely do NOT want to hash
@@ -58,6 +60,9 @@ if(marker == "MiFish" | marker == "MiMammal") {
 
 ### set up output file paths
 output.folder = paste0(here("Output","dada2_output"),"/run",run.num,"_",format(Sys.Date(), "%Y%m%d"), "/", marker)
+output.folder = paste0(here("Output","dada2_output"),"/rs_",format(Sys.Date(), "%Y%m%d"), "/", marker)
+
+
 # Check if output directory exists - if not create as a subfolder of input dir
 if(!dir.exists(file.path(output.folder))){
   dir.create(path = file.path(output.folder),recursive = T)
@@ -104,7 +109,7 @@ ggsave(file.path(output.dir,"R2_aggregate.png"))
 ## REMOVE ANY BAD SAMPLES - if the aggregate *doesn't run*, some files are bad in there so we need to remove them
 ## removed any samples removed during filtering so edit metadata file to remove it
 # Locus_Ac16S_Ac16S-PadUp11-4-0321_S109
-#sample.metadata <- sample.metadata[-1,]
+sample.metadata <- sample.metadata[-24,]
 
 
 ## CHANGE TRIMMING LENGTHS IF YOU NEED TO AFTER LOOKING AT Q SCORE PLOT - REQUIRES HUMAN INPUT

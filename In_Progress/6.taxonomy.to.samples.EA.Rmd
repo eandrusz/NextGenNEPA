@@ -30,7 +30,7 @@ We probably just want "good" annotations, which is family level annotations for 
 ```{r read in files}
 
 # Read the merged ASV tables
-COI.ASV.table <- read_csv(paste0(here("Output", "dada2_output", "20220210.combined.COI.ASV.table.csv")))
+COI.ASV.table <- read_csv(paste0(here("Output", "dada2_output", "20220401.combined.COI.ASV.table.csv")))
 MiFish.ASV.table <- read_csv(paste0(here("Output", "dada2_output", "20220314.combined.MiFish.ASV.table.csv")))
 MiMammal.ASV.table <- read_csv(paste0(here("Output", "dada2_output", "20220314.combined.MiMammal.ASV.table.csv")))
 
@@ -40,7 +40,7 @@ COI.annotations <- readRDS(file=paste0(here("Output","classification_output"),"/
 MiFish.annotations <- readRDS(file=paste0(here("Output","classification_output"),"/MiFish.all.good.previous.hashes.annotated.rds"))
 MiMammal.annotations <- readRDS(file=paste0(here("Output","classification_output"),"/MiMammal.all.good.previous.hashes.annotated.rds"))
 
-all.metadata <- read.csv(here("Input", "sequencing_metadata_files", "master_sequencing_datasheet_20211026.csv"))
+all.metadata <- read.csv(here("Input", "sequencing_metadata_files", "master_sequencing_datasheet_20220317.csv"))
 
 ```
 
@@ -103,12 +103,14 @@ write.csv(MiFish.by.species, here("Output","combined_species_tables","20220314_M
 
 # this taxonomy file is the "good" annotations to species and genus level so let's get rid of the other junk for right now 
 COI.simple.annotations <- COI.annotations %>% 
-  select(representative, taxon, class, order, family, genus, species) %>% 
+  #select(representative, taxon, class, order, family, genus, species) %>% 
   rename(Hash = representative)
 
 COI.ASV.taxon <- COI.ASV.table %>% 
   left_join(COI.simple.annotations, by = "Hash") %>% 
-  select(-Locus)
+  select(-Locus) %>% 
+  rename(Sample_ID = Sample_name) %>% 
+  left_join(all.metadata, by = "Sample_ID")
 
 # and same - keep things that do have an annotation (reminder to species or genus level so "good" annotation)
 COI.ASV.yes.taxon <- COI.ASV.taxon[! is.na(COI.ASV.taxon$taxon),]
@@ -117,9 +119,13 @@ COI.ASV.yes.taxon <- COI.ASV.taxon[! is.na(COI.ASV.taxon$taxon),]
 COI.by.species <- COI.ASV.yes.taxon %>% 
   select(-Hash) %>% # we don't need the hash identifier anymore
   #filter(species != "") %>% 
-  group_by(Sample_name, class, order, family, genus, species) %>% # for each sample that has multiple asvs that assign to the same taxa...
-  summarise(tot = sum(nReads))
+  group_by(Sample_ID, class, order, family, genus, species) %>% # for each sample that has multiple asvs that assign to the same taxa...
+  summarise(tot = sum(nReads)) %>% 
+  filter(!str_detect(Sample_ID, "MBT")) %>% 
+  filter(!str_detect(Sample_ID, "HIP")) %>% 
+  filter(!str_detect(Sample_ID, "Delta"))
 
-write.csv(COI.by.species, here("Output","combined_species_tables","20220210_COI.csv"), row.names = FALSE)
+write.csv(COI.by.species, here("Output","combined_species_tables","20220401_COI.csv"), row.names = FALSE)
 
+write.csv(COI.by.species, "/Users/elizabethandruszkiewicz/Desktop/COI.for.helen.csv", row.names=FALSE)
 ```

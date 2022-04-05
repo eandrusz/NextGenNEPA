@@ -100,6 +100,6 @@ Run the bash script via R to actually use cutadapt
 *IMPORTANT* won't work unless manually put in full file path to params.txt file.
 
 ```{bash}
-bash test.bash.sh "/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run1_20220321/params.txt"
+bash test.bash.sh "/Users/elizabethandruszkiewicz/Downloads/Miseq_712_Annette_41708_extracted/cutadaptoutput/params.txt"
 ```
 

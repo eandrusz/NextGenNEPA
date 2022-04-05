@@ -29,7 +29,7 @@ The ASV tables and hash keys come from the output folder where each run has a su
 all.asvs <- list.files(path = here("Output","dada2_output"), pattern = "^ASV_table.csv", recursive = T, full.names = T)
 all.hashes <- list.files(path = here("Output","dada2_output"), pattern = "^Hash_key.csv", recursive = T, full.names = T,ignore.case = T)
 
-all.metadata <- read.csv(here("Input", "sequencing_metadata_files", "master_sequencing_datasheet_20211026.csv"))
+all.metadata <- read.csv(here("Input", "sequencing_metadata_files", "master_sequencing_datasheet_20220317.csv"))
 
 # now sort ASVs and hashes by marker
 COI.asvs <- str_subset(all.asvs, "COI")
@@ -52,22 +52,30 @@ Now let's actually start pulling ASV and hash files together and merging them al
 ```{r pull and merge ASV tables and hashes COI}
 
 # coi run 1 has sample as NGNX rather than sample name 
-COI.ASV.table <- bind_rows(map(COI.asvs[2:3], read_csv))
 COI1 <- read.csv(COI.asvs[1])
 COI1$Sample_name <- as.character(COI1$Sample_name)
 COI1 <- COI1 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") %>% select(Sample_ID,Locus,Hash,nReads) %>% rename("Sample_name" = "Sample_ID")
+
+COI2 <- read.csv(COI.asvs[2])
+
+COI3 <- read.csv(COI.asvs[3])
+
 COI4 <- read.csv(COI.asvs[4])
 COI4$Sample_name <- as.character(COI4$Sample_name)
 COI4 <- COI4 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") %>% select(Sample_ID,Locus,Hash,nReads) %>% rename("Sample_name" = "Sample_ID")
-COI6 <- read.csv(COI.asvs[5])
+
+COI5 <- read.csv(COI.asvs[5])
+
+COI6 <- read.csv(COI.asvs[6])
 COI6$Sample_name <- as.character(COI6$Sample_name)
 COI6 <- COI6 %>% select(-Locus) %>% left_join(all.metadata, by = "Sample_name") %>% select(Sample_ID,Locus,Hash,nReads) %>% rename("Sample_name" = "Sample_ID")
+
 COI7 <- read.csv(COI.asvs[7])
 COI7 <- COI7 %>% 
   separate(Sample_name, into=c("marker","date","creek","site","bio_rep"), remove = TRUE) %>%  # separate sample names 
   unite("Sample_name", c("marker","date","creek","site","bio_rep"), sep=".", remove=TRUE)
 
-COI.ASV.table <- bind_rows(COI.ASV.table, COI1, COI4, COI6, COI7)
+COI.ASV.table <- bind_rows(COI1, COI2, COI3, COI4, COI5, COI6, COI7)
 
 COI.hash.key <- bind_rows(map(COI.hashes, read_csv))
 COI.hash.key <- COI.hash.key %>% 
