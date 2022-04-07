@@ -1,0 +1,211 @@
+---
+title: "simple_up_down"
+author: "Eily Allan"
+date: "3/10/2022"
+output: html_document
+---
+
+Simply looking at upstream vs. downstream starting with 12S data - both markers combined - species level- use # reads - drop padden up 5.
+
+```{r set up}
+library(here)
+library(tidyverse)
+library(ggplot2)
+library(vegan)
+library(mvabund)
+
+mimam <- read.csv("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/combined_species_tables/20220314_MiMammal.csv")
+mifish <- read.csv("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/combined_species_tables/20220314_MiFish.csv")
+combo <- rbind(mimam,mifish)
+```
+
+Combine reads by species 
+
+```{r data wrangle}
+df <- combo %>% 
+  filter(!str_detect(Sample_name,"Kangaroo")) %>% # remove kangaroo 
+  separate(Sample_name, into=c("marker","date","creek","site","bio_rep"), remove = TRUE) %>%  # separate sample names 
+  filter(site != "Up11") %>% # for now, just look at padden down and padden up 11 (drop padden up 5)
+  group_by(date,creek,site,species) %>% 
+  summarize(totreads = sum(tot)) %>% # sum reads per species
+  mutate(creek = recode(creek, "1Prt" = "Portage", "2Brn" = "Barnes", "3Chk" = "Chuckanut", "4Pad" = "Padden", "5Sqm" = "Squalicum")) %>% 
+  mutate(site = recode(site, "Up5" = "Up")) #change names so all up/down
+
+df.sep.bio <- combo %>% 
+  filter(!str_detect(Sample_name,"Kangaroo")) %>% # remove kangaroo 
+  filter(!str_detect(Sample_name,"TR")) %>% # remove any extra technical replicates (so each site only has 3) 
+  separate(Sample_name, into=c("marker","date","creek","site","bio_rep"), remove = TRUE) %>%  # separate sample names 
+  filter(site != "Up5") %>% # for now, just look at padden down and padden up 11 (drop padden up 5)
+  #group_by(date,creek,site,species, bio_rep) %>% 
+  #summarize(totreads = sum(tot)) %>% # sum reads per species
+  mutate(creek = recode(creek, "1Prt" = "Portage", "2Brn" = "Barnes", "3Chk" = "Chuckanut", "4Pad" = "Padden", "5Sqm" = "Squalicum")) %>% 
+  mutate(site = recode(site, "Up11" = "Up")) #change names so all up/down
+
+# warning is because some have TR afterwards (technical replicates)
+```
+
+Pivot to see what it looks like 
+
+```{r pivot it}
+df.pivot <- df %>% 
+  unite("Sample_name", c("date", "creek","site"),sep=".", remove = T) %>%  
+   pivot_wider(names_from = Sample_name, values_from = totreads) 
+
+```
+
+Ok don't even know where to start.. let's go with richness up vs. downstream and then plot distribution separated by creek... positive numbers are that richness is higher upstream and negative are that richness is higher downstream (aka there is a barrier blocking things from getting upstream)
+
+```{r richness up down distributions}
+rich <- df %>% 
+  mutate(pa=1) %>% 
+  group_by(date,creek,site) %>% 
+  mutate(rich = sum(pa)) %>% 
+  select(date,creek,site,rich) %>% 
+  distinct() 
+
+delta.rich <- rich %>% 
+  group_by(date,creek) %>% 
+  pivot_wider(names_from = site, values_from = rich) %>% 
+  mutate(deltarich = Up - Dn) 
+
+delta.rich.plot <- ggplot(delta.rich, aes(x=date, y=deltarich, color=as.factor(creek))) +
+  geom_point() +
+  geom_hline(yintercept=0) +
+  theme_bw() +
+  facet_wrap(~ creek) +
+  labs(y="Species Richness Upstream - Species Richness Downstream", x= "Month", title="12S MiFish/MiMammal (Combined)", color = "Creek")
+
+### now with biological replicates separate and plot as box plot
+
+rich.sep.bio <- df.sep.bio %>% 
+  mutate(pa=1) %>% 
+  group_by(date,creek,site,bio_rep) %>% 
+  mutate(rich = sum(pa)) %>% 
+  select(date,creek,site,bio_rep,rich) %>% 
+  distinct() 
+
+delta.rich.sep.bio <- rich.sep.bio %>% 
+  #unite("site_biorep", c(site,bio_rep), sep="-") %>% 
+  group_by(date,creek,bio_rep) %>% 
+  pivot_wider(names_from = site, values_from = rich) %>% 
+  mutate(deltarich = Up - Dn) 
+
+delta.rich.plot.sep.bio <- ggplot(delta.rich.sep.bio, aes(x=date, y=deltarich, color=as.factor(creek))) +
+  geom_point() +
+  geom_hline(yintercept=0) +
+  theme_bw() +
+  facet_wrap(~ creek) +
+  labs(y="Species Richness Upstream - Species Richness Downstream", x= "Month", title="12S MiFish/MiMammal (Combined)", color = "Creek")
+
+
+```
+
+Damn.. biological replicates don't give the same species richness really at all - let's try plotting for each creek not the delta but a box plot of up and down per month. 
+
+```{r richnesss not delta with bio replicates}
+
+rich.box.plots <- ggplot(rich.sep.bio, aes(x=date, y=rich, fill=as.factor(site))) +
+  geom_boxplot() +
+  theme_bw() +
+  facet_wrap(~ creek) +
+  labs(y="Species Richness", x= "Month", title="12S MiFish/MiMammal (Combined)", fill = "Site")
+
+
+```
+
+If we combine all biological replicates, we can look at each species and whether they are found only up, only down, or both
+
+```{r each species site up down or both}
+species.by.site <- df %>% 
+  mutate(pa=1) %>% 
+  group_by(date,creek,species) %>% 
+  mutate(sitekey = sum(pa)) %>% 
+  mutate(plotsite = case_when(sitekey == 2 ~ "Down and Up",
+                          sitekey == 1 & site == "Dn" ~ "Down only",
+                          sitekey == 1 & site == "Up" ~ "Up only"))
+
+# plot by creek 
+species.by.site %>% 
+  filter(creek=="Chuckanut")  %>% 
+  ggplot(aes(date, species, fill=as.factor(plotsite), width=0.7, height=0.7)) + 
+  geom_tile(size=1) +
+  theme_bw() +
+  labs(x="Month", y="Species", fill = "Sites Present") +
+  facet_wrap(~creek) +
+  scale_fill_manual(values=c("#000000","#99CCCC","#9999CC")) +
+  scale_x_discrete(guide = guide_axis(angle = 45))
+  
+```
+
+Let's try putting beta diversity on the y axis instead of richness 
+
+Here, we should probably sum biological replicates per site (?)
+
+```{r beta diversity plots}
+# to use vegan, we want species as COLUMNS and sites as ROWS
+df.beta <- t(df.pivot)
+colnames(df.beta) <- df.beta[1,]
+df.beta <- df.beta[-1, ] 
+df.beta[is.na(df.beta)] <- 0
+df.beta <- matrix(as.numeric(df.beta),    # Convert to numeric matrix
+                  ncol = ncol(df.beta))
+
+
+H <- diversity(df.beta)
+J <- H/log(specnumber(df.beta))
+
+quantile(rowSums(df.beta))
+Srar <- rarefy(df.beta, min(rowSums(df.beta)))
+
+# Fisher
+k <- sample(nrow(df.beta), 1)
+fishveg <- fisherfit(df.beta[k,])
+confint(fishveg)
+
+# Preston
+prestondistr(df.beta[k,])
+
+# Rank Abundance Distribution 
+rad <- radfit(df.beta[k,])
+
+# Species Accumulation 
+sac <- specaccum(df.beta)
+plot(sac, ci.type="polygon", ci.col="yellow")
+ncol(df.beta)/mean(specnumber(df.beta)) - 1
+
+# Sorensen index of beta diversity
+beta <- vegdist(df.beta, binary=TRUE)
+mean(beta)
+#betadiver(help=TRUE) ## SO MANY TO CHOOSE FROM 
+
+
+species.jaccard <- vegdist(df.beta, "jaccard", na.rm = TRUE)
+month <- rep(3:8, each=10)
+creek <- rep(rep(c("Portage","Barnes","Chuckanut","Padden","Squalicum"), each = 2), times=6)
+site <- rep(c("Down","Up"), times = 30)
+
+species.disp <- betadisper(species.jaccard, group = creek)
+species.disp.anova <- anova(species.disp) 
+species.disp.anova
+
+# permanova
+species.adonis <- adonis(species.jaccard ~ creek*month)
+
+
+```
+
+
+ANOVA with repeated measure (time series)
+see: https://www.datanovia.com/en/lessons/repeated-measures-anova-in-r/
+
+```{r anova repeated measures}
+library(rstatix)
+
+rich %>% 
+  group_by(date) %>% 
+  get_summary_stats(rich, type = "mean_sd")
+
+```
+
+
+

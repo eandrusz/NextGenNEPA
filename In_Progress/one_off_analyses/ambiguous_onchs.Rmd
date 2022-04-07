@@ -1,0 +1,47 @@
+---
+title: "ambiguous_onchs"
+author: "Eily Allan"
+date: "12/6/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(here)
+library(tidyverse)
+library(vegan)
+library(reshape2)
+
+```
+
+```{r input}
+MiFish.ASV.table <- read_csv(paste0(here("Output", "dada2_output", "20211122.combined.MiFish.ASV.table.csv")))
+MiMammal.ASV.table <- read_csv(paste0(here("Output", "dada2_output", "20211122.combined.MiMammal.ASV.table.csv")))
+
+MiFish.annotations <- readRDS(file=paste0(here("Output","classification_output"),"/MiFish.all.gs.previous.hashes.annotated.rds"))
+MiMammal.annotations <- readRDS(file=paste0(here("Output","classification_output"),"/MiMammal.all.gs.previous.hashes.annotated.rds"))
+
+MiFish.blast <- readRDS(file=paste0(here("Output","classification_output"),"/MiFish.blast.previous.hashes.annotated.rds"))
+MiFish.hash.key <- read.csv(file=paste0(here("Output","dada2_output"),"/20211122.combined.MiFish.hash.key.csv"))
+
+all.metadata <- read.csv(here("Input", "sequencing_metadata_files", "master_sequencing_datasheet_20211026.csv"))
+```
+
+```{r find ASVs to onchorynchus and no species}
+# find ASVs that only go to onchorynchus
+
+mf.onc <- MiFish.annotations %>% 
+  filter(genus == "Oncorhynchus") %>% 
+  filter(species == "")
+# so 39 ASVs are just to genus oncohynchus
+
+# did they come from the insect tree or blast?
+intersect(MiFish.blast$representative, mf.onc$representative)
+# no - so they come from insect tree
+
+# let's pull the sequences and blast them 
+mf.onc.blast <- MiFish.hash.key[which(MiFish.hash.key$Hash %in% mf.onc$representative),]
+  
+
+```
