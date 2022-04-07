@@ -1,0 +1,173 @@
+---
+title: "simple_up_down"
+author: "Eily Allan"
+date: "3/10/2022"
+output: html_document
+---
+
+For each species, build distribution of difference between down and up over time. Use that distribution for all the control creeks. 
+Then put on there your intervention creek and at each time point, figure out the difference between your intervention and the 
+mean of the control creeks. That is your test statistic. Then you can see how that test statistic changes over time. 
+(i.e., C/T * time)
+
+Start with 12S MiFish data - use eDNA index for now - eventually use DNA adundance (after quantitative model)
+
+```{r set up}
+library(here)
+library(tidyverse)
+library(ggplot2)
+library(vegan)
+
+asvs <- read.csv("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/dada2_output/20220210.combined.COI.ASV.table.csv")
+
+annotations <- read.csv("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/classification_output/COI.all.previous.hashes.annotated.csv")
+
+annotations <- readRDS("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Output/classification_output/COI.all.previous.hashes.annotated.RDS")
+
+
+all.metadata <- read.csv("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/Input/sequencing_metadata_files/master_sequencing_datasheet_20211026.csv")
+
+marker <- "COI"
+
+```
+
+Assign taxonomy 
+
+```{r data wrangle}
+df <- asvs %>% 
+  rename(representative = Hash) %>% 
+  left_join(annotations, by = "representative") %>% 
+  rename(Sample_ID = Sample_name) %>% 
+  left_join(all.metadata,by = "Sample_ID") %>% 
+  group_by(Sample_ID) %>% 
+  mutate(sample_read_depth = sum(nReads))
+
+run.depths <- df %>% 
+  group_by(Sequencing.run) %>% 
+  mutate(run_read_depth = sum(nReads)) %>% 
+  select(Sequencing.run, run_read_depth) %>% 
+  distinct()
+
+```
+
+Just look at one species 
+- write this as a function later 
+- and for now just take average # of reads 
+- later go back and do eDNA index (but then also will get in trouble later I think...)
+- eventually want this as number of copies/DNA (after quantitative model)
+
+```{r look at one species}
+
+unique_species <- df %>% select(species)
+unique_species <- unique(unique_species$species)
+
+spec.prop <- function(df,target.tax){
+  
+  spec.df <- df  %>% 
+  mutate(prop.reads = nReads/sample_read_depth) %>% 
+  filter(!str_detect(Sample_ID,"Kangaroo")) %>% # remove kangaroo 
+  filter(!str_detect(Sample_ID,"TR")) %>% # remove technical replicates for now
+  filter(Station != "Up11") %>% # for now, just look at padden down and padden up 5 (drop padden up 11)
+  filter(taxon == target.tax) %>% # just look at clarkii for now
+  group_by(Month.year,Creek,Station) %>% 
+  mutate(mean.prop.reads = mean(prop.reads)) %>% # sum reads per species
+  mutate(Creek = recode(Creek, "1Prt" = "Portage", "2Brn" = "Barnes", "3Chk" = "Chuckanut", "4Pad" = "Padden", "5Sqm" = "Squalicum"))
+
+return(spec.df)
+}
+
+
+```
+
+Now, we want a plot of difference in the # of reads up vs. down as a function of time in control creeks 
+- also go back and make this a function later 
+
+```{r difference up down in control creeks}
+
+delta.spec.prop <- function(df){
+  
+  delta <- df %>% 
+  select(Month.year, Creek, Station, mean.prop.reads) %>% 
+  distinct() %>% 
+  group_by(Month.year,Creek) %>% 
+  pivot_wider(names_from = Station, values_from = mean.prop.reads) %>% 
+  mutate_if(is.numeric, ~replace(., is.na(.), 0)) %>% 
+  mutate(delta = Up - Dn) 
+  
+return(delta)
+}
+
+
+baci.plot <- function(delta.df, target.tax){
+  
+  plot.title <- paste0(target.tax, "- MiFish")
+  
+baci.plot <- delta.df %>% 
+  mutate(creektype = case_when(Creek == "Padden" ~ "Intervention",
+                          Creek != "Padden" ~ "Control")) %>% 
+  ggplot(aes(x=Month.year, y=delta, shape=as.factor(Creek), color=as.factor(creektype))) +
+  geom_point(size=4) +
+  theme_bw() +
+  geom_hline(yintercept = 0) + 
+  scale_shape_manual(values=c(15,16,16,17,18)) +
+  scale_color_manual(values=c("#999999","#660000")) +
+  labs(y="Proportion of reads upstream - downstream", x= "Month", title= plot.title, shape = "Creek", color = "Creek Type")
+
+return(baci.plot)
+}
+
+
+onebigfunction <- function(df,target.tax){
+  
+  spec.df <- df  %>% 
+    mutate(prop.reads = nReads/sample_read_depth) %>% 
+    filter(!str_detect(Sample_ID,"Kangaroo")) %>% # remove kangaroo 
+    filter(!str_detect(Sample_ID,"TR")) %>% # remove technical replicates for now
+    filter(Station != "Up11") %>% # for now, just look at padden down and padden up 5 (drop padden up 11)
+    filter(taxon == target.tax) %>% # just look at clarkii for now
+    group_by(Month.year,Creek,Station) %>% 
+    mutate(mean.prop.reads = mean(prop.reads)) %>% # sum reads per species
+    mutate(Creek = recode(Creek, "1Prt" = "Portage", "2Brn" = "Barnes", "3Chk" = "Chuckanut", "4Pad" = "Padden", "5Sqm" = "Squalicum"))
+  
+  delta.df <- spec.df %>% 
+    select(Month.year, Creek, Station, mean.prop.reads) %>% 
+    distinct() %>% 
+    group_by(Month.year,Creek) %>% 
+    pivot_wider(names_from = Station, values_from = mean.prop.reads) %>% 
+    mutate_if(is.numeric, ~replace(., is.na(.), 0)) %>% 
+    mutate(delta = Up - Dn) 
+  
+  plot.title <- paste0(target.tax, " - ", marker)
+  
+  baci.plot <- delta.df %>% 
+    mutate(creektype = case_when(Creek == "Padden" ~ "Intervention",
+                                 Creek != "Padden" ~ "Control")) %>% 
+    ggplot(aes(x=Month.year, y=delta, shape=as.factor(Creek), color=as.factor(creektype))) +
+    geom_point(size=4) +
+    theme_bw() +
+    geom_hline(yintercept = 0) + 
+    scale_shape_manual(values=c(15,16,16,17,18)) +
+    scale_color_manual(values=c("#999999","#660000")) +
+    labs(y="Proportion of reads upstream - downstream", x= "Month", title= plot.title, shape = "Creek", color = "Creek Type")
+  
+  return(baci.plot)
+}
+  
+```
+
+ITERATE THROUGH ALL SPECIES
+
+```{r iterate all plots for all unique species}
+
+for (i in 37:length(unique_species)) {
+
+  filename1 = paste0("/Users/elizabethandruszkiewicz/Desktop/baci_plots/baci.",marker,".",unique_species[i],".jpeg")
+  onebigfunction(df, unique_species[i])
+  ggsave(filename=filename1)
+  print(i)
+  
+}
+
+```
+
+

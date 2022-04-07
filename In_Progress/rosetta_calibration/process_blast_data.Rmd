@@ -1,0 +1,185 @@
+---
+title: "process_blast_results"
+author: "Eily Allan"
+date: "11/19/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(here)
+library(insect)
+library(tidyverse)
+library(taxonomizr)
+select <- dplyr::select
+
+marker <- "MiFish"
+```
+
+
+Using the results from Blast we add headers to the dataframe and convert taxaid to numeric where possible, then find the ones that coerce NAs because they have more than one taxID
+
+```{r read in blast files}
+
+blast_file <- paste0(here("Output","classification_output"),"/rs/", marker,"/Rosetta_mifish.txt")
+
+blast_results <- read_delim(blast_file, col_names = c("qseqid", "sseqid", "sacc", "pident", "length", "mismatch", "gapopen", "qcovus", "qstart", "qend", "sstart", "send", "evalue", "bitscore", "staxid", "qlen", "sscinames", "sseq"), delim = "\t" )
+
+blast_results %>% mutate (Ntaxid = as.numeric (staxid)) %>% filter(is.na(Ntaxid))
+
+# pull the taxonomy using insect 
+#worlds.taxonomy <- insect::taxonomy() 
+```
+
+Let's start with the ones that did not get assigned a rank
+
+```{r}
+# keep only things that just have one taxID per hash
+blast_results_simple <- blast_results %>% 
+  dplyr::select(qseqid, pident, staxid, sscinames) %>% 
+  distinct() 
+
+blast_results_one <- blast_results_simple %>%
+  group_by(qseqid) %>%
+  dplyr::filter(n() == 1) %>%
+  ungroup() 
+
+# keep things that DO have multiple taxIDs per hash -- this is a problem and well have to decide how to choose! 
+multi_taxid <- setdiff(blast_results_simple, blast_results_one)
+
+multi_taxid_pid100 <- multi_taxid %>% 
+  filter(pident == 100) %>% 
+  filter(!str_detect(staxid, ";")) %>% 
+  group_by(qseqid) %>% 
+  top_n(1) %>% 
+  ungroup() %>% 
+  add_row(qseqid = "70e8e188ebdd7ea3d78d9c745f097cb48e934f95",pident = 100.000, staxid = "245074", sscinames = "Entosphenus tridentatus") %>% 
+  select(qseqid, sscinames)
+
+multi_taxid_less100 <- multi_taxid %>% 
+  filter(!qseqid %in% multi_taxid_pid100$qseqid) 
+
+multi_taxid_same_taxon_name <- multi_taxid_less100 %>% 
+  select(qseqid, sscinames) %>% 
+  distinct() %>%
+  count(qseqid) %>% 
+  filter(n == 1) %>% 
+  pull(qseqid)
+ 
+multi_taxid_same_taxon <- multi_taxid_less100 %>% 
+  filter(qseqid %in% multi_taxid_same_taxon_name) %>% 
+  select(qseqid, sscinames) %>% 
+  distinct()
+
+multi_taxid_less100_notsame_besthit <- multi_taxid %>% 
+  filter(!qseqid %in% multi_taxid_pid100$qseqid) %>% 
+  filter(!qseqid %in% multi_taxid_same_taxon$qseqid) %>% 
+  group_by(qseqid) %>% 
+  top_n(1) %>% 
+  select(qseqid, sscinames) %>% 
+  distinct()
+
+
+## OK PUT THEM ALL TOGETHER
+blast_results_one <- blast_results_one %>% 
+  select(qseqid, sscinames)
+
+blast.hashes <- rbind(blast_results_one, multi_taxid_pid100, multi_taxid_same_taxon, multi_taxid_less100_notsame_besthit)
+
+saveRDS(blast.hashes, paste0(here("Output","classification_output"),"/rs/", marker,"/hashes.annotated.blast.rds"))
+blast.hashes <- readRDS(paste0(here("Output","classification_output"),"/rs/", marker,"/hashes.annotated.blast.rds"))
+write.csv(blast.hashes, paste0(here("Output","classification_output"),"/rs/", marker,"/hashes.annotated.blast.csv"), row.names=FALSE)
+```
+
+
+Compare BLAST annotations to insect annotations 
+
+```{r insect versus blast}
+insect.hashes <- readRDS(paste0(here("Output","classification_output"),"/rs/", marker,"/hashes.annotated.rds"))
+
+insect.simple <- insect.hashes %>% 
+  dplyr::select(representative, taxon) %>% 
+  rename(insect.taxon = taxon)
+
+blast.simple <- blast.hashes %>% 
+  rename(blast.taxon = sscinames, representative = qseqid)
+
+combined <- insect.simple %>% 
+  left_join(blast.simple, by = "representative")
+
+
+```
+
+
+
+
+
+
+
+
+
+```{r old moncho code for LCA}
+# so what should we do with the things that have multiple staxids? 
+# use Moncho's code to do an LCA
+
+multi.taxids <- multi_taxid %>% 
+  distinct(staxid) %>%
+  pull()
+multi.taxids <- map(multi.taxids, as.numeric)
+multi.taxonomy <- insect::get_lineage(multi.taxids, worlds.taxonomy) 
+
+#convert to df with taxonomy
+multi.df<- tibble (staxid = multi.taxids,
+                         taxonomy = multi.taxonomy) %>%
+  mutate (Kingdom = map_chr(taxonomy, ~.x["kingdom"]),
+          Phylum = map_chr(taxonomy, ~.x["phylum"]),
+          Class = map_chr(taxonomy, ~.x["class"]),
+          Order = map_chr(taxonomy, ~.x["order"]),
+          Family= map_chr(taxonomy, ~.x["family"]),
+          Genus = map_chr(taxonomy, ~.x["genus"]),
+          Species = map_chr(taxonomy, ~.x["species"]))
+
+multi.df %>% filter(is.na(staxid))
+multi.df$staxid <- as.character(multi.df$staxid)
+
+multi.full <- multi_taxid %>% 
+  left_join(multi.df, by= "staxid")
+
+source(here("functions", "custom.lca.R"))
+multi.lca <- custom.lca(multi.full, cutoff = 0.95)
+
+# GREAT! Now we just need to store this as hash and taxonomy like we would get from the classification from insect to make it easy to merge them 
+
+# but first -- split consensus into ranks
+multi.lca <-
+  multi.lca %>% 
+  separate(consensus, c("kingdom", "phylum", "class", "order", "family", "genus", "species"), sep = '%') %>% 
+  rename(representative = qseqid)
+
+multi.lca[multi.lca == "NA" ] <- NA
+multi.lca <- multi.lca %>% 
+  mutate(taxon = coalesce(species,genus,family,order,class,phylum,kingdom))
+multi.lca <- multi.lca[rowSums(is.na(multi.lca[ , 2:9])) != 8,] 
+multi.lca <- multi.lca %>% 
+  group_by (representative) %>% 
+  nest %>% 
+  mutate (rank = map_chr(data, ~pivot_longer(.x,cols = 1:7, names_to  = "rank", values_to ="name") %>% 
+                           filter(name == taxon) %>% 
+                           pull(rank))) %>% 
+  select(representative, rank) %>% 
+  inner_join(multi.lca)
+multi.lca$taxID = "consensus" #we will need this column but we want to remember that this was a consensus
+multi.lca$score = "consensus" #we will need this column but we want to remember that this was a consensus
+
+
+blast.hashes <- multi.lca
+saveRDS(blast.hashes, paste0(here("Output","classification_output"),"/rs/", marker,"/hashes.annotated.blast.rds"))
+blast.hashes <- readRDS(paste0(here("Output","classification_output"),"/rs/", marker,"/hashes.annotated.blast.rds"))
+write.csv(blast.hashes, paste0(here("Output","classification_output"),"/rs/", marker,"/hashes.annotated.blast.csv"))
+
+```
+
+
