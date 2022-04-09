@@ -1,0 +1,189 @@
+---
+title: "process_blast_results"
+author: "Eily Allan"
+date: "4/8/22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(here)
+library(insect)
+library(tidyverse)
+library(taxonomizr)
+select <- dplyr::select
+
+marker <- "MiFish"
+```
+
+
+Using the results from Blast we add headers to the dataframe and convert taxaid to numeric where possible, then find the ones that coerce NAs because they have more than one taxID
+
+```{r read in blast files}
+
+blast_file <- paste0(here("Output","classification_output"),"/rs/", marker,"/Rosetta_mifish.txt")
+
+blast_results <- read_delim(blast_file, col_names = c("qseqid", "sseqid", "sacc", "pident", "length", "mismatch", "gapopen", "qcovus", "qstart", "qend", "sstart", "send", "evalue", "bitscore", "staxid", "qlen", "sscinames", "sseq"), delim = "\t" )
+
+blast_results %>% mutate (Ntaxid = as.numeric (staxid)) %>% filter(is.na(Ntaxid))
+
+```
+
+Let's start with the ones that did not get assigned a rank
+
+```{r}
+# keep only things that just have one taxID per hash
+blast_results_simple <- blast_results %>% 
+  dplyr::select(qseqid, pident, staxid, sscinames) %>% 
+  distinct() 
+
+blast_results_one <- blast_results_simple %>%
+  group_by(qseqid) %>%
+  dplyr::filter(n() == 1) %>%
+  ungroup() 
+
+# keep things that DO have multiple taxIDs per hash -- this is a problem and well have to decide how to choose! 
+multi_taxid <- setdiff(blast_results_simple, blast_results_one)
+ 
+multi_taxid_same_taxon <- multi_taxid %>% 
+  select(qseqid, sscinames) %>% 
+  distinct() %>% 
+  group_by(qseqid) %>%
+  dplyr::filter(n() == 1) %>%
+  ungroup() 
+
+multi_taxid_diff_taxon <- multi_taxid %>% 
+  filter(! qseqid %in% multi_taxid_same_taxon$qseqid) 
+
+### FILTER THESE MANUALLY
+
+multi_taxid_diff_taxon_p100 <- multi_taxid_diff_taxon %>% 
+  filter(pident == 100) %>% 
+  select(qseqid, sscinames) %>% 
+  distinct() %>% # remove multiple subspecies of clarkii
+  filter(qseqid != "49b916c007d3dbb75da7ceb655dd8cefb4e15ac4") %>% 
+  add_row(qseqid="49b916c007d3dbb75da7ceb655dd8cefb4e15ac4", sscinames="Cottus asper") %>% 
+  filter(qseqid != "2c79a691f61d8877b4c2f3953447d6e033680d33") %>% 
+  add_row(qseqid="2c79a691f61d8877b4c2f3953447d6e033680d33", sscinames="Salvelinus confluentus") %>% 
+  filter(qseqid != "ab5f0eddb2786c5ae144a6bafda5a1edac68365e") %>% 
+  add_row(qseqid="ab5f0eddb2786c5ae144a6bafda5a1edac68365e", sscinames="Cottus marginatus") %>%
+  filter(qseqid != "bc392f2ab2d28f1c9aa2a98ebf78c0d707871993") %>% 
+  add_row(qseqid="bc392f2ab2d28f1c9aa2a98ebf78c0d707871993", sscinames="Anaxyrus boreas") %>%
+  filter(qseqid != "70e8e188ebdd7ea3d78d9c745f097cb48e934f95") %>% 
+  add_row(qseqid="70e8e188ebdd7ea3d78d9c745f097cb48e934f95", sscinames="Entosphenus tridentatus") %>%
+  filter(qseqid != "631402d8ed10c8b197e1d67c208b29b9ba254a64") %>% 
+  add_row(qseqid="631402d8ed10c8b197e1d67c208b29b9ba254a64", sscinames="Salvelinus malma") %>%
+  mutate(., sscinames = case_when(sscinames == "Salmo trutta trutta" ~ "Salmo trutta",
+                                sscinames == "Micropterus salmoides salmoides" ~ "Micropterus salmoides",
+                                sscinames == "Hippoglossus stenolepis" ~ "Hippoglossus hippoglossus",
+                                sscinames == "Hippoglossus hippoglossus" ~ "Hippoglossus hippoglossus",
+                                sscinames == "Atheresthes evermanni;Atheresthes stomias" ~ "Atheresthes evermanni",
+                                sscinames == "Oreochromis niloticus x Oreochromis aureus" ~ "Oreochromis aureus",
+                                sscinames == "Oreochromis niloticus" ~ "Oreochromis aureus",
+                                sscinames == "Oncorhynchus clarkii lewisi" ~ "Oncorhynchus clarkii",
+                                sscinames == "Macropus giganteus" ~ "Osphranter rufus",
+                                sscinames == "Macropus cf. giganteus TL-2021" ~ "Osphranter rufus",
+                                sscinames == "Squalus acanthias;Squalus suckleyi" ~ "Squalus acanthias",
+                                sscinames == "Dinornis robustus" ~ "Dinornis giganteus",
+         TRUE ~ sscinames)) %>% 
+  distinct() %>% 
+  group_by(qseqid) %>% 
+  top_n(1)
+
+### FILTER THESE MANUALLY
+
+multi_taxid_diff_taxon_less100 <- multi_taxid_diff_taxon %>% 
+  filter(! qseqid %in% multi_taxid_diff_taxon_p100$qseqid) %>% 
+  filter(qseqid != "8b14c93f1397b9332dad055f0a0fc595f3646681") %>% 
+  add_row(qseqid="8b14c93f1397b9332dad055f0a0fc595f3646681", sscinames="Cottus asper") %>% 
+  filter(qseqid != "0a3f5fde1bbb570e4705a194d016c59a57f82481") %>% 
+  add_row(qseqid="0a3f5fde1bbb570e4705a194d016c59a57f82481", sscinames="Cottus marginatus") %>% 
+  filter(qseqid != "2888591f23daf76ef3ae53a7d4bd6ffe13361bb8") %>% 
+  add_row(qseqid="2888591f23daf76ef3ae53a7d4bd6ffe13361bb8", sscinames="Ondatra zibethicus") %>% 
+  filter(qseqid != "1c6d757a385993942374fd4c94f562e4dda52ae5") %>% 
+  add_row(qseqid="1c6d757a385993942374fd4c94f562e4dda52ae5", sscinames="Cottus asper") %>% 
+  filter(qseqid != "6f93809b6bc63b61b0d350733addd08a6ab86f2e") %>% 
+  add_row(qseqid="6f93809b6bc63b61b0d350733addd08a6ab86f2e", sscinames="Ardea herodias") %>% 
+  filter(qseqid != "6d2015bef5f47452896ebee8aca282525a742131") %>% 
+  add_row(qseqid="6d2015bef5f47452896ebee8aca282525a742131", sscinames="Dinornis giganteus") %>% 
+  filter(qseqid != "3790a41fc458cb2fa0b80e27a79405121163ae49") %>% 
+  add_row(qseqid="3790a41fc458cb2fa0b80e27a79405121163ae49", sscinames="Lynx rufus") %>% 
+  filter(qseqid != "6839f85e5feb0227a9953db6121f0e84161b366e") %>% 
+  add_row(qseqid="6839f85e5feb0227a9953db6121f0e84161b366e", sscinames="Bathyraja trachouros") %>%
+  filter(qseqid != "9c53d265314cb79ca072a5a4cb53a03c99a125c6") %>% 
+  add_row(qseqid="9c53d265314cb79ca072a5a4cb53a03c99a125c6", sscinames="Dinornis giganteus") %>% 
+  filter(qseqid != "aa5818327c00eebaf0a1d977dfaac7e0c643c622") %>% 
+  add_row(qseqid="aa5818327c00eebaf0a1d977dfaac7e0c643c622", sscinames="Pheucticus melanocephalus") %>%
+  filter(qseqid != "cce45cc7e4ea0594ae1859ee98f0420718bcd348") %>% 
+  add_row(qseqid="cce45cc7e4ea0594ae1859ee98f0420718bcd348", sscinames="Bos taurus") %>%
+  filter(qseqid != "e1f7fb69621f3a27b6001ae4f8b810904c8d33c9") %>% 
+  add_row(qseqid="e1f7fb69621f3a27b6001ae4f8b810904c8d33c9", sscinames="Dinornis giganteus") %>%
+  filter(qseqid != "df3ec2d9d2b8a387a2af461f6c1fbc7b7feb2458") %>% 
+  add_row(qseqid="df3ec2d9d2b8a387a2af461f6c1fbc7b7feb2458", sscinames="Dinornis giganteus") %>%
+  filter(qseqid != "905f024774cb9552a4d8e59beb7f1988a4b179d3") %>% 
+  add_row(qseqid="905f024774cb9552a4d8e59beb7f1988a4b179d3", sscinames="Oncorhynchus nerka") %>%
+  filter(qseqid != "afb6e29d578074f7a4ffe420bed62b2babbaa2c1") %>% 
+  add_row(qseqid="afb6e29d578074f7a4ffe420bed62b2babbaa2c1", sscinames="Osphranter rufus") %>%
+  filter(qseqid != "9becf343f91982b014f8358523d56ec9a84ca816") %>% 
+  add_row(qseqid="9becf343f91982b014f8358523d56ec9a84ca816", sscinames="Dinornis giganteus") %>%
+  filter(qseqid != "3db492f4716a04f894bceb195ec2df6c0ff627ce") %>% 
+  add_row(qseqid="3db492f4716a04f894bceb195ec2df6c0ff627ce", sscinames="Osphranter rufus") %>%
+  filter(qseqid != "532b5d019a513a17bc04b6bfb52d115753882531") %>% 
+  add_row(qseqid="532b5d019a513a17bc04b6bfb52d115753882531", sscinames="Cottus marginatus") %>%
+  filter(qseqid != "7eb7b85cd4d1267b7272d76ac7a008e3a7172c93") %>% 
+  add_row(qseqid="7eb7b85cd4d1267b7272d76ac7a008e3a7172c93", sscinames="Didelphis virginiana") %>%
+  filter(qseqid != "0cedfc21bdbe73715c943f7f8275d466e7d43510") %>% 
+  add_row(qseqid="0cedfc21bdbe73715c943f7f8275d466e7d43510", sscinames="Didelphis virginiana") %>%
+  filter(qseqid != "b7eb26b7d6175fd0cce928f0eb09e965e81ce57d") %>% 
+  add_row(qseqid="b7eb26b7d6175fd0cce928f0eb09e965e81ce57d", sscinames="Cottus marginatus") %>%
+  filter(qseqid != "e66e4274b898d1c8c4cf6c4eecbab4f1b879539f") %>% 
+  add_row(qseqid="e66e4274b898d1c8c4cf6c4eecbab4f1b879539f", sscinames="Didelphis virginiana") %>%
+  filter(qseqid != "3bc3b53cba4c0d3e566ffa796e6bf6e266f287bb") %>% 
+  add_row(qseqid="3bc3b53cba4c0d3e566ffa796e6bf6e266f287bb", sscinames="Oncorhynchus keta") %>%
+  filter(qseqid != "ae77d606e4c5ac9df86c065675561e34625cfb7e") %>% 
+  add_row(qseqid="ae77d606e4c5ac9df86c065675561e34625cfb7e", sscinames="Cottus asper") %>%
+  select(qseqid, sscinames) %>% 
+  distinct() %>% 
+  group_by(qseqid) %>% 
+  top_n(1)
+
+  
+## OK PUT THEM ALL TOGETHER
+blast_results_one <- blast_results_one %>% 
+  select(qseqid, sscinames)
+
+blast.hashes <- rbind(blast_results_one, multi_taxid_same_taxon, multi_taxid_diff_taxon_p100, multi_taxid_diff_taxon_less100)
+
+blast.hashes <- blast.hashes %>% 
+  mutate(., sscinames = case_when(sscinames == "Rana luteiventris" ~ "Rana pretiosa",
+                                sscinames == "Oreochromis aureus" ~ "Tilapia sparrmanii",
+                                sscinames == "Macropus fuliginosus" ~ "Osphranter rufus",
+         TRUE ~ sscinames)) 
+
+saveRDS(blast.hashes, paste0(here("Output","classification_output"),"/rs/", marker,"/manual.hashes.annotated.blast.rds"))
+blast.hashes <- readRDS(paste0(here("Output","classification_output"),"/rs/", marker,"/manual.hashes.annotated.blast.rds"))
+write.csv(blast.hashes, paste0(here("Output","classification_output"),"/rs/", marker,"/manual.hashes.annotated.blast.csv"), row.names=FALSE)
+```
+
+
+Compare BLAST annotations to insect annotations 
+
+```{r insect versus blast}
+insect.hashes <- readRDS(paste0(here("Output","classification_output"),"/rs/", marker,"/hashes.annotated.rds"))
+
+insect.simple <- insect.hashes %>% 
+  dplyr::select(representative, taxon) %>% 
+  rename(insect.taxon = taxon)
+
+blast.simple <- blast.hashes %>% 
+  rename(blast.taxon = sscinames, representative = qseqid)
+
+combined <- insect.simple %>% 
+  left_join(blast.simple, by = "representative")
+
+
+```
+

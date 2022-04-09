@@ -15,7 +15,7 @@ marker <- "MiFish"
 # HARDCODE IN FILEPATHS FOR NOW BC NOT SYNCING TO GOOGLE DRIVE - sorry this is annoying
 ASV.table <- read_csv(paste0(here("Output","dada2_output","rs_20220404"),"/",marker,"/ASV_table.csv"))
 taxonomy <- read_csv(paste0(here("Output","classification_output","rs"),"/",marker,"/hashes.annotated.csv"))
-blast.taxonomy <- read_csv(paste0(here("Output","classification_output","rs"),"/",marker,"/hashes.annotated.blast.csv"))
+blast.taxonomy <- read_csv(paste0(here("Output","classification_output","rs"),"/",marker,"/manual.hashes.annotated.blast.csv"))
 input.metadata <- read_csv(paste0(here("Input","metadata"),"/rosetta_stone_start.csv"))                      
 sequencing.metadata <- read_csv(paste0(here("Input","sequencing_metadata_files"),"/metadata-input-rs.csv"))
 
@@ -42,9 +42,21 @@ taxonomy <- taxonomy %>%
   rename(Hash = representative) %>% 
   select(c(Hash, species))
 
-taxonomy <- blast.taxonomy %>% 
+goodtaxonomy <- taxonomy %>% 
+  filter(!is.na(species))
+
+blast.taxonomy <- blast.taxonomy %>% 
   rename(Hash = qseqid, species = sscinames) %>% 
   select(c(Hash, species))
+
+taxonomytoadd <- taxonomy %>% 
+  filter(is.na(species)) %>% 
+  left_join(blast.taxonomy, by= "Hash") %>% 
+  dplyr::select(-species.x) %>% 
+  rename(species = species.y) %>% 
+  filter(!is.na(species))
+
+taxonomy <- rbind(goodtaxonomy, taxonomytoadd)
 
 ## MANUAL FIXING THINGS 
 # "Anaxyrus exsul" -> "Anaxyrus boreas"
@@ -59,18 +71,19 @@ taxonomy <- blast.taxonomy %>%
 taxonomy <- taxonomy %>% 
   mutate(., species = case_when(species == "Anaxyrus exsul" ~ "Anaxyrus boreas",
                                 species == "Ardea purpurea" ~ "Ardea herodias",
-                                species == "Micropterus salmoides salmoides" ~ "Micropterus salmoides",
-                                species == "Neogale vison" ~ "Neovison vison",
-                                species == "Oncorhynchus clarkii lewisi" ~ "Oncorhynchus clarkii",
+                                #species == "Micropterus salmoides salmoides" ~ "Micropterus salmoides",
+                                #species == "Neogale vison" ~ "Neovison vison",
+                                #species == "Oncorhynchus clarkii lewisi" ~ "Oncorhynchus clarkii",
                                 species == "Oreochromis niloticus x Oreochromis aureus" ~ "Tilapia sparrmanii",
                                 species == "Philander opossum" ~ "Didelphis virginiana",
-                                species == "Salmo trutta trutta" ~ "Salmo trutta",
+                                #species == "Salmo trutta trutta" ~ "Salmo trutta",
                                 species == "Lithobates catesbeianus" ~ "Rana catesbeiana",
+                                species == "Macropus cf. giganteus TL-2021" ~ "Osphranter rufus",
                                 species == "Macropus fuliginosus" ~ "Osphranter rufus",
                                 species == "Macropus giganteus" ~ "Osphranter rufus",
                                 species == "Piranga leucoptera" ~ "Piranga ludoviciana",
-                                species == "Rhinoraja longicauda;Bathyraja trachouros" ~ "Bathyraja abyssicola",
-                                species == "Puma concolor" ~ "Felis catus", 
+                                #species == "Rhinoraja longicauda;Bathyraja trachouros" ~ "Bathyraja abyssicola",
+                                #species == "Puma concolor" ~ "Felis catus", 
                                 species == "Castor fiber" ~ "Castor canadensis", 
                                 species == "Petrogale xanthopus" ~ "Osphranter rufus", 
                                 species == "Setophaga kirtlandii" ~ "Cardellina pusilla",
@@ -78,6 +91,10 @@ taxonomy <- taxonomy %>%
   add_row(Hash="7818939be318eeca036d8b3906645d17e81c5012", species="Random_gBlock") %>% 
   add_row(Hash="c2b79afb7f9c2c9714de591bf2d93d3cfdd1749e", species="Random_gBlock")
 
+
+taxonomy <- blast.taxonomy %>% 
+  add_row(Hash="7818939be318eeca036d8b3906645d17e81c5012", species="Random_gBlock") %>% 
+  add_row(Hash="c2b79afb7f9c2c9714de591bf2d93d3cfdd1749e", species="Random_gBlock")
 
 # for now, take only mock communities A, B, and C -- and then add on Zack's metadata 
 if(marker == "MiFish" | marker == "COI") {
@@ -118,7 +135,7 @@ gblocks <- ASV.table %>%
   select(-totReads)
 
 # issue with piranga ludoviciana not matching... hard code it for now
-seqs.tax[103:105,2] <- start.metadata[121:123,2]
+seqs.tax[111:113,2] <- start.metadata[121:123,2]
 
 mock.data <- start.metadata %>% 
   full_join(seqs.tax) %>% 
@@ -133,14 +150,14 @@ mock.data <- start.metadata %>%
   select(-c(Mass_Input, nReads, Prop_Input, propReads))
   
 # write output to file 
-write_rds(mock.data, file=paste0(here("In_Progress","rosetta_calibration","data"),"/",marker,"mockdata.RDS"))
+write_rds(mock.data, file=paste0(here("In_Progress","rosetta_calibration","data"),"/",marker,"mockdatablast.RDS"))
 
 
 # what the hell does it look like? 
 
 plot(mock.data$b_proportion, mock.data$proportion_reads)
 
-ggplot(mock.data, aes(x = tech, y = b_proportion, fill = species)) +
+ggplot(mock.data, aes(x = tech, y = proportion_reads, fill = species)) +
   geom_col() +  
   guides(fill = "none") +
   facet_wrap(~site, scales="free_x") +

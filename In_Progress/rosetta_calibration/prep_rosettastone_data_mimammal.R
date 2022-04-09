@@ -104,7 +104,7 @@ write_rds(mock.data, file=paste0(here("In_Progress","rosetta_calibration","data"
 
 plot(mock.data$b_proportion, mock.data$proportion_reads)
 
-ggplot(mock.data, aes(x = tech, y = b_proportion, fill = species)) +
+ggplot(mock.data, aes(x = tech, y = proportion_reads, fill = species)) +
   geom_col() +  
   guides(fill = "none") +
   facet_wrap(~site, scales="free_x") +
