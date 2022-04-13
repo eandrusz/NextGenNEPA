@@ -16,6 +16,8 @@ select <- dplyr::select
 salmonids <- readDNAStringSet(here("In_Progress","rosetta_calibration","output","salmon_seqs.fasta"))
 salmon.hashes <- names(salmonids)
 
+rename <- dplyr::rename
+
 ## look at environmental hash key 
 all.enviro.asv.table <- read_csv(here("Output","dada2_output", "20220314.combined.MiFish.ASV.table.csv"))
 intersect(salmon.hashes, all.enviro.asv.table$Hash)
@@ -56,7 +58,7 @@ enviro.annotated.reads <- sum(enviro.annotated.reads$nReads)
 # 11925664
 
 percentannotated <- 11925664/15150742*100
-
+# 78% not bad
 
 #### write hash key and dada2 output for only salmonids with only hashes found in mock community 
 taxonomy.to.write <- enviro.salmon.asv.table %>% 
@@ -69,4 +71,24 @@ asv.table.to.write <- all.enviro.asv.table %>%
 
 tax.table.to.write <- asv.table.to.write %>% 
   dplyr::rename(representative = Hash) %>% 
-  left_join(taxonomy.to.write, by = "representative")
+  left_join(taxonomy.to.write, by = "representative") %>% 
+  select(-Locus) %>% 
+  group_by(Sample_name, taxon) %>% 
+  summarize(Nreads = sum(nReads)) %>% 
+  filter(!is.na(taxon)) %>% 
+  rename(species = taxon) %>% 
+  filter(!str_detect(Sample_name, "Kangaroo")) %>% 
+  mutate(., Sample_name = case_when(Sample_name == "MiFish.0321.1Prt.Dn.1TR3" ~ "MiFish.0321.1Prt.Dn.1.TR3",
+                             Sample_name == "MiFish.0421.3Chk.Dn.3TR2" ~ "MiFish.0421.3Chk.Dn.3.TR2",
+                             Sample_name == "MiFish.0421.3Chk.Dn.3TR3" ~ "MiFish.0421.3Chk.Dn.3.TR3",
+                             Sample_name == "MiFish.0821.2Brn.Dn.2TR2" ~ "MiFish.0821.2Brn.Dn.2.TR2", 
+                             Sample_name == "MiFish.0821.2Brn.Dn.2TR3" ~ "MiFish.0821.2Brn.Dn.2.TR3",
+                             TRUE ~ Sample_name)) %>% 
+  separate(Sample_name, into=c("marker", "time", "creek", "site", "biol", "tech")) %>%
+  select(-marker) %>% 
+  mutate(., tech = case_when(tech == "TR2" ~ 2,
+                             tech == "TR3" ~ 3,
+                             is.na(tech) ~ 1)) 
+  
+
+write_rds(tax.table.to.write, file=paste0(here("In_Progress","rosetta_calibration","data"),"/MiFish.salmonidonly.envirodata.RDS"))
