@@ -15,7 +15,7 @@ marker <- "MiFish"
 # HARDCODE IN FILEPATHS FOR NOW BC NOT SYNCING TO GOOGLE DRIVE - sorry this is annoying
 ASV.table <- read_csv(paste0(here("Output","dada2_output","rs_20220404"),"/",marker,"/ASV_table.csv"))
 taxonomy <- read_csv(paste0(here("Output","classification_output","rs"),"/",marker,"/hashes.annotated.csv"))
-blast.taxonomy <- read_csv(paste0(here("Output","classification_output","rs"),"/",marker,"/manual.hashes.annotated.blast.csv"))
+#blast.taxonomy <- read_csv(paste0(here("Output","classification_output","rs"),"/",marker,"/manual.hashes.annotated.blast.csv"))
 input.metadata <- read_csv(paste0(here("Input","metadata"),"/rosetta_stone_start.csv"))                      
 sequencing.metadata <- read_csv(paste0(here("Input","sequencing_metadata_files"),"/metadata-input-rs.csv"))
 
@@ -40,7 +40,7 @@ sequencing.metadata <- sequencing.metadata %>%
 # take only what we need from the taxonomy file
 taxonomy <- taxonomy %>% 
   rename(Hash = representative) %>% 
-  select(c(Hash, species))
+  dplyr::select(c(Hash, species))
 
 goodtaxonomy <- taxonomy %>% 
   filter(!is.na(species))
@@ -92,9 +92,15 @@ taxonomy <- taxonomy %>%
   add_row(Hash="c2b79afb7f9c2c9714de591bf2d93d3cfdd1749e", species="Random_gBlock")
 
 
-taxonomy <- blast.taxonomy %>% 
-  add_row(Hash="7818939be318eeca036d8b3906645d17e81c5012", species="Random_gBlock") %>% 
-  add_row(Hash="c2b79afb7f9c2c9714de591bf2d93d3cfdd1749e", species="Random_gBlock")
+taxonomy <- taxonomy %>% 
+  filter(representative != "2c79a691f61d8877b4c2f3953447d6e033680d33") %>% 
+  add_row(representative="2c79a691f61d8877b4c2f3953447d6e033680d33", sscinames="Salvelinus confluentus") %>% 
+  filter(representative != "f3b1b944f738536215cd355d76bc8c2bffd66624") %>% 
+  add_row(representative="f3b1b944f738536215cd355d76bc8c2bffd66624", sscinames="Oncorhynchus mykiss") %>% 
+  filter(representative != "631402d8ed10c8b197e1d67c208b29b9ba254a64") %>% 
+  add_row(representative="631402d8ed10c8b197e1d67c208b29b9ba254a64", sscinames="Salvelinus malma") %>% 
+  add_row(representative="7818939be318eeca036d8b3906645d17e81c5012", species="Random_gBlock") %>% 
+  add_row(representative="c2b79afb7f9c2c9714de591bf2d93d3cfdd1749e", species="Random_gBlock")
 
 # for now, take only mock communities A, B, and C -- and then add on Zack's metadata 
 if(marker == "MiFish" | marker == "COI") {

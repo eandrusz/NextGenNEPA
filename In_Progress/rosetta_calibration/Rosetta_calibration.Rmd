@@ -20,10 +20,13 @@ setwd(here("In_Progress","rosetta_calibration"))
 
 source("simFunctions.R") #functions to generate communities and observations of those communities
 
-d <- readRDS(here("In_Progress","rosetta_calibration","data","MiMammalmockdata.RDS")) %>% 
+d <- readRDS(here("In_Progress","rosetta_calibration","data","MiFish.salmonidonly.mockdata.RDS")) %>% 
   mutate(time = 1,
          creek = 1,
          biol = 1) 
+  # unite(com_rep, c(site,tech), remove=FALSE) %>% 
+  # filter(com_rep != "MCZ_1") %>%  
+  # dplyr::select(-com_rep)
 
 Mock <- d %>% filter(site == "MCC") %>% filter(b_proportion > 0 & Nreads > 0) 
 
@@ -204,7 +207,7 @@ stan_data <- makeDesign(Observation)
           facet_wrap(~sitename, scale = 'free_x') +
           ylab("Posterior Mean Estimates (25th/75th CI)") + xlab("")
 
-      ggsave(here("In_Progress","rosetta_calibration","output","mimammal.usec.pdf"))  
+      ggsave(here("In_Progress","rosetta_calibration","output","mifish.salmononly.usec.pdf"))  
 
 ```
 
