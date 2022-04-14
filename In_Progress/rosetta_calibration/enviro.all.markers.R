@@ -7,46 +7,13 @@ library(here)
 library(tidyverse)
 library(ggplot2)
 library(gridExtra)
-library(DECIPHER)
 select <- dplyr::select
 
 # for mifish 
-# take the salmonids from the mock community and see if the same ASVs are found in environmental samples
-
-salmonids <- readDNAStringSet(here("In_Progress","rosetta_calibration","output","salmon_only_seqs.fasta"))
-salmon.hashes <- names(salmonids)
-
-rename <- dplyr::rename
 
 ## look at environmental hash key 
 all.enviro.asv.table <- read_csv(here("Output","dada2_output", "20220314.combined.MiFish.ASV.table.csv"))
-intersect(salmon.hashes, all.enviro.asv.table$Hash)
-
-## things that are annotated
 all.enviro.hash.key <- readRDS(here("Output","classification_output", "MiFish.all.previous.hashes.annotated.rds"))
-intersect(salmon.hashes, all.enviro.hash.key$representative)
-
-# Ok first pull all salmonid data out from the hash key 
-enviro.salmon.hashes <- all.enviro.hash.key %>% 
-  filter(family == "Salmonidae")
-intersect(salmon.hashes, enviro.salmon.hashes$representative)
-
-enviro.salmon.asv.table <- all.enviro.asv.table %>% 
-  filter(Hash %in% enviro.salmon.hashes$representative) %>% 
-  dplyr::rename(representative = Hash) %>% 
-  left_join(enviro.salmon.hashes, by = "representative")
-
-enviro.all.salmon.reads <- sum(enviro.salmon.asv.table$nReads)
-# 8413253
-
-enviro.salmon.MChashes <- enviro.salmon.asv.table %>% 
-  filter(representative %in% salmon.hashes)
-enviro.salmon.MChashes.reads <- sum(enviro.salmon.MChashes$nReads)
-# 8162162
-
-# WOW THAT IS GREAT- 
-percent = 8162162/8413253*100
-# 97%
 
 enviro.all.reads <- sum(all.enviro.asv.table$nReads)
 # 15150742
@@ -59,6 +26,12 @@ enviro.annotated.reads <- sum(enviro.annotated.reads$nReads)
 
 percentannotated <- 11925664/15150742*100
 # 78% not bad
+
+annotated.asv.table <- all.enviro.asv.table %>% 
+  rename(representative = Hash) %>% 
+  left_join(all.enviro.hash.key, by = "representative")
+
+
 
 #### write hash key and dada2 output for only salmonids with only hashes found in mock community 
 taxonomy.to.write <- enviro.salmon.asv.table %>% 

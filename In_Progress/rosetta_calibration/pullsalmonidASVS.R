@@ -11,7 +11,7 @@ library(DECIPHER)
 select <- dplyr::select
 
 ## Start with MiFish data 
-marker <- "MiMammal"
+marker <- "MiFish"
 
 # Read in MiSeq data -- ASV table, annotations, and metadata
 # HARDCODE IN FILEPATHS FOR NOW BC NOT SYNCING TO GOOGLE DRIVE - sorry this is annoying
