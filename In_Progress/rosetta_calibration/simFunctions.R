@@ -166,11 +166,11 @@ makeDesign <- function(obs){
     p_mock <- MOCK %>% 
       dplyr::select(species, site, tech, b_proportion) %>% 
       rename(tech_rep = tech) %>% 
-      pivot_wider(names_from = species, values_from = b_proportion) %>% 
+      pivot_wider(names_from = species, values_from = b_proportion, values_fill = 1e-9) %>% 
       ungroup() 
     colnames(p_mock)[3:(length(unique(MOCK$species))+2)] <- paste0("alr_", 1:length(unique(MOCK$species)))
     
-    p_mock <- alr(p_mock[,3:ncol(p_mock)]) %>% as.data.frame()
+    p_mock <- alr(p_mock[,3:ncol(p_mock)]) %>% as.matrix() %>% as.data.frame()
       p_mock[,length(unique(MOCK$species))] <- 0  #add reference zero expressly
       names(p_mock)[length(unique(MOCK$species))] <- paste0("alr_", length(unique(MOCK$species)))
 
@@ -192,7 +192,7 @@ makeDesign <- function(obs){
     ungroup() %>% 
     #mutate(site = 1) %>% 
     mutate(species = paste0("sp_", species)) %>% 
-    pivot_wider(names_from = species, values_from = Nreads)
+    pivot_wider(names_from = species, values_from = Nreads, values_fill = 0)
   N_pcr_mock <- rep(obs$N_pcr_mock, nrow(p_mock_all)) #assumes all have the same Npcr
   
   
@@ -218,15 +218,15 @@ makeDesign <- function(obs){
 
 # makeInitBetaRaw <- function(obs){
 #   require(tidyverse)
-#   
+# 
 #   alrTransform <- function(samp){
 #     require(tidyverse)
 #     require(compositions)
-#     
-#     p_samp <- obs %>% 
-#       ungroup() %>% 
-#       dplyr::select(species, time, creek, biol, tech, site, proportion_reads) %>% 
-#       filter(tech == 1) %>% 
+# 
+#     p_samp <- obs %>%
+#       ungroup() %>%
+#       dplyr::select(species, time, creek, biol, tech, site, proportion_reads) %>%
+#       filter(tech == 1) %>%
 #       pivot_wider(names_from = species, values_from = proportion_reads)
 #     colnames(p_samp)[6:(length(unique(obs$species))+5)] <- paste0("alr_", 1:length(unique(obs$species)))
 #     p_samp <- p_samp %>% dplyr::select(starts_with("alr"))

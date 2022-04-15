@@ -89,7 +89,9 @@ write_rds(tax.table.to.write, file=paste0(here("In_Progress","rosetta_calibratio
 
 
 tax.table.to.write %>% 
-  filter(time == "0321") %>%  
+  filter(time == "0321") %>%
+  filter(species != "") %>% 
+  #filter(creek != "4Pad") %>% 
   ggplot(aes(x = species, y = Nreads)) +
   geom_point() +  
   facet_grid(~site ~ creek, scales="free_y") +

@@ -104,7 +104,7 @@ NOM <- as.name(colnames(p_samp_all)[1])
     model_vector_a_samp_small = as.array(model_vector_a_samp_small),
       
     # Design matrices: mock community samples
-    model_vector_a_mock = model_vector_a_mock,
+    model_vector_a_mock = as.array(model_vector_a_mock),
 
     # totalDNA = rep(10, nrow(p_samp_all %>% filter(tech_rep == 1))), #vector of total DNA concentrations for each community observed; this is arbitrary until we have field measurements
     # 
@@ -114,6 +114,6 @@ NOM <- as.name(colnames(p_samp_all)[1])
     # Priors
     alpha_prior = c(0,0.1),  # normal prior
     beta_prior = c(0,5),    # normal prior
-    tau_prior = c(2,2)   # gamma prior
+    tau_prior = c(1,2)   # gamma prior
   )
   
