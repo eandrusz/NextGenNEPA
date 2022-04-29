@@ -24,8 +24,8 @@ a <- readRDS("data/COI.incomplete.all.envirodata.RDS")
 d <- readRDS(here("In_Progress","rosetta_calibration","data","COImockdata.RDS")) %>% 
   mutate(time = 1,
          creek = 1,
-         biol = 1) %>% 
-  filter(tech == 1)
+         biol = 1) 
+  #filter(tech == 1)
   # unite(com_rep, c(site,tech), remove=FALSE) %>% 
   # filter(com_rep != "MCZ_1") %>%  
   # dplyr::select(-com_rep)
@@ -35,7 +35,7 @@ Mock <- d %>% filter(site %in% c("MCB")) %>% filter(b_proportion > 0 & Nreads > 
 Observation <- a %>% 
   filter(species %in% Mock$species) %>% 
   #filter(!species %in% c("Salmo trutta", "Oncorhynchus nerka")) %>%  #for now; very rare
-  # filter(creek %in% c("4Pad")) %>%  #for now, just look at subset
+  #filter(creek %in% c("4Pad")) %>%  #for now, just look at subset
   #filter(b_proportion > 0) %>% 
   filter(Nreads > 0) %>% 
   filter(tech == 1)
@@ -98,10 +98,10 @@ stan_data <- makeDesign(Observation)
       
       #Simpler datasets work fine in this quick likelihood estimation
       #likelihood
-      M <- stan_model(file=here("In_Progress","rosetta_calibration","quant_metabar_rosetta_noEta.stan"))
+      M <- stan_model(file=here("In_Progress","rosetta_calibration","quant_metabar_rosetta_noSampleEta.stan"))
       stanOpt <- optimizing(M, data=stan_data, iter=30000,draws=0,
                             verbose=T,
-                            init=stan_init_f3(N_species=stan_data$N_species),
+                            #init=stan_init_f3(N_species=stan_data$N_species),
                             tol_param=1e-40,
                             algorithm="LBFGS",
                             hessian = TRUE)
@@ -175,14 +175,14 @@ stan_data <- makeDesign(Observation)
               "beta",
               # "eta_samp",
               # "eta_mock",
-              # "tau",
+              "tau",
               "mu_samp",
               "mu_mock",
               "int_samp_small"
             )
 
       #full Bayesian model
-      stanMod = stan(file = here("In_Progress","rosetta_calibration","quant_metabar_rosetta_noEta.stan") ,data = stan_data,
+      stanMod = stan(file = here("In_Progress","rosetta_calibration","quant_metabar_rosetta_noSampleEta.stan") ,data = stan_data,
                      verbose = FALSE, chains = 3, thin = 1,
                      warmup = 500, iter = 1000,
                      control = list(adapt_init_buffer = 175,
@@ -276,7 +276,7 @@ assign(paste0("p_",i), post %>%
     ggtitle(i)
 )
 }
-pdf("Mifish.pdf")
+pdf("COI.pdf")
 p_0321
 p_0421
 p_0521
