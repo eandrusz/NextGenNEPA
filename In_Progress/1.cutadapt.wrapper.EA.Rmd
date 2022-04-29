@@ -29,7 +29,7 @@ Note that the input and output files are too big to be on Github so you *must* h
 ```{r setup2}
 
 ## CHANGE THESE FOR EACH RUN 
-run.num = 1
+run.num = 8
 
 # probably don't need to change this, leave at 100 unless you have an issue
 minlength = 100
@@ -41,8 +41,8 @@ old_path <- Sys.getenv("PATH")
 Sys.setenv(PATH = paste(old_path, "/Users/elizabethandruszkiewicz/opt/anaconda2/bin/", sep = ":"))
 
 # set working directory to "In_Progress"
-#setwd("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/In_Progress")
-setwd(here("In_Progress"))
+setwd("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA/In_Progress")
+#setwd(here("In_Progress"))
 
 # hard code in fastq folder to come from local hard drive NOT the github folder because the files are too big to host on Github
 fastqfolder <- paste0("/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Input/fastq_files","/run",run.num)
@@ -100,6 +100,6 @@ Run the bash script via R to actually use cutadapt
 *IMPORTANT* won't work unless manually put in full file path to params.txt file.
 
 ```{bash}
-bash test.bash.sh "/Users/elizabethandruszkiewicz/Downloads/Miseq_712_Annette_41708_extracted/cutadaptoutput/params.txt"
+bash test.bash.sh "/Users/elizabethandruszkiewicz/GoogleDrive/UW/GitHub/NextGenNEPA_LOCAL/Output/cutadapt_output/run8_20220428/params.txt"
 ```
 
