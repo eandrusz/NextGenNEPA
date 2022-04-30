@@ -216,9 +216,6 @@
 "MiFish.0421.5Sqm.Up.3","Actinopteri","Salmo trutta",471
 "MiFish.0421.5Sqm.Up.3","Aves","Turdus migratorius",45
 "MiFish.0421.5Sqm.Up.3","Hyperoartia","Lampetra sp. CBM:ZF:17561",677
-"MiFish.0521.1Prt.Dn.1","Actinopteri","Oncorhynchus clarkii",18882
-"MiFish.0521.1Prt.Dn.1","Actinopteri","Oncorhynchus kisutch",108
-"MiFish.0521.1Prt.Dn.1","Hyperoartia","Lampetra sp. CBM:ZF:17561",9410
 "MiFish.0521.1Prt.Dn.2","Actinopteri","Oncorhynchus clarkii",14824
 "MiFish.0521.1Prt.Dn.2","Actinopteri","Oncorhynchus kisutch",6623
 "MiFish.0521.1Prt.Dn.2","Aves","Turdus migratorius",389
@@ -227,9 +224,6 @@
 "MiFish.0521.1Prt.Dn.3","Actinopteri","Oncorhynchus kisutch",8896
 "MiFish.0521.1Prt.Dn.3","Actinopteri","Perca flavescens",6
 "MiFish.0521.1Prt.Dn.3","Hyperoartia","Lampetra sp. CBM:ZF:17561",32328
-"MiFish.0521.1Prt.Up.1","Actinopteri","Oncorhynchus clarkii",1613
-"MiFish.0521.1Prt.Up.1","Actinopteri","Oncorhynchus kisutch",2236
-"MiFish.0521.1Prt.Up.1","Hyperoartia","Lampetra sp. CBM:ZF:17561",2125
 "MiFish.0521.1Prt.Up.2","Actinopteri","Oncorhynchus clarkii",45774
 "MiFish.0521.1Prt.Up.2","Actinopteri","Oncorhynchus kisutch",5098
 "MiFish.0521.1Prt.Up.2","Hyperoartia","Lampetra sp. CBM:ZF:17561",13583
@@ -242,51 +236,28 @@
 "MiFish.0521.2Brn.Dn.1","Hyperoartia","Lampetra sp. CBM:ZF:17561",2463
 "MiFish.0521.2Brn.Dn.2","Actinopteri","Oncorhynchus clarkii",13759
 "MiFish.0521.2Brn.Dn.2","Actinopteri","Oncorhynchus kisutch",21024
-"MiFish.0521.2Brn.Dn.3","Actinopteri","Oncorhynchus clarkii",36881
-"MiFish.0521.2Brn.Dn.3","Actinopteri","Oncorhynchus kisutch",58762
 "MiFish.0521.3Chk.Dn.2","Actinopteri","Oncorhynchus clarkii",66383
 "MiFish.0521.3Chk.Dn.3","Actinopteri","Oncorhynchus clarkii",34866
 "MiFish.0521.3Chk.Up.1","Actinopteri","Oncorhynchus clarkii",32108
 "MiFish.0521.3Chk.Up.2","Actinopteri","Oncorhynchus clarkii",37532
-"MiFish.0521.3Chk.Up.3","Actinopteri","Oncorhynchus clarkii",83088
-"MiFish.0521.4Pad.Dn.1","Actinopteri","Oncorhynchus clarkii",21160
-"MiFish.0521.4Pad.Dn.1","Actinopteri","Oncorhynchus kisutch",9048
-"MiFish.0521.4Pad.Dn.1","Actinopteri","Oncorhynchus mykiss",34585
-"MiFish.0521.4Pad.Dn.1","Amphibia","Taricha granulosa",22687
 "MiFish.0521.4Pad.Dn.2","Actinopteri","Oncorhynchus clarkii",12979
 "MiFish.0521.4Pad.Dn.2","Actinopteri","Oncorhynchus kisutch",4289
 "MiFish.0521.4Pad.Dn.2","Actinopteri","Oncorhynchus mykiss",17330
 "MiFish.0521.4Pad.Dn.2","Actinopteri","Perca flavescens",2971
+"MiFish.0521.4Pad.Dn.2","Mammalia","Sus scrofa",824
 "MiFish.0521.4Pad.Dn.3","Actinopteri","Oncorhynchus clarkii",25261
 "MiFish.0521.4Pad.Dn.3","Actinopteri","Oncorhynchus kisutch",15552
 "MiFish.0521.4Pad.Dn.3","Actinopteri","Oncorhynchus mykiss",4932
-"MiFish.0521.4Pad.Up11.1","Actinopteri","Oncorhynchus clarkii",43735
-"MiFish.0521.4Pad.Up11.1","Actinopteri","Oncorhynchus kisutch",26143
-"MiFish.0521.4Pad.Up11.1","Actinopteri","Oncorhynchus mykiss",8372
-"MiFish.0521.4Pad.Up11.1","Hyperoartia","Lampetra sp. CBM:ZF:17561",3
 "MiFish.0521.4Pad.Up11.2","Actinopteri","Oncorhynchus clarkii",33671
 "MiFish.0521.4Pad.Up11.2","Actinopteri","Oncorhynchus kisutch",4853
 "MiFish.0521.4Pad.Up11.2","Actinopteri","Oncorhynchus mykiss",15788
 "MiFish.0521.4Pad.Up11.2","Actinopteri","Perca flavescens",1133
-"MiFish.0521.4Pad.Up5.1","Actinopteri","Oncorhynchus clarkii",418
-"MiFish.0521.4Pad.Up5.1","Actinopteri","Oncorhynchus mykiss",57294
-"MiFish.0521.4Pad.Up5.1","Actinopteri","Perca flavescens",5428
 "MiFish.0521.4Pad.Up5.2","Actinopteri","Oncorhynchus mykiss",65732
 "MiFish.0521.4Pad.Up5.2","Actinopteri","Perca flavescens",4518
 "MiFish.0521.4Pad.Up5.3","Actinopteri","Oncorhynchus clarkii",975
 "MiFish.0521.4Pad.Up5.3","Actinopteri","Oncorhynchus kisutch",10
 "MiFish.0521.4Pad.Up5.3","Actinopteri","Oncorhynchus mykiss",43687
 "MiFish.0521.4Pad.Up5.3","Actinopteri","Perca flavescens",1621
-"MiFish.0521.5Sqm.Dn.1","Actinopteri","Oncorhynchus clarkii",52163
-"MiFish.0521.5Sqm.Dn.1","Actinopteri","Oncorhynchus kisutch",22653
-"MiFish.0521.5Sqm.Dn.1","Actinopteri","Pimephales promelas",684
-"MiFish.0521.5Sqm.Dn.1","Aves","Turdus migratorius",155
-"MiFish.0521.5Sqm.Dn.1","Hyperoartia","Lampetra sp. CBM:ZF:17561",9604
-"MiFish.0521.5Sqm.Dn.2","Actinopteri","Oncorhynchus clarkii",55973
-"MiFish.0521.5Sqm.Dn.2","Actinopteri","Oncorhynchus kisutch",26047
-"MiFish.0521.5Sqm.Dn.2","Actinopteri","Pimephales promelas",5362
-"MiFish.0521.5Sqm.Dn.2","Aves","Turdus migratorius",99
-"MiFish.0521.5Sqm.Dn.2","Hyperoartia","Lampetra sp. CBM:ZF:17561",11336
 "MiFish.0521.5Sqm.Dn.3","Actinopteri","Oncorhynchus clarkii",23506
 "MiFish.0521.5Sqm.Dn.3","Actinopteri","Oncorhynchus kisutch",10562
 "MiFish.0521.5Sqm.Dn.3","Actinopteri","Oncorhynchus mykiss",780
@@ -298,22 +269,9 @@
 "MiFish.0521.5Sqm.Up.1","Actinopteri","Pimephales promelas",1837
 "MiFish.0521.5Sqm.Up.1","Aves","Turdus migratorius",167
 "MiFish.0521.5Sqm.Up.1","Hyperoartia","Lampetra sp. CBM:ZF:17561",1981
-"MiFish.0521.5Sqm.Up.2","Actinopteri","Oncorhynchus clarkii",24800
-"MiFish.0521.5Sqm.Up.2","Actinopteri","Oncorhynchus kisutch",7673
-"MiFish.0521.5Sqm.Up.2","Actinopteri","Oncorhynchus mykiss",198
-"MiFish.0521.5Sqm.Up.2","Actinopteri","Pimephales promelas",3640
-"MiFish.0521.5Sqm.Up.2","Hyperoartia","Lampetra sp. CBM:ZF:17561",1611
-"MiFish.0521.5Sqm.Up.3","Actinopteri","Oncorhynchus clarkii",69429
-"MiFish.0521.5Sqm.Up.3","Actinopteri","Oncorhynchus kisutch",27671
-"MiFish.0521.5Sqm.Up.3","Actinopteri","Oncorhynchus mykiss",1041
-"MiFish.0521.5Sqm.Up.3","Actinopteri","Pimephales promelas",975
-"MiFish.0521.5Sqm.Up.3","Hyperoartia","Lampetra sp. CBM:ZF:17561",3342
 "MiFish.0621.1Prt.Dn.1","Actinopteri","Oncorhynchus clarkii",15887
 "MiFish.0621.1Prt.Dn.1","Actinopteri","Oncorhynchus kisutch",6040
 "MiFish.0621.1Prt.Dn.1","Hyperoartia","Lampetra sp. CBM:ZF:17561",7780
-"MiFish.0621.1Prt.Dn.2","Actinopteri","Oncorhynchus clarkii",53796
-"MiFish.0621.1Prt.Dn.2","Actinopteri","Oncorhynchus kisutch",21979
-"MiFish.0621.1Prt.Dn.2","Hyperoartia","Lampetra sp. CBM:ZF:17561",18636
 "MiFish.0621.1Prt.Dn.3","Actinopteri","Oncorhynchus clarkii",30851
 "MiFish.0621.1Prt.Dn.3","Actinopteri","Oncorhynchus kisutch",10219
 "MiFish.0621.1Prt.Dn.3","Hyperoartia","Lampetra sp. CBM:ZF:17561",27778
@@ -322,11 +280,6 @@
 "MiFish.0621.1Prt.Up.1","Actinopteri","Oncorhynchus kisutch",25073
 "MiFish.0621.1Prt.Up.1","Aves","Turdus migratorius",635
 "MiFish.0621.1Prt.Up.1","Hyperoartia","Lampetra sp. CBM:ZF:17561",33413
-"MiFish.0621.1Prt.Up.2","Actinopteri","Oncorhynchus clarkii",56829
-"MiFish.0621.1Prt.Up.2","Actinopteri","Oncorhynchus kisutch",16018
-"MiFish.0621.1Prt.Up.2","Aves","Turdus migratorius",610
-"MiFish.0621.1Prt.Up.2","Hyperoartia","Lampetra sp. CBM:ZF:17561",12070
-"MiFish.0621.1Prt.Up.2","Mammalia","Didelphis virginiana",9
 "MiFish.0621.1Prt.Up.3","Actinopteri","Oncorhynchus clarkii",48198
 "MiFish.0621.1Prt.Up.3","Actinopteri","Oncorhynchus kisutch",8602
 "MiFish.0621.1Prt.Up.3","Hyperoartia","Lampetra sp. CBM:ZF:17561",8948
@@ -345,10 +298,6 @@
 "MiFish.0621.3Chk.Dn.2","Actinopteri","Oncorhynchus mykiss",3293
 "MiFish.0621.3Chk.Dn.2","Actinopteri","Perca flavescens",11
 "MiFish.0621.3Chk.Dn.2","Aves","Turdus migratorius",17
-"MiFish.0621.3Chk.Dn.3","Actinopteri","Oncorhynchus clarkii",149678
-"MiFish.0621.3Chk.Dn.3","Actinopteri","Oncorhynchus mykiss",10208
-"MiFish.0621.3Chk.Dn.3","Aves","Turdus migratorius",448
-"MiFish.0621.3Chk.Dn.3","Mammalia","Sus scrofa",286
 "MiFish.0621.3Chk.Up.1","Actinopteri","Oncorhynchus clarkii",92996
 "MiFish.0621.3Chk.Up.1","Aves","Turdus migratorius",70
 "MiFish.0621.3Chk.Up.2","Actinopteri","Oncorhynchus clarkii",158769
@@ -374,12 +323,6 @@
 "MiFish.0621.4Pad.Up11.1","Actinopteri","Oncorhynchus mykiss",15948
 "MiFish.0621.4Pad.Up11.1","Aves","Turdus migratorius",17
 "MiFish.0621.4Pad.Up11.1","Hyperoartia","Lampetra sp. CBM:ZF:17561",2
-"MiFish.0621.4Pad.Up11.2","Actinopteri","Oncorhynchus clarkii",7858
-"MiFish.0621.4Pad.Up11.2","Actinopteri","Oncorhynchus kisutch",43567
-"MiFish.0621.4Pad.Up11.2","Actinopteri","Oncorhynchus mykiss",9241
-"MiFish.0621.4Pad.Up11.2","Actinopteri","Perca flavescens",1636
-"MiFish.0621.4Pad.Up11.2","Aves","Sturnus vulgaris",104
-"MiFish.0621.4Pad.Up11.2","Aves","Turdus migratorius",15
 "MiFish.0621.4Pad.Up5.1","Actinopteri","Oncorhynchus kisutch",26474
 "MiFish.0621.4Pad.Up5.1","Actinopteri","Perca flavescens",1045
 "MiFish.0621.4Pad.Up5.1","Aves","Turdus migratorius",135
@@ -389,12 +332,6 @@
 "MiFish.0621.4Pad.Up5.3","Actinopteri","Perca flavescens",654
 "MiFish.0621.4Pad.Up5.3","Aves","Turdus migratorius",1897
 "MiFish.0621.4Pad.Up5.3","Mammalia","Sus scrofa",45
-"MiFish.0621.5Sqm.Dn.1","Actinopteri","Oncorhynchus clarkii",40456
-"MiFish.0621.5Sqm.Dn.1","Actinopteri","Oncorhynchus kisutch",11420
-"MiFish.0621.5Sqm.Dn.1","Actinopteri","Pimephales promelas",541
-"MiFish.0621.5Sqm.Dn.1","Aves","Melospiza melodia",332
-"MiFish.0621.5Sqm.Dn.1","Aves","Turdus migratorius",1297
-"MiFish.0621.5Sqm.Dn.1","Hyperoartia","Lampetra sp. CBM:ZF:17561",3410
 "MiFish.0621.5Sqm.Dn.2","Actinopteri","Ameiurus nebulosus",1396
 "MiFish.0621.5Sqm.Dn.2","Actinopteri","Oncorhynchus clarkii",23839
 "MiFish.0621.5Sqm.Dn.2","Actinopteri","Oncorhynchus kisutch",5703
@@ -413,12 +350,6 @@
 "MiFish.0621.5Sqm.Up.1","Actinopteri","Oncorhynchus clarkii",19777
 "MiFish.0621.5Sqm.Up.1","Actinopteri","Oncorhynchus kisutch",5061
 "MiFish.0621.5Sqm.Up.1","Hyperoartia","Lampetra sp. CBM:ZF:17561",953
-"MiFish.0621.5Sqm.Up.2","Actinopteri","Oncorhynchus clarkii",73780
-"MiFish.0621.5Sqm.Up.2","Actinopteri","Oncorhynchus kisutch",21753
-"MiFish.0621.5Sqm.Up.2","Aves","Bombycilla cedrorum",9
-"MiFish.0621.5Sqm.Up.2","Aves","Melospiza melodia",397
-"MiFish.0621.5Sqm.Up.2","Aves","Turdus migratorius",9163
-"MiFish.0621.5Sqm.Up.2","Hyperoartia","Lampetra sp. CBM:ZF:17561",16383
 "MiFish.0621.5Sqm.Up.3","Actinopteri","Ameiurus nebulosus",1696
 "MiFish.0621.5Sqm.Up.3","Actinopteri","Oncorhynchus clarkii",167271
 "MiFish.0621.5Sqm.Up.3","Actinopteri","Oncorhynchus kisutch",42921
@@ -426,11 +357,6 @@
 "MiFish.0621.5Sqm.Up.3","Aves","Melospiza melodia",123
 "MiFish.0621.5Sqm.Up.3","Aves","Turdus migratorius",1845
 "MiFish.0621.5Sqm.Up.3","Hyperoartia","Lampetra sp. CBM:ZF:17561",38079
-"MiFish.0721.1Prt.Dn.1","Actinopteri","Oncorhynchus clarkii",57130
-"MiFish.0721.1Prt.Dn.1","Actinopteri","Oncorhynchus kisutch",20335
-"MiFish.0721.1Prt.Dn.1","Aves","Turdus migratorius",139
-"MiFish.0721.1Prt.Dn.1","Hyperoartia","Lampetra sp. CBM:ZF:17561",12901
-"MiFish.0721.1Prt.Dn.1","Mammalia","Didelphis virginiana",5
 "MiFish.0721.1Prt.Dn.2","Actinopteri","Oncorhynchus clarkii",55422
 "MiFish.0721.1Prt.Dn.2","Actinopteri","Oncorhynchus kisutch",23071
 "MiFish.0721.1Prt.Dn.2","Aves","Turdus migratorius",240
@@ -448,27 +374,12 @@
 "MiFish.0721.1Prt.Up.2","Actinopteri","Oncorhynchus kisutch",13027
 "MiFish.0721.1Prt.Up.2","Hyperoartia","Lampetra sp. CBM:ZF:17561",10983
 "MiFish.0721.1Prt.Up.2","Mammalia","Didelphis virginiana",386
-"MiFish.0721.1Prt.Up.3","Actinopteri","Oncorhynchus clarkii",100923
-"MiFish.0721.1Prt.Up.3","Actinopteri","Oncorhynchus kisutch",27362
-"MiFish.0721.1Prt.Up.3","Hyperoartia","Lampetra sp. CBM:ZF:17561",45047
-"MiFish.0721.1Prt.Up.3","Mammalia","Didelphis virginiana",281
-"MiFish.0721.2Brn.Dn.1","Actinopteri","Oncorhynchus clarkii",49895
-"MiFish.0721.2Brn.Dn.1","Actinopteri","Oncorhynchus kisutch",17290
-"MiFish.0721.2Brn.Dn.1","Mammalia","Didelphis virginiana",164
 "MiFish.0721.2Brn.Dn.2","Actinopteri","Oncorhynchus clarkii",36398
 "MiFish.0721.2Brn.Dn.2","Actinopteri","Oncorhynchus kisutch",11916
 "MiFish.0721.2Brn.Dn.3","Actinopteri","Oncorhynchus clarkii",48002
 "MiFish.0721.2Brn.Dn.3","Actinopteri","Oncorhynchus kisutch",15461
 "MiFish.0721.2Brn.Up.1","Aves","Turdus migratorius",220
 "MiFish.0721.2Brn.Up.2","Aves","Turdus migratorius",212
-"MiFish.0721.3Chk.Dn.1","Actinopteri","Oncorhynchus clarkii",81936
-"MiFish.0721.3Chk.Dn.1","Actinopteri","Oncorhynchus mykiss",3460
-"MiFish.0721.3Chk.Dn.1","Mammalia","Didelphis virginiana",5
-"MiFish.0721.3Chk.Dn.2","Actinopteri","Oncorhynchus clarkii",82421
-"MiFish.0721.3Chk.Dn.2","Actinopteri","Oncorhynchus mykiss",3741
-"MiFish.0721.3Chk.Dn.2","Mammalia","Scapanus orarius",6
-"MiFish.0721.3Chk.Dn.3","Actinopteri","Oncorhynchus clarkii",87286
-"MiFish.0721.3Chk.Dn.3","Actinopteri","Oncorhynchus mykiss",2387
 "MiFish.0721.3Chk.Up.1","Actinopteri","Oncorhynchus clarkii",38178
 "MiFish.0721.3Chk.Up.1","Actinopteri","Oncorhynchus mykiss",528
 "MiFish.0721.3Chk.Up.1","Mammalia","Didelphis virginiana",48
@@ -476,14 +387,6 @@
 "MiFish.0721.3Chk.Up.2","Actinopteri","Oncorhynchus mykiss",452
 "MiFish.0721.3Chk.Up.2","Aves","Turdus migratorius",29
 "MiFish.0721.3Chk.Up.2","Mammalia","Didelphis virginiana",132
-"MiFish.0721.3Chk.Up.3","Actinopteri","Oncorhynchus clarkii",101266
-"MiFish.0721.3Chk.Up.3","Actinopteri","Oncorhynchus mykiss",2615
-"MiFish.0721.3Chk.Up.3","Aves","Turdus migratorius",58
-"MiFish.0721.3Chk.Up.3","Mammalia","Didelphis virginiana",84
-"MiFish.0721.4Pad.Dn.1","Actinopteri","Gasterosteus aculeatus",8529
-"MiFish.0721.4Pad.Dn.1","Actinopteri","Oncorhynchus clarkii",9612
-"MiFish.0721.4Pad.Dn.1","Actinopteri","Oncorhynchus kisutch",1218
-"MiFish.0721.4Pad.Dn.1","Actinopteri","Oncorhynchus mykiss",20104
 "MiFish.0721.4Pad.Dn.2","Actinopteri","Gasterosteus aculeatus",4572
 "MiFish.0721.4Pad.Dn.2","Actinopteri","Oncorhynchus clarkii",6535
 "MiFish.0721.4Pad.Dn.2","Actinopteri","Oncorhynchus kisutch",229
@@ -492,37 +395,11 @@
 "MiFish.0721.4Pad.Dn.3","Actinopteri","Oncorhynchus clarkii",3079
 "MiFish.0721.4Pad.Dn.3","Actinopteri","Oncorhynchus kisutch",87
 "MiFish.0721.4Pad.Dn.3","Actinopteri","Oncorhynchus mykiss",11115
-"MiFish.0721.4Pad.Up11.1","Actinopteri","Oncorhynchus clarkii",13368
-"MiFish.0721.4Pad.Up11.1","Actinopteri","Oncorhynchus kisutch",15729
-"MiFish.0721.4Pad.Up11.1","Actinopteri","Oncorhynchus mykiss",68957
-"MiFish.0721.4Pad.Up11.1","Actinopteri","Perca flavescens",626
-"MiFish.0721.4Pad.Up11.1","Aves","Melospiza melodia",10
-"MiFish.0721.4Pad.Up11.1","Aves","Turdus migratorius",887
-"MiFish.0721.4Pad.Up11.1","Mammalia","Sus scrofa",54
-"MiFish.0721.4Pad.Up11.2","Actinopteri","Oncorhynchus clarkii",10382
-"MiFish.0721.4Pad.Up11.2","Actinopteri","Oncorhynchus kisutch",20710
-"MiFish.0721.4Pad.Up11.2","Actinopteri","Oncorhynchus mykiss",75253
 "MiFish.0721.4Pad.Up11.3","Actinopteri","Oncorhynchus clarkii",4775
 "MiFish.0721.4Pad.Up11.3","Actinopteri","Oncorhynchus kisutch",4318
 "MiFish.0721.4Pad.Up11.3","Actinopteri","Oncorhynchus mykiss",19978
 "MiFish.0721.4Pad.Up11.3","Actinopteri","Perca flavescens",234
 "MiFish.0721.4Pad.Up11.3","Aves","Melospiza melodia",10
-"MiFish.0721.4Pad.Up5.1","Actinopteri","Oncorhynchus kisutch",44157
-"MiFish.0721.4Pad.Up5.1","Aves","Turdus migratorius",7929
-"MiFish.0721.4Pad.Up5.1.TR2","Actinopteri","Oncorhynchus kisutch",29972
-"MiFish.0721.4Pad.Up5.1.TR2","Aves","Turdus migratorius",6668
-"MiFish.0721.4Pad.Up5.1.TR3","Actinopteri","Oncorhynchus kisutch",60849
-"MiFish.0721.4Pad.Up5.1.TR3","Aves","Turdus migratorius",10903
-"MiFish.0721.4Pad.Up5.1.TR3","Mammalia","Sus scrofa",68
-"MiFish.0721.4Pad.Up5.2","Actinopteri","Oncorhynchus kisutch",54694
-"MiFish.0721.4Pad.Up5.2","Actinopteri","Perca flavescens",1932
-"MiFish.0721.4Pad.Up5.2","Aves","Turdus migratorius",7297
-"MiFish.0721.4Pad.Up5.3","Actinopteri","Oncorhynchus kisutch",17333
-"MiFish.0721.4Pad.Up5.3","Aves","Turdus migratorius",1214
-"MiFish.0721.5Sqm.Dn.1","Actinopteri","Oncorhynchus clarkii",62968
-"MiFish.0721.5Sqm.Dn.1","Actinopteri","Oncorhynchus kisutch",29748
-"MiFish.0721.5Sqm.Dn.1","Aves","Turdus migratorius",4
-"MiFish.0721.5Sqm.Dn.1","Hyperoartia","Lampetra sp. CBM:ZF:17561",68
 "MiFish.0721.5Sqm.Dn.2","Actinopteri","Oncorhynchus clarkii",76838
 "MiFish.0721.5Sqm.Dn.2","Actinopteri","Oncorhynchus kisutch",27979
 "MiFish.0721.5Sqm.Dn.2","Aves","Turdus migratorius",5
@@ -532,18 +409,10 @@
 "MiFish.0721.5Sqm.Dn.3","Actinopteri","Oncorhynchus kisutch",9010
 "MiFish.0721.5Sqm.Dn.3","Aves","Turdus migratorius",13
 "MiFish.0721.5Sqm.Dn.3","Hyperoartia","Lampetra sp. CBM:ZF:17561",10
-"MiFish.0721.5Sqm.Up.1","Actinopteri","Oncorhynchus clarkii",45205
-"MiFish.0721.5Sqm.Up.1","Actinopteri","Oncorhynchus kisutch",18950
-"MiFish.0721.5Sqm.Up.1","Aves","Turdus migratorius",4135
-"MiFish.0721.5Sqm.Up.1","Hyperoartia","Lampetra sp. CBM:ZF:17561",5667
 "MiFish.0721.5Sqm.Up.2","Actinopteri","Oncorhynchus clarkii",23453
 "MiFish.0721.5Sqm.Up.2","Actinopteri","Oncorhynchus kisutch",10459
 "MiFish.0721.5Sqm.Up.2","Aves","Turdus migratorius",2453
 "MiFish.0721.5Sqm.Up.2","Hyperoartia","Lampetra sp. CBM:ZF:17561",3319
-"MiFish.0721.5Sqm.Up.3","Actinopteri","Oncorhynchus clarkii",59228
-"MiFish.0721.5Sqm.Up.3","Actinopteri","Oncorhynchus kisutch",26822
-"MiFish.0721.5Sqm.Up.3","Aves","Turdus migratorius",4403
-"MiFish.0721.5Sqm.Up.3","Hyperoartia","Lampetra sp. CBM:ZF:17561",4262
 "MiFish.0821.1Prt.Dn.1","Actinopteri","Oncorhynchus clarkii",18132
 "MiFish.0821.1Prt.Dn.1","Actinopteri","Oncorhynchus kisutch",5289
 "MiFish.0821.1Prt.Dn.1","Actinopteri","Oncorhynchus nerka",88
@@ -651,12 +520,298 @@
 "MiFish.0821.5Sqm.Up.3","Actinopteri","Oncorhynchus kisutch",10050
 "MiFish.0821.5Sqm.Up.3","Aves","Turdus migratorius",161
 "MiFish.0821.5Sqm.Up.3","Hyperoartia","Lampetra sp. CBM:ZF:17561",6555
+"MiFish.0921.1Prt.Dn.2","Actinopteri","Oncorhynchus clarkii",53840
+"MiFish.0921.1Prt.Dn.2","Actinopteri","Oncorhynchus gorbuscha",3871
+"MiFish.0921.1Prt.Dn.2","Actinopteri","Oncorhynchus kisutch",31050
+"MiFish.0921.1Prt.Dn.2","Hyperoartia","Lampetra sp. CBM:ZF:17561",14460
+"MiFish.0921.1Prt.Dn.2","Mammalia","Scapanus orarius",137
+"MiFish.0921.1Prt.Up.3","Actinopteri","Oncorhynchus clarkii",36388
+"MiFish.0921.1Prt.Up.3","Actinopteri","Oncorhynchus gorbuscha",4008
+"MiFish.0921.1Prt.Up.3","Actinopteri","Oncorhynchus kisutch",33193
+"MiFish.0921.1Prt.Up.3","Aves","Turdus migratorius",1517
+"MiFish.0921.1Prt.Up.3","Hyperoartia","Lampetra sp. CBM:ZF:17561",13743
+"MiFish.0921.1Prt.Up.3","Mammalia","Didelphis virginiana",53
+"MiFish.0921.2Brn.Dn.2","Actinopteri","Oncorhynchus clarkii",34076
+"MiFish.0921.2Brn.Dn.2","Actinopteri","Oncorhynchus kisutch",17757
+"MiFish.0921.2Brn.Dn.2","Aves","Turdus migratorius",14952
+"MiFish.0921.2Brn.Up.3","Actinopteri","Oncorhynchus kisutch",13
+"MiFish.0921.2Brn.Up.3","Aves","Turdus migratorius",813
+"MiFish.0921.3Chk.Dn.1","Actinopteri","Oncorhynchus clarkii",76074
+"MiFish.0921.3Chk.Dn.1","Actinopteri","Oncorhynchus mykiss",130
+"MiFish.0921.3Chk.Dn.2","Actinopteri","Oncorhynchus clarkii",68231
+"MiFish.0921.3Chk.Dn.2","Mammalia","Neovison vison",156
+"MiFish.0921.3Chk.Dn.3","Actinopteri","Gasterosteus aculeatus",5
+"MiFish.0921.3Chk.Dn.3","Actinopteri","Oncorhynchus clarkii",74702
+"MiFish.0921.3Chk.Dn.3","Actinopteri","Oncorhynchus kisutch",18
+"MiFish.0921.3Chk.Dn.3","Mammalia","Neovison vison",92
+"MiFish.0921.3Chk.Up.1","Actinopteri","Oncorhynchus clarkii",132731
+"MiFish.0921.3Chk.Up.1","Mammalia","Neovison vison",30
+"MiFish.0921.3Chk.Up.3","Actinopteri","Gasterosteus aculeatus",5
+"MiFish.0921.3Chk.Up.3","Actinopteri","Oncorhynchus clarkii",114016
+"MiFish.0921.3Chk.Up.3","Actinopteri","Oncorhynchus kisutch",27
+"MiFish.0921.3Chk.Up.3","Actinopteri","Sardinops sagax",3
+"MiFish.0921.3Chk.Up.3","Aves","Turdus migratorius",5
+"MiFish.0921.3Chk.Up.3","Mammalia","Neovison vison",10
+"MiFish.0921.4Pad.Dn.1","Actinopteri","Oncorhynchus clarkii",11923
+"MiFish.0921.4Pad.Dn.1","Actinopteri","Oncorhynchus kisutch",15108
+"MiFish.0921.4Pad.Dn.1","Actinopteri","Oncorhynchus mykiss",57391
+"MiFish.0921.4Pad.Dn.1","Aves","Sturnus vulgaris",412
+"MiFish.0921.4Pad.Dn.1","Aves","Turdus migratorius",350
+"MiFish.0921.4Pad.Dn.2","Actinopteri","Oncorhynchus clarkii",7249
+"MiFish.0921.4Pad.Dn.2","Actinopteri","Oncorhynchus kisutch",15435
+"MiFish.0921.4Pad.Dn.2","Actinopteri","Oncorhynchus mykiss",59790
+"MiFish.0921.4Pad.Dn.2","Aves","Turdus migratorius",19
+"MiFish.0921.4Pad.Up5.2","Actinopteri","Oncorhynchus kisutch",32161
+"MiFish.0921.4Pad.Up5.2","Aves","Melospiza melodia",51
+"MiFish.0921.4Pad.Up5.2","Aves","Piranga ludoviciana",22
+"MiFish.0921.4Pad.Up5.2","Aves","Turdus migratorius",7946
+"MiFish.0921.5Sqm.Dn.2","Actinopteri","Oncorhynchus clarkii",68272
+"MiFish.0921.5Sqm.Dn.2","Aves","Junco hyemalis",381
+"MiFish.0921.5Sqm.Dn.2","Aves","Poecile atricapillus",936
+"MiFish.0921.5Sqm.Dn.2","Hyperoartia","Lampetra sp. CBM:ZF:17561",7200
+"MiFish.0921.5Sqm.Dn.3","Actinopteri","Oncorhynchus clarkii",54841
+"MiFish.0921.5Sqm.Dn.3","Aves","Junco hyemalis",2237
+"MiFish.0921.5Sqm.Dn.3","Hyperoartia","Lampetra sp. CBM:ZF:17561",5996
+"MiFish.1021.1Prt.Dn.1","Actinopteri","Oncorhynchus clarkii",105142
+"MiFish.1021.1Prt.Dn.1","Actinopteri","Oncorhynchus kisutch",12762
+"MiFish.1021.1Prt.Dn.1","Aves","Turdus migratorius",153
+"MiFish.1021.1Prt.Dn.1","Hyperoartia","Lampetra sp. CBM:ZF:17561",6138
+"MiFish.1021.1Prt.Dn.1","Mammalia","Didelphis virginiana",12
+"MiFish.1021.1Prt.Dn.2","Actinopteri","Oncorhynchus clarkii",64384
+"MiFish.1021.1Prt.Dn.2","Actinopteri","Oncorhynchus kisutch",24710
+"MiFish.1021.1Prt.Dn.2","Aves","Turdus migratorius",2601
+"MiFish.1021.1Prt.Dn.2","Hyperoartia","Lampetra sp. CBM:ZF:17561",10938
+"MiFish.1021.1Prt.Up.2","Actinopteri","Oncorhynchus clarkii",30508
+"MiFish.1021.1Prt.Up.2","Actinopteri","Oncorhynchus kisutch",6714
+"MiFish.1021.1Prt.Up.2","Aves","Turdus migratorius",587
+"MiFish.1021.1Prt.Up.2","Hyperoartia","Lampetra sp. CBM:ZF:17561",12661
+"MiFish.1021.2Brn.Up.1","Actinopteri","Oncorhynchus keta",36
+"MiFish.1021.2Brn.Up.2","Actinopteri","Gasterosteus aculeatus",5
+"MiFish.1021.2Brn.Up.2","Actinopteri","Oncorhynchus keta",32
+"MiFish.1021.3Chk.Dn.1","Actinopteri","Gasterosteus aculeatus",4
+"MiFish.1021.3Chk.Dn.1","Actinopteri","Oncorhynchus clarkii",95785
+"MiFish.1021.3Chk.Dn.1","Actinopteri","Oncorhynchus mykiss",4754
+"MiFish.1021.3Chk.Dn.1","Mammalia","Canis lupus",667
+"MiFish.1021.3Chk.Dn.2","Actinopteri","Oncorhynchus clarkii",69716
+"MiFish.1021.3Chk.Dn.2","Actinopteri","Oncorhynchus mykiss",2411
+"MiFish.1021.3Chk.Dn.2","Aves","Pipilo maculatus",18
+"MiFish.1021.3Chk.Up.2","Actinopteri","Oncorhynchus clarkii",95883
+"MiFish.1021.3Chk.Up.2","Aves","Turdus migratorius",562
+"MiFish.1021.3Chk.Up.3","Actinopteri","Oncorhynchus clarkii",77950
+"MiFish.1021.4Pad.Dn.1","Actinopteri","Oncorhynchus clarkii",1935
+"MiFish.1021.4Pad.Dn.1","Actinopteri","Oncorhynchus kisutch",9066
+"MiFish.1021.4Pad.Dn.1","Actinopteri","Oncorhynchus mykiss",3361
+"MiFish.1021.4Pad.Dn.3","Actinopteri","Oncorhynchus clarkii",25342
+"MiFish.1021.4Pad.Dn.3","Actinopteri","Oncorhynchus kisutch",7750
+"MiFish.1021.4Pad.Dn.3","Actinopteri","Oncorhynchus mykiss",10309
+"MiFish.1021.4Pad.Up11.3","Actinopteri","Oncorhynchus clarkii",17436
+"MiFish.1021.4Pad.Up11.3","Actinopteri","Oncorhynchus kisutch",38437
+"MiFish.1021.4Pad.Up11.3","Actinopteri","Oncorhynchus mykiss",33595
+"MiFish.1021.5Sqm.Dn.2","Actinopteri","Oncorhynchus clarkii",31661
+"MiFish.1021.5Sqm.Dn.2","Actinopteri","Oncorhynchus kisutch",15
+"MiFish.1021.5Sqm.Dn.2","Aves","Turdus migratorius",11494
+"MiFish.1021.5Sqm.Dn.2","Hyperoartia","Lampetra sp. CBM:ZF:17561",10714
+"MiFish.1021.5Sqm.Dn.2","Mammalia","Sus scrofa",4304
+"MiFish.1021.5Sqm.Up.2","Actinopteri","Oncorhynchus clarkii",10056
+"MiFish.1021.5Sqm.Up.2","Actinopteri","Oncorhynchus kisutch",14
+"MiFish.1021.5Sqm.Up.2","Aves","Turdus migratorius",70509
+"MiFish.1021.5Sqm.Up.2","Hyperoartia","Lampetra sp. CBM:ZF:17561",2549
+"MiFish.1021.5Sqm.Up.2","Mammalia","Sus scrofa",125
+"MiFish.1021.5Sqm.Up.3","Actinopteri","Oncorhynchus clarkii",11231
+"MiFish.1021.5Sqm.Up.3","Aves","Turdus migratorius",94797
+"MiFish.1121.1Prt.Dn.1","Actinopteri","Oncorhynchus clarkii",4118
+"MiFish.1121.1Prt.Dn.1","Actinopteri","Oncorhynchus kisutch",117350
+"MiFish.1121.1Prt.Dn.1","Aves","Regulus calendula",308
+"MiFish.1121.1Prt.Dn.1","Aves","Sturnus vulgaris",388
+"MiFish.1121.1Prt.Dn.1","Hyperoartia","Lampetra sp. CBM:ZF:17561",817
+"MiFish.1121.1Prt.Dn.1","Mammalia","Didelphis virginiana",4
+"MiFish.1121.2Brn.Dn.1","Actinopteri","Oncorhynchus clarkii",16863
+"MiFish.1121.2Brn.Dn.1","Actinopteri","Oncorhynchus kisutch",12934
+"MiFish.1121.2Brn.Dn.1","Actinopteri","Oncorhynchus nerka",74255
+"MiFish.1121.2Brn.Dn.1","Mammalia","Felis catus",70
+"MiFish.1121.2Brn.Dn.1","Mammalia","Lynx rufus",13
+"MiFish.1121.2Brn.Dn.2","Actinopteri","Oncorhynchus clarkii",5969
+"MiFish.1121.2Brn.Dn.2","Actinopteri","Oncorhynchus kisutch",15296
+"MiFish.1121.2Brn.Dn.2","Actinopteri","Oncorhynchus nerka",65739
+"MiFish.1121.2Brn.Up.3","Actinopteri","Oncorhynchus gorbuscha",4
+"MiFish.1121.2Brn.Up.3","Aves","Turdus migratorius",2029
+"MiFish.1121.2Brn.Up.3","Mammalia","Sus scrofa",1558
+"MiFish.1121.3Chk.Dn.1","Actinopteri","Oncorhynchus clarkii",68604
+"MiFish.1121.3Chk.Dn.2","Actinopteri","Oncorhynchus clarkii",34931
+"MiFish.1121.3Chk.Dn.2","Mammalia","Sus scrofa",6943
+"MiFish.1121.3Chk.Dn.3","Actinopteri","Oncorhynchus clarkii",43751
+"MiFish.1121.3Chk.Dn.3","Actinopteri","Oncorhynchus mykiss",7776
+"MiFish.1121.3Chk.Up.1","Actinopteri","Oncorhynchus clarkii",3045
+"MiFish.1121.3Chk.Up.3","Actinopteri","Oncorhynchus clarkii",28940
+"MiFish.1121.3Chk.Up.3","Aves","Colaptes auratus",142
+"MiFish.1121.3Chk.Up.3","Aves","Turdus migratorius",752
+"MiFish.1121.3Chk.Up.3","Mammalia","Didelphis virginiana",55
+"MiFish.1121.3Chk.Up.3","Mammalia","Scapanus orarius",267
+"MiFish.1121.4Pad.Up11.1","Actinopteri","Oncorhynchus kisutch",24006
+"MiFish.1121.4Pad.Up11.1","Actinopteri","Oncorhynchus mykiss",1334
+"MiFish.1121.4Pad.Up11.1","Actinopteri","Oncorhynchus nerka",13995
+"MiFish.1121.4Pad.Up11.1","Actinopteri","Spirinchus thaleichthys",10
+"MiFish.1121.4Pad.Up11.1","Aves","Turdus migratorius",17623
+"MiFish.1121.4Pad.Up11.3","Actinopteri","Oncorhynchus clarkii",1186
+"MiFish.1121.4Pad.Up11.3","Actinopteri","Oncorhynchus kisutch",12569
+"MiFish.1121.4Pad.Up11.3","Actinopteri","Oncorhynchus nerka",28374
+"MiFish.1121.4Pad.Up11.3","Actinopteri","Perca flavescens",529
+"MiFish.1121.4Pad.Up11.3","Aves","Turdus migratorius",116
+"MiFish.1121.4Pad.Up5.1","Actinopteri","Oncorhynchus gorbuscha",174
+"MiFish.1121.4Pad.Up5.1","Actinopteri","Oncorhynchus nerka",17320
+"MiFish.1121.4Pad.Up5.1","Mammalia","Canis lupus",396
+"MiFish.1121.4Pad.Up5.2","Actinopteri","Oncorhynchus clarkii",1556
+"MiFish.1121.4Pad.Up5.2","Actinopteri","Oncorhynchus nerka",18686
+"MiFish.1121.4Pad.Up5.2","Aves","Turdus migratorius",1905
+"MiFish.1121.5Sqm.Dn.1","Actinopteri","Ameiurus nebulosus",2815
+"MiFish.1121.5Sqm.Dn.1","Actinopteri","Oncorhynchus clarkii",7660
+"MiFish.1121.5Sqm.Dn.1","Actinopteri","Oncorhynchus kisutch",40230
+"MiFish.1121.5Sqm.Dn.1","Actinopteri","Oncorhynchus mykiss",1803
+"MiFish.1121.5Sqm.Dn.1","Actinopteri","Oncorhynchus tshawytscha",898
+"MiFish.1121.5Sqm.Dn.1","Actinopteri","Pimephales promelas",7439
+"MiFish.1121.5Sqm.Dn.1","Aves","Turdus migratorius",6045
+"MiFish.1121.5Sqm.Dn.1","Hyperoartia","Lampetra sp. CBM:ZF:17561",1574
+"MiFish.1121.5Sqm.Dn.1","Mammalia","Sus scrofa",391
+"MiFish.1121.5Sqm.Dn.3","Actinopteri","Ameiurus nebulosus",825
+"MiFish.1121.5Sqm.Dn.3","Actinopteri","Oncorhynchus clarkii",27532
+"MiFish.1121.5Sqm.Dn.3","Actinopteri","Oncorhynchus gorbuscha",22
+"MiFish.1121.5Sqm.Dn.3","Actinopteri","Oncorhynchus kisutch",53799
+"MiFish.1121.5Sqm.Dn.3","Actinopteri","Oncorhynchus tshawytscha",1130
+"MiFish.1121.5Sqm.Dn.3","Actinopteri","Pimephales promelas",5356
+"MiFish.1121.5Sqm.Dn.3","Aves","Fulica americana",111
+"MiFish.1121.5Sqm.Dn.3","Aves","Turdus migratorius",750
+"MiFish.1121.5Sqm.Up.1","Actinopteri","Oncorhynchus clarkii",6908
+"MiFish.1121.5Sqm.Up.1","Actinopteri","Oncorhynchus kisutch",70697
+"MiFish.1121.5Sqm.Up.1","Actinopteri","Oncorhynchus tshawytscha",421
+"MiFish.1121.5Sqm.Up.1","Actinopteri","Pimephales promelas",572
+"MiFish.1121.5Sqm.Up.1","Actinopteri","Spirinchus thaleichthys",6
+"MiFish.1121.5Sqm.Up.1","Aves","Turdus migratorius",732
+"MiFish.1121.5Sqm.Up.2","Actinopteri","Oncorhynchus clarkii",7293
+"MiFish.1121.5Sqm.Up.2","Actinopteri","Oncorhynchus gorbuscha",14
+"MiFish.1121.5Sqm.Up.2","Actinopteri","Oncorhynchus kisutch",32182
+"MiFish.1121.5Sqm.Up.2","Actinopteri","Pimephales promelas",1851
+"MiFish.Kangaroo.NA.NA.NA","Mammalia","Osphranter rufus",140264
 "MiFish.Kangaroo.Run.2","Mammalia","Osphranter rufus",128818
 "MiFish.Kangaroo.Run.3","Actinopteri","Oncorhynchus clarkii",10
 "MiFish.Kangaroo.Run.3","Actinopteri","Oncorhynchus kisutch",8
 "MiFish.Kangaroo.Run.3","Hyperoartia","Lampetra sp. CBM:ZF:17561",4
 "MiFish.Kangaroo.Run.3","Mammalia","Osphranter rufus",36682
 "MiFish.Kangaroo.Run.4","Mammalia","Osphranter rufus",48396
-"MiFish.Kangaroo.Run.5","Mammalia","Osphranter rufus",87837
 "MiFish.Kangaroo.Run.6","Mammalia","Osphranter rufus",53345
 "MiFish.Kangaroo.Run.7.NA","Mammalia","Osphranter rufus",65648
+"NGN0302","Actinopteri","Oncorhynchus kisutch",1578
+"NGN0303","Actinopteri","Oncorhynchus clarkii",3166
+"NGN0303","Actinopteri","Oncorhynchus kisutch",3477
+"NGN0304","Actinopteri","Oncorhynchus clarkii",2732
+"NGN0304","Hyperoartia","Lampetra sp. CBM:ZF:17561",3403
+"NGN0305","Actinopteri","Oncorhynchus clarkii",4955
+"NGN0305","Actinopteri","Oncorhynchus kisutch",189
+"NGN0305","Actinopteri","Oncorhynchus mykiss",3932
+"NGN0305","Actinopteri","Perca flavescens",930
+"NGN0305","Mammalia","Canis lupus",5
+"NGN0307","Actinopteri","Oncorhynchus clarkii",5171
+"NGN0308","Actinopteri","Oncorhynchus clarkii",2029
+"NGN0308","Actinopteri","Oncorhynchus mykiss",567
+"NGN0308","Actinopteri","Oncorhynchus nerka",563
+"NGN0308","Actinopteri","Perca flavescens",5744
+"NGN0309","Actinopteri","Ameiurus nebulosus",577
+"NGN0309","Actinopteri","Oncorhynchus clarkii",19556
+"NGN0309","Actinopteri","Pimephales promelas",12015
+"NGN0309","Hyperoartia","Lampetra sp. CBM:ZF:17561",699
+"NGN0310","Actinopteri","Oncorhynchus clarkii",15461
+"NGN0310","Actinopteri","Oncorhynchus mykiss",588
+"NGN0310","Actinopteri","Pimephales promelas",12081
+"NGN0310","Aves","Turdus migratorius",142
+"NGN0310","Hyperoartia","Lampetra sp. CBM:ZF:17561",214
+"NGN0311","Actinopteri","Ameiurus nebulosus",790
+"NGN0311","Actinopteri","Oncorhynchus clarkii",25063
+"NGN0311","Actinopteri","Oncorhynchus kisutch",697
+"NGN0311","Actinopteri","Pimephales promelas",8083
+"NGN0312","Actinopteri","Oncorhynchus clarkii",12483
+"NGN0312","Actinopteri","Oncorhynchus kisutch",12885
+"NGN0312","Hyperoartia","Lampetra sp. CBM:ZF:17561",1154
+"NGN0313","Actinopteri","Oncorhynchus clarkii",36453
+"NGN0313","Actinopteri","Oncorhynchus kisutch",32605
+"NGN0313","Aves","Aix sponsa",27
+"NGN0313","Aves","Melospiza melodia",32
+"NGN0313","Hyperoartia","Lampetra sp. CBM:ZF:17561",9717
+"NGN0314","Actinopteri","Oncorhynchus clarkii",17980
+"NGN0314","Actinopteri","Oncorhynchus kisutch",13231
+"NGN0314","Hyperoartia","Lampetra sp. CBM:ZF:17561",2403
+"NGN0315","Actinopteri","Oncorhynchus clarkii",3859
+"NGN0315","Actinopteri","Oncorhynchus kisutch",14042
+"NGN0316","Aves","Turdus migratorius",931
+"NGN0317","Actinopteri","Oncorhynchus clarkii",22619
+"NGN0317","Aves","Turdus migratorius",1775
+"NGN0317","Mammalia","Didelphis virginiana",22
+"NGN0318","Actinopteri","Oncorhynchus clarkii",22033
+"NGN0319","Actinopteri","Oncorhynchus clarkii",5455
+"NGN0319","Actinopteri","Oncorhynchus keta",122
+"NGN0319","Actinopteri","Oncorhynchus kisutch",3075
+"NGN0319","Actinopteri","Oncorhynchus mykiss",6459
+"NGN0319","Actinopteri","Perca flavescens",5526
+"NGN0319","Aves","Regulus calendula",309
+"NGN0320","Actinopteri","Oncorhynchus clarkii",6400
+"NGN0320","Actinopteri","Oncorhynchus keta",1214
+"NGN0320","Actinopteri","Oncorhynchus kisutch",3366
+"NGN0320","Actinopteri","Oncorhynchus mykiss",6414
+"NGN0320","Actinopteri","Perca flavescens",11346
+"NGN0320","Mammalia","Canis lupus",59
+"NGN0321","Actinopteri","Oncorhynchus clarkii",3267
+"NGN0321","Actinopteri","Oncorhynchus kisutch",494
+"NGN0321","Actinopteri","Oncorhynchus mykiss",9507
+"NGN0321","Actinopteri","Perca flavescens",7039
+"NGN0321","Mammalia","Canis lupus",6
+"NGN0322","Actinopteri","Oncorhynchus clarkii",1894
+"NGN0322","Actinopteri","Oncorhynchus mykiss",7080
+"NGN0322","Actinopteri","Perca flavescens",17965
+"NGN0323","Actinopteri","Ameiurus nebulosus",2146
+"NGN0323","Actinopteri","Oncorhynchus clarkii",18386
+"NGN0323","Actinopteri","Oncorhynchus kisutch",713
+"NGN0323","Actinopteri","Oncorhynchus mykiss",644
+"NGN0323","Actinopteri","Pimephales promelas",18629
+"NGN0323","Aves","Turdus migratorius",75
+"NGN0323","Hyperoartia","Lampetra sp. CBM:ZF:17561",573
+"NGN0324","Actinopteri","Oncorhynchus clarkii",32568
+"NGN0324","Actinopteri","Oncorhynchus kisutch",8742
+"NGN0325","Actinopteri","Oncorhynchus clarkii",26859
+"NGN0325","Actinopteri","Oncorhynchus kisutch",9983
+"NGN0326","Actinopteri","Oncorhynchus clarkii",9584
+"NGN0326","Actinopteri","Oncorhynchus mykiss",173
+"NGN0327","Actinopteri","Oncorhynchus clarkii",25280
+"NGN0328","Actinopteri","Oncorhynchus clarkii",45329
+"NGN0329","Actinopteri","Oncorhynchus clarkii",47251
+"NGN0330","Actinopteri","Gasterosteus aculeatus",1720
+"NGN0330","Actinopteri","Oncorhynchus clarkii",1264
+"NGN0330","Actinopteri","Oncorhynchus kisutch",69
+"NGN0330","Actinopteri","Oncorhynchus mykiss",1067
+"NGN0330","Mammalia","Sus scrofa",12
+"NGN0331","Actinopteri","Oncorhynchus clarkii",1356
+"NGN0331","Actinopteri","Oncorhynchus kisutch",2217
+"NGN0331","Actinopteri","Oncorhynchus mykiss",25905
+"NGN0332","Actinopteri","Oncorhynchus clarkii",1760
+"NGN0332","Actinopteri","Oncorhynchus kisutch",1905
+"NGN0332","Actinopteri","Oncorhynchus mykiss",18423
+"NGN0333","Actinopteri","Oncorhynchus kisutch",8727
+"NGN0333","Actinopteri","Perca flavescens",1612
+"NGN0333","Aves","Melospiza melodia",40
+"NGN0333","Aves","Poecile atricapillus",32
+"NGN0334","Actinopteri","Oncorhynchus kisutch",4729
+"NGN0334","Aves","Melospiza melodia",10
+"NGN0335","Actinopteri","Oncorhynchus clarkii",47824
+"NGN0335","Actinopteri","Oncorhynchus kisutch",1565
+"NGN0335","Aves","Turdus migratorius",28
+"NGN0335","Hyperoartia","Lampetra sp. CBM:ZF:17561",92
+"NGN0336","Actinopteri","Oncorhynchus clarkii",29361
+"NGN0336","Actinopteri","Oncorhynchus kisutch",11248
+"NGN0336","Aves","Turdus migratorius",200
+"NGN0336","Hyperoartia","Lampetra sp. CBM:ZF:17561",6678
+"NGN0337","Actinopteri","Oncorhynchus clarkii",29964
+"NGN0337","Actinopteri","Oncorhynchus kisutch",10498
+"NGN0337","Aves","Turdus migratorius",155
+"NGN0337","Hyperoartia","Lampetra sp. CBM:ZF:17561",8670
+"NGN0338","Actinopteri","Oncorhynchus clarkii",26118
+"NGN0338","Actinopteri","Oncorhynchus kisutch",10050
+"NGN0338","Aves","Turdus migratorius",161
+"NGN0338","Hyperoartia","Lampetra sp. CBM:ZF:17561",6555
+"NGN0339","Mammalia","Osphranter rufus",48396
