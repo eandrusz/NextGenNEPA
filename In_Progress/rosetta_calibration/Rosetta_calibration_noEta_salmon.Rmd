@@ -1,0 +1,332 @@
+---
+title: "Rosetta Stone Calibration"
+author: "Kelly"
+date: "4/5/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(MCMCpack) #for rdirichelet function
+library(rstan)
+library(shinystan)
+library(bayesplot)
+library(here)
+rstan_options(auto_write = TRUE)
+options(mc.cores = parallel::detectCores())
+
+setwd(here("In_Progress","rosetta_calibration"))
+
+source("simFunctions.R") #functions to generate communities and observations of those communities
+a <- readRDS("data/MiFish.salmonidonly.envirodata.RDS") %>% 
+  filter(species != "") %>% 
+  filter(time != "NA")
+  #filter(creek == "4Pad")
+
+d <- readRDS(here("In_Progress","rosetta_calibration","data","MiFishmockdata.RDS")) %>% 
+  mutate(time = 1,
+         creek = 1,
+         biol = 1)  
+  #filter(tech == 1)
+  # unite(com_rep, c(site,tech), remove=FALSE) %>% 
+  # filter(com_rep != "MCZ_1") %>%  
+  # dplyr::select(-com_rep)
+
+Mock <- d %>% filter(site %in% c("MCC", "MCB")) %>% filter(b_proportion > 0 & Nreads > 0) 
+#Mock <- d %>% filter(site %in% c("MCZ")) %>% filter(b_proportion > 0 & Nreads > 0 & tech %in% c(2,3)) 
+
+
+Observation <- a %>% 
+  filter(species %in% Mock$species) %>% 
+  filter(!species %in% c("Salmo trutta", "Oncorhynchus nerka")) %>%  #for now; very rare
+  #filter(creek %in% c("4Pad")) %>%  #for now, just look at subset
+  #filter(b_proportion > 0) %>% 
+  filter(Nreads > 0) %>% 
+  filter(tech == 1)
+Mock <- Mock %>% filter(species %in% Observation$species)
+
+  #index species to common standard 
+  sp_list <- data.frame(
+    species = c(Mock$species, Observation$species) %>% unique(),
+    species_idx = NA)
+  sp_list$species_idx <- match(sp_list$species, unique(sp_list$species)) 
+
+#reindex and renormalize to deal with omitted species
+Mock <- Mock %>% 
+  left_join(sp_list) %>% 
+  mutate(sitename = site, 
+           site = match(site, unique(site)),
+           speciesname = species,
+           species = species_idx) %>% 
+  group_by(site, tech, time, creek, biol) %>% 
+  mutate(b_proportion = b_proportion/sum(b_proportion)) %>% 
+  ungroup()
+Observation <- Observation %>% 
+  left_join(sp_list) %>% 
+  mutate(sitename = site, 
+           site = match(site, unique(site)),
+           speciesname = species,
+           species = species_idx) %>% 
+  group_by(site, time, creek, biol) %>% 
+  mutate(tech = match(tech, unique(tech))) %>% 
+  #mutate(b_proportion = b_proportion/sum(b_proportion)) %>% 
+  ungroup()
+
+  site_list <- data.frame(
+    site = Observation$sitename %>% unique(),
+    site_idx = NA)
+  site_list$site_idx <- match(site_list$site, unique(site_list$site)) 
+
+
+
+#list object containing named elements Observation, Mock, and Npcr
+Observation <- list(
+  Observation = Observation,
+  Mock = Mock,
+  N_pcr_mock = 43
+)   
+
+#prep for stan
+stan_data <- makeDesign(Observation)
+
+
+```
+
+
+
+```{r ML Estimation in Stan}
+
+
+
+#fit model
+      
+      #Simpler datasets work fine in this quick likelihood estimation
+      #likelihood
+      M <- stan_model(file=here("In_Progress","rosetta_calibration","quant_metabar_rosetta_noSampleEta.stan"))
+      stanOpt <- optimizing(M, data=stan_data, iter=30000,draws=0,
+                            verbose=T,
+                            #init=stan_init_f3(N_species=stan_data$N_species),
+                            tol_param=1e-40,
+                            algorithm="LBFGS",
+                            hessian = TRUE)
+      MLest <- stanOpt$par[grep("int_samp_small", names(stanOpt$par))] %>%
+        matrix(ncol = stan_data$N_species)
+      fisher_info<-solve(-stanOpt$hessian)
+      prop_sigma<-sqrt(diag(fisher_info))
+      #prop_sigma<-diag(prop_sigma)
+      parnames <- data.frame("d" = colnames(fisher_info)) %>% 
+                      separate(col = d, into = c("keep", "leave"), sep = "\\.") %>% 
+        pull(keep) %>% unique()
+
+      upper<-stanOpt$par[gsub("\\[.+\\]","", names(stanOpt$par)) %in% parnames]+1.96*prop_sigma
+      lower<-stanOpt$par[gsub("\\[.+\\]","", names(stanOpt$par)) %in% parnames]-1.96*prop_sigma
+      interval<-data.frame(value=stanOpt$par[gsub("\\[.+\\]","", names(stanOpt$par)) %in% parnames], upper=upper, lower=lower)
+      interval %>% 
+        rownames_to_column("par") %>% 
+        filter(str_detect(par, "alpha_raw")) %>% 
+        ggplot(aes(x = par, y = value)) +
+          geom_point() +
+          geom_segment(aes(x = par, xend = par, y = lower, yend = upper))
+      
+    w <- Observation$Observation %>% 
+    ungroup() %>% 
+    #unite(time, creek, site, biol, col = "site") %>% 
+    rename(tech_rep = tech) %>% 
+    mutate(species = paste0("sp_", species)) %>% 
+    filter(tech_rep ==1) %>% 
+      arrange(species) %>% 
+      dplyr::select(-c(species, species_idx, tech_rep)) %>% 
+    pivot_wider(names_from = speciesname, values_from = Nreads, values_fill = 0) %>% 
+      pivot_longer(cols = -c(time, creek, site, biol, sitename), names_to = "speciesname", values_to = "Nreads")
+    w$MLest <- as.vector(t(MLest))
+    
+    w %>% 
+      #filter(sitename %in% c("Dn", "Up5")) %>%
+      mutate(sitename = case_when(sitename == "Dn" ~ "Downstream",
+                                  sitename == "Up11" ~ "Upstream",
+                                  sitename == "Up" ~ "Upstream",
+                                   sitename == "Up5" ~ "Upstream Hwy 5")) %>%
+      mutate(speciesname = case_when(speciesname == "Oncorhynchus clarkii" ~ "Cutthroat Trout",
+                                     speciesname == "Oncorhynchus keta" ~ "Chum Salmon",
+                                     speciesname == "Oncorhynchus kisutch" ~ "Coho Salmon",
+                                     speciesname == "Oncorhynchus mykiss" ~ "Rainbow Trout",
+                                     speciesname == "Oncorhynchus gorbuscha" ~ "Pink Salmon",
+                                     speciesname == "Oncorhynchus tshawytscha" ~ "Chinook Salmon")) %>%
+      #filter(creek == "4Pad") %>%
+      group_by(time, creek, sitename, speciesname) %>% 
+      summarise(meanMLest = mean(MLest)) %>%  #mean across biol replicates
+      ggplot(aes(x = time, y = meanMLest, fill = speciesname)) +
+        geom_bar(stat = "identity") +
+        facet_grid(creek~sitename) +
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+      ylab("Proportion") + xlab("Month")
+    
+    
+      # true <- Observation$Observation %>% 
+      #   filter(tech == 1) %>% 
+      #   dplyr::select(site, species, b_proportion) %>% 
+      #   pivot_wider(names_from = species, values_from = b_proportion, values_fill = 0) %>% 
+      #   dplyr::select(-site) %>% 
+      #   as.matrix()
+      
+      #Observation$Observation %>% filter(site == 1)
+      
+      # plot(MLest ~ true)
+      
+      ML_a <- data.frame(
+        est_a = stanOpt$par[grep("alpha\\[", names(stanOpt$par))],
+        sp_list
+      )  
+      
+        
+      
+      
+```
+
+
+
+```{r Bayesian Model Estimation in Stan}
+      stan_pars <- c( 
+              "alpha",
+              "beta",
+              # "eta_samp",
+              # "eta_mock",
+              "tau",
+              "mu_samp",
+              "mu_mock",
+              "int_samp_small"
+            )
+
+      #full Bayesian model
+      stanMod = stan(file = here("In_Progress","rosetta_calibration","quant_metabar_rosetta_noSampleEta.stan") ,data = stan_data,
+                     verbose = FALSE, chains = 3, thin = 1,
+                     warmup = 500, iter = 1000,
+                     control = list(adapt_init_buffer = 175,
+                                    max_treedepth=12,
+                                    stepsize=0.01,
+                                    adapt_delta=0.7,
+                                    metric="diag_e"),
+                     pars = stan_pars,
+                     refresh = 10,
+                     boost_lib = NULL,
+                     #init = stan_init_f2(n.chain=N_CHAIN,N_species=N_species),
+                     sample_file = "temp/tmp.csv"
+      )
+
+      
+      #shinystan::launch_shinystan(stanMod)
+      #stanMod <- readRDS(here("ModFit_20220331_121413.RDS"))
+      
+      out <- list(
+        stanMod = stanMod,
+        #seed = SEED,
+        #Nspecies = NSpecies,
+        #Nt = Nt,
+        #NCreeks = NCreeks,
+        #NBiol = NBiol,
+        stan_data,
+        stan_pars
+      )
+      
+      saveRDS(out, file = paste0("ModFit_", format(Sys.time(), "%Y%m%d_%X"), ".RDS"))
+      plot(stanMod, par = "alpha")
+      #plot(stanMod, par = "int_samp_small")
+      
+      sp_list %>% 
+        mutate(meanAlpha = summary(stanMod, par = "alpha")$summary[,1]) %>% 
+        arrange(meanAlpha)
+      
+      
+      
+      
+      #set up df to handle estimates
+      # NCreeks <- length(unique(Observation$Observation$creek))
+      # NBiol <- length(unique(Observation$Observation$biol))
+      
+      
+      res.df <- expand.grid(
+        species = unique(Observation$Observation$species),
+        time = unique(Observation$Observation$time),
+        creek = unique(Observation$Observation$creek),
+        biol = unique(Observation$Observation$biol),
+        site = unique(Observation$Observation$site)
+      ) %>% 
+        unite(time, creek, biol, site, col = "s", remove = F) %>% 
+        mutate(site_idx = match(s, unique(s))) %>% 
+        mutate(species = as.numeric(species),
+               site_idx = as.numeric(site_idx))
+      # 
+      # 
+      # Observation$Observation %>% 
+      #   ungroup() %>% 
+      #   dplyr::select(species, time, creek, biol, site) %>% 
+      #   distinct() %>% 
+      #   unite(time, creek, biol, site, col = "s", remove = F) %>% 
+      #   mutate(site_idx = match(s, unique(s))) %>% 
+      #   mutate(species = as.numeric(species),
+      #          site_idx = as.numeric(site_idx))
+       post <- summary(stanMod, par = "int_samp_small")$summary %>% 
+        as.data.frame() %>% 
+        mutate(site_idx = rep(1:stan_data$N_obs_samp_small, each = stan_data$N_species),
+               species = rep(1:stan_data$N_species, times = stan_data$N_obs_samp_small)) %>% 
+        left_join(res.df) %>% 
+         left_join(sp_list %>% rename(speciesname = species, species = species_idx)) %>% 
+         left_join(site_list %>% rename(sitename = site, site = site_idx))
+
+
+```
+
+
+```{r Illustrate Model Fit}
+
+for (i in unique(post$time)){
+assign(paste0("p_",i), post %>% 
+  drop_na() %>% 
+  filter(time == i) %>% 
+  ggplot(aes(x = speciesname, y = mean)) +
+    geom_point() +
+    geom_line() +
+    #geom_segment(aes(x = speciesname, xend = speciesname, y = `25%`, yend = `75%`)) +
+    facet_grid(sitename~creek) +
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+    ggtitle(i)
+)
+}
+pdf("Mifish.pdf")
+p_0321
+p_0421
+p_0521
+p_0621
+p_0721
+p_0821
+dev.off()
+
+
+
+post %>% 
+  drop_na() %>% 
+  filter(time == "0821") %>% 
+  ggplot(aes(x = sitename, y = mean)) +
+    geom_boxplot() +
+    #geom_segment(aes(x = sitename, xend = sitename, y = `25%`, yend = `75%`)) +
+    facet_grid(speciesname~time) +
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+
+post %>% 
+  drop_na() %>% 
+  filter(time == "0321") %>% 
+  group_by(time, creek, site, species, sitename, speciesname) %>% 
+      summarise(meanEst = mean(mean)) %>%  #mean across biol replicates
+      ggplot(aes(x = time, y = meanEst, fill = speciesname)) +
+        geom_bar(stat = "identity") +
+        facet_grid(creek~sitename) +
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+      #ggsave(here("In_Progress","rosetta_calibration","output","mifish.salmononly.usec.pdf"))  
+
+```
+
