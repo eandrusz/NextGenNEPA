@@ -1,0 +1,526 @@
+---
+title: "Culvert Simulations"
+author: "Kelly"
+date: "3/31/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+#library(MCMCpack) #for rdirichelet function
+library(rstan)
+#library(shinystan)
+#library(bayesplot)
+library(here)
+rstan_options(auto_write = TRUE)
+options(mc.cores = parallel::detectCores())
+
+
+source(here("In_Progress/rosetta_calibration/simFunctions.R")) #functions to generate communities and observations of those communities
+qPCRdata <- read.csv(here("In_Progress/rosetta_calibration/data/cutthroat_qpcr_results.csv"))
+stdCurve <- qPCRdata %>% 
+  filter(Type == "STANDARD" & Ct != "Undetermined" & Plate == 1) %>% 
+  mutate(Ct = as.numeric(Ct),
+         Sample = as.numeric(Sample))
+envir_qPCR <- qPCRdata %>% 
+  filter(Type != "STANDARD") %>% 
+  filter(Ct != "Undetermined") %>% 
+  mutate(Ct = as.numeric(Ct)) %>% 
+  arrange(Sample) %>% 
+  separate(Sample, into = c("time", "site", "station", "biolRep"), remove = F) %>% 
+  group_by(time, site, station, biolRep) %>% 
+  mutate(tech_rep = 1:n())
+```
+
+Metabarcoding data
+
+```{r}
+a <- readRDS("data/MiFish.salmonidonly.envirodata.RDS") %>% 
+  filter(species != "") %>% 
+  filter(time != "NA") %>% 
+  filter(creek == "4Pad") %>% 
+  filter(time %in% unique(envir_qPCR$time))
+
+d <- readRDS(here("In_Progress","rosetta_calibration","data","MiFishmockdata.RDS")) %>% 
+  mutate(time = 1,
+         creek = 1,
+         biol = 1)  
+  #filter(tech == 1)
+  # unite(com_rep, c(site,tech), remove=FALSE) %>% 
+  # filter(com_rep != "MCZ_1") %>%  
+  # dplyr::select(-com_rep)
+
+Mock <- d %>% filter(site %in% c("MCC", "MCB")) %>% filter(b_proportion > 0 & Nreads > 0) 
+#Mock <- d %>% filter(site %in% c("MCZ")) %>% filter(b_proportion > 0 & Nreads > 0 & tech %in% c(2,3)) 
+
+
+Observation <- a %>% 
+  filter(species %in% Mock$species) %>% 
+  filter(!species %in% c("Salmo trutta", "Oncorhynchus nerka")) %>%  #for now; very rare
+  #filter(creek %in% c("4Pad")) %>%  #for now, just look at subset
+  #filter(b_proportion > 0) %>% 
+  filter(Nreads > 0) %>% 
+  filter(tech == 1)
+Mock <- Mock %>% filter(species %in% Observation$species)
+
+  #index species to common standard 
+  sp_list <- data.frame(
+    species = c(Mock$species, Observation$species) %>% unique(),
+    species_idx = NA)
+  sp_list$species_idx <- match(sp_list$species, unique(sp_list$species)) 
+
+#reindex and renormalize to deal with omitted species
+Mock <- Mock %>% 
+  left_join(sp_list) %>% 
+  mutate(sitename = site, 
+           site = match(site, unique(site)),
+           speciesname = species,
+           species = species_idx) %>% 
+  group_by(site, tech, time, creek, biol) %>% 
+  mutate(b_proportion = b_proportion/sum(b_proportion)) %>% 
+  ungroup()
+Observation <- Observation %>% 
+  left_join(sp_list) %>% 
+  mutate(sitename = site, 
+           site = match(site, unique(site)),
+           speciesname = species,
+           species = species_idx) %>% 
+  group_by(site, time, creek, biol) %>% 
+  mutate(tech = match(tech, unique(tech))) %>% 
+  #mutate(b_proportion = b_proportion/sum(b_proportion)) %>% 
+  ungroup()
+
+  site_list <- data.frame(
+    site = Observation$sitename %>% unique(),
+    site_idx = NA)
+  site_list$site_idx <- match(site_list$site, unique(site_list$site)) 
+
+
+
+#list object containing named elements Observation, Mock, and Npcr
+Observation <- list(
+  Observation = Observation,
+  Mock = Mock,
+  N_pcr_mock = 43
+)   
+
+
+#limit to data for which we have both qPCR and metabarcoding:
+Observation$Observation  <- Observation$Observation %>% 
+  unite(c(time, creek, sitename, biol), col = "Sample", sep = ".", remove = F) %>%
+  rename(station = sitename) 
+
+keepSamples <- intersect(Observation$Observation$Sample, envir_qPCR$Sample)
+Observation$Observation <- Observation$Observation %>% filter(Sample %in% keepSamples)
+envir_qPCR <- envir_qPCR %>% filter(Sample %in% keepSamples)
+
+NSpecies <- nrow(sp_list)
+
+RefSpecies <- 1 #index of the species for which you have qPCR data, relative to sp_list
+
+```
+
+
+
+
+Check std curves
+```{r}
+stdCurve %>% 
+  ggplot(aes(x= log(Sample), y = Ct, color = as.factor(Plate))) +
+    geom_point() +
+    geom_smooth(method = "lm")
+
+```
+
+
+
+
+```{r qPCR calibrations setup}
+
+stan_data <- list()
+#add qPCR std curve
+  stan_data$N_std_curve <- length(stdCurve$Ct)
+  stan_data$N_std_samples <- length(unique(stdCurve$Sample))
+  stan_data$std_sample_idx <- match(stdCurve$Sample, unique(stdCurve$Sample)) #note, assumes single array of dilutions
+  stan_data$known_concentration <- unique(stdCurve$Sample)
+  stan_data$y_ct_std_curve <- stdCurve$Ct
+
+#add qPCR from envir samples
+  stan_data$N_qPCR_envir <- nrow(envir_qPCR)
+  stan_data$N_biol_estimates <- length(unique(envir_qPCR$Sample))
+  stan_data$sp_idx_qPCR <- rep(1, stan_data$N_biol_estimates) #species idx; will need to change when we have multiple reference species
+  stan_data$obs_samp_idx <- match(envir_qPCR$Sample, unique(envir_qPCR$Sample))
+  stan_data$obs_samp_small_idx <- unique(envir_qPCR$Sample)
+  stan_data$y_ct_envir <- envir_qPCR$Ct
+
+```
+
+
+qPCR calibration and estimating absolute concentrations from enviro samples using qPCR.
+
+```{r fit qPCR calibration model and estimate concentration of enviro samples, results='hide'}
+
+#TODO modify model to handle multiple different std curves
+
+qMod = stan(file = here("In_Progress/rosetta_calibration/qPCR_calibration.stan") ,data = stan_data,
+                     verbose = FALSE, chains = 3, thin = 1,
+                     warmup = 500, iter = 2000,
+                     control = list(adapt_init_buffer = 175,
+                                    max_treedepth=12,
+                                    stepsize=0.01,
+                                    adapt_delta=0.7,
+                                    metric="diag_e"),
+                     #pars = stan_pars,
+                     refresh = 10,
+                     boost_lib = NULL,
+                     #init = stan_init_f2(n.chain=N_CHAIN,N_species=N_species),
+                     sample_file = "temp/tmp.csv"
+      )
+
+#plot(qMod, par = c("beta_std_curve_1", "sigma_std_curve", "sigma_envir_qPCR"))
+# launch_shinystan(qMod)
+```
+
+Visualize std curve with CI
+
+```{r}
+pp_beta0 <- extract(qMod, "beta_std_curve_0")$beta_std_curve_0
+pp_beta1 <- extract(qMod, "beta_std_curve_1")$beta_std_curve_1
+pp_sigma <- extract(qMod, "sigma_std_curve")$sigma_std_curve
+
+conc <- runif(1000, 0, 5)
+mu <- sample(pp_beta0, 1000) + (sample(pp_beta1, 1000)*conc)
+y<-NA
+for(i in 1:1000){y[i] <- rnorm(1, mean = mu[i], sd = pp_sigma[i])}
+
+data.frame(y, conc) %>% 
+  ggplot(aes(x = conc, y = y)) +
+    geom_point(alpha = .5)
+
+```
+
+
+
+```{r plot qPCR fit}
+results_qPCR <- envir_qPCR %>%
+  ungroup() %>% 
+  filter(tech_rep == 1) %>%
+  mutate(bayes_est = 10^(summary(qMod, par = "envir_concentration")$summary[,1]),
+         bayes_25pct = 10^(summary(qMod, par = "envir_concentration")$summary[,5]),
+         bayes_75pct = 10^(summary(qMod, par = "envir_concentration")$summary[,7]))
+         
+
+results_qPCR %>% 
+  ggplot(aes(x = station, y = log(bayes_est))) +
+    geom_point() +
+    geom_segment(aes(x = station, xend = station, y = log(bayes_25pct), yend = log(bayes_75pct))) +
+    facet_wrap(~time)
+    
+
+```
+
+
+
+
+
+
+```{r ML Estimation in Stan, results='hide'}
+
+stan_data <- makeDesign(Observation)
+
+#fit model
+      
+      #Simpler datasets work fine in this quick likelihood estimation
+      #likelihood
+      M <- stan_model(file=here("In_Progress/rosetta_calibration/quant_metabar_rosetta_noSampleEta.stan"))
+      stanOpt <- optimizing(M, data=stan_data, iter=30000,draws=0,
+                            verbose=T,
+                            #init=stan_init_f4(N_species=stan_data$N_species, Observation),
+                            tol_param=1e-15,
+                            algorithm="LBFGS")
+      MLest <- stanOpt$par[grep("int_samp_small", names(stanOpt$par))] %>%
+        matrix(ncol = stan_data$N_species)
+
+      #make sure we got amp efficiencies right; this should be a straight line      
+      ML_a <- stanOpt$par[grep("alpha\\[", names(stanOpt$par))]
+      
+      
+      #scale by qPCR values to estimate absolute concentration 
+      totalDNA <- results_qPCR$bayes_est / MLest[,RefSpecies]
+      ML_absolute <- totalDNA * MLest
+      ML_absolute <- ML_absolute %>% 
+        as.data.frame() %>% 
+        mutate(site_idx = 1:n()) %>% 
+        pivot_longer(-site_idx, names_to = "species", values_to = "ML_absolute") %>% 
+        mutate(species = str_replace(species, "V",""),
+               species = as.numeric(species))
+
+      
+      res.df <- Observation$Observation %>% 
+        ungroup() %>% 
+        dplyr::select(time, creek, biol, station) %>% 
+        distinct() %>% 
+        unite(time, creek, biol, station, col = "s", remove = F) %>% 
+        mutate(site_idx = match(s, unique(s))) %>% 
+        mutate(site_idx = as.numeric(site_idx)) %>% 
+        expand_grid(species = 1:nrow(sp_list))
+      MLest <- MLest %>% 
+        as.data.frame() %>% 
+        mutate(site_idx = 1:n()) %>% 
+        pivot_longer(-site_idx, names_to = "species", values_to = "MLest") %>% 
+        mutate(species = str_replace(species, "V",""),
+               species = as.numeric(species)) %>% 
+        left_join(res.df) %>% 
+        left_join(ML_absolute)
+    
+      MLest %>% 
+        drop_na() %>% 
+        ggplot(aes(x=station, y=log(ML_absolute), color = as.factor(species))) +
+        geom_boxplot() +
+        facet_grid(as.factor(species)~time, scales = "free_y")
+
+      MLest %>% 
+        filter(time == "0321", species == 1)
+      results_qPCR %>% filter(time == "0321")
+```
+
+Now estimate full Bayesian version of proportions, so we can use the full posterior.
+
+```{r Bayesian Model Estimation in Stan, results='hide'}
+      stan_pars <- c( 
+              "alpha",
+              "beta",
+              #"eta_samp",
+              "eta_mock",
+              "tau",
+              "mu_samp",
+              "mu_mock",
+              "int_samp_small"
+            )
+
+      #full Bayesian model
+      stanMod = stan(file = here("In_Progress/rosetta_calibration/quant_metabar_rosetta_noSampleEta.stan") ,data = stan_data,
+                     verbose = FALSE, chains = 3, thin = 1,
+                     warmup = 500, iter = 2000,
+                     control = list(adapt_init_buffer = 175,
+                                    max_treedepth=12,
+                                    stepsize=0.01,
+                                    adapt_delta=0.7,
+                                    metric="diag_e"),
+                     pars = stan_pars,
+                     refresh = 10,
+                     boost_lib = NULL,
+                     #init = stan_init_f2(n.chain=N_CHAIN,N_species=N_species),
+                     sample_file = "temp/tmp.csv"
+      )
+
+      #stanMod <- readRDS(here("ModFit_20220331_121413.RDS"))
+      
+      out <- list(
+        stanMod = stanMod,
+        # #seed = SEED,
+        # Nspecies = NSpecies,
+        # Nt = Nt,
+        # Process = Process,
+        Observation = Observation,
+        stan_data,
+        stan_pars
+      )
+      
+      saveRDS(out, file = paste0("Mod_object_", format(Sys.time(), "%Y%m%d_%X"), ".RDS"))
+
+      
+      #set up df to handle estimates
+      NCreeks <- length(unique(Observation$Observation$creek))
+      NBiol <- length(unique(Observation$Observation$biol))
+      
+      res.df <- Observation$Observation %>% 
+        ungroup() %>% 
+        dplyr::select(time, creek, biol, station) %>% 
+        distinct() %>% 
+        unite(time, creek, biol, station, col = "s", remove = F) %>% 
+        mutate(site_idx = match(s, unique(s))) %>% 
+        mutate(site_idx = as.numeric(site_idx)) %>% 
+        expand_grid(species = 1:nrow(sp_list))
+       post <- summary(stanMod, par = "int_samp_small")$summary %>% 
+        as.data.frame() %>% 
+        mutate(site_idx = rep(1:stan_data$N_obs_samp_small, each = stan_data$N_species),
+               species = rep(1:stan_data$N_species, times = stan_data$N_obs_samp_small)) %>% 
+        left_join(res.df)
+
+
+```
+
+Now, we sample from the posteriors of the proportions and from the qPCR model to reach a final estimate of absolute molecular abundance in the underlying samples.
+
+```{r}
+ppp <- extract(stanMod, par = "int_samp_small")$int_samp_small #get posterior samples for proportions
+ppq <- 10^extract(qMod, par = "envir_concentration")$envir_concentration #get posterior samples for absolute concentration of reference species
+
+totalDNAposterior <- ppq/ppp[,,RefSpecies] #note need same number of chains in quant metabar and qPCR models for this to work easily
+
+#dimensions are c(postSamples, site, species)
+absolute_estimate <- array(NA, dim = dim(ppp))
+for (i in 1:NSpecies){
+  absolute_estimate[,,i] <- ppp[,,i] * totalDNAposterior
+}
+
+mean_Abs_est <- apply(absolute_estimate, c(2:3), mean) %>% 
+        as.data.frame() %>% 
+        mutate(site_idx = 1:n()) %>% 
+        pivot_longer(-site_idx, names_to = "species", values_to = "mean_Abs_est") %>% 
+        mutate(species = str_replace(species, "V",""),
+               species = as.numeric(species))
+
+lower95 <- apply(absolute_estimate, c(2:3), quantile, .025) %>% 
+  as.data.frame() %>% 
+        mutate(site_idx = 1:n()) %>% 
+        pivot_longer(-site_idx, names_to = "species", values_to = "lower95_est") %>% 
+        mutate(species = str_replace(species, "V",""),
+               species = as.numeric(species))
+upper95 <- apply(absolute_estimate, c(2:3), quantile, .975) %>% 
+  as.data.frame() %>% 
+        mutate(site_idx = 1:n()) %>% 
+        pivot_longer(-site_idx, names_to = "species", values_to = "upper95_est") %>% 
+        mutate(species = str_replace(species, "V",""),
+               species = as.numeric(species))
+
+results.df <- Observation$Observation %>% 
+        ungroup() %>% 
+        dplyr::select(time, creek, biol, station) %>% 
+        distinct() %>% 
+        unite(time, creek, biol, station, col = "s", remove = F) %>% 
+        mutate(site_idx = match(s, unique(s))) %>% 
+        mutate(site_idx = as.numeric(site_idx)) %>% 
+        expand_grid(species = 1:nrow(sp_list)) %>% 
+  left_join(mean_Abs_est) %>% 
+  left_join(lower95) %>% 
+  left_join(upper95)
+
+```
+
+Visualize
+```{r}
+results.df %>% 
+        left_join(sp_list %>% rename(sp_name = species, species = species_idx)) %>% 
+        filter(mean_Abs_est < 1e4) %>% #remove outliers for now
+        ggplot(aes(x=time, y=mean_Abs_est, color = sp_name)) +
+        geom_point() +
+        geom_segment(aes(x=time, xend = time, 
+                         y=lower95_est, yend = upper95_est, 
+                         color = sp_name)) +
+        facet_grid(sp_name~station, scales = "free_y")
+
+
+results.df %>% 
+        filter(species %in% c(1,4)) %>% 
+        left_join(sp_list %>% rename(sp_name = species, species = species_idx)) %>% 
+        filter(mean_Abs_est < 1e4) %>% #remove outliers for now
+        ggplot(aes(x=station, y=mean_Abs_est, color = sp_name)) +
+        geom_point() +
+        geom_segment(aes(x=station, xend = station, 
+                         y=lower95_est, yend = upper95_est, 
+                         color = sp_name)) +
+        facet_grid(sp_name~time, scales = "free_y")
+
+```
+
+
+Now, finally, can we estimate the effects of culverts on these species? 
+
+```{r Illustrate Culvert Effect}
+  #results.df
+
+#flatten biol replicates into means within geographic sites / stations
+      downstream <- absolute_estimate[,results.df %>% dplyr::select(time, creek, biol, station, site_idx) %>% distinct() %>% filter(station == "Dn") %>% pull(site_idx),
+      ]
+      
+      upstream <- absolute_estimate[,results.df %>% dplyr::select(time, creek, biol, station, site_idx) %>% distinct() %>% filter(station == "Up11") %>% pull(site_idx),
+      ]
+      
+      down_idx <- results.df %>% dplyr::select(time, creek, biol, station, site_idx) %>% distinct() %>% filter(station == "Dn") %>% unite(time, creek, col = "timestream") %>% 
+        mutate(idx = match(timestream, unique(timestream)))
+      
+      up_idx <- results.df %>% dplyr::select(time, creek, biol, station, site_idx) %>% distinct() %>% filter(station == "Up11") %>% unite(time, creek, col = "timestream") %>% 
+        mutate(idx = match(timestream, unique(timestream)))
+      
+      
+      downstream_avg <- array(NA, dim = c(dim(downstream)[1], #posterior samples
+                                          max(down_idx$idx), #dim(downstream)[2]/NBiol, #unique geogr sites; assumes all samples present!
+                                          dim(downstream)[3] #species
+                                          ))
+      for (i in 1:dim(downstream_avg)[2]){
+        if(length(dim(downstream[,down_idx$idx == i,])) == 2){
+          downstream_avg[,i,] <- downstream[,down_idx$idx == i,]
+        } else {
+          downstream_avg[,i,] <- apply(downstream[,down_idx$idx == i,], c(1,3), mean)
+        } 
+      }
+      
+      upstream_avg <- array(NA, dim = c(dim(upstream)[1], #posterior samples
+                                          max(up_idx$idx),#dim(upstream)[2]/NBiol, #unique geogr sites
+                                          dim(upstream)[3] #species
+                                          ))
+      for (i in 1:dim(upstream_avg)[2]){
+        if(length(dim(upstream[,up_idx$idx == i,])) == 2){
+          upstream_avg[,i,] <- upstream[,up_idx$idx == i,]
+        } else {
+          upstream_avg[,i,] <- apply(upstream[,up_idx$idx == i,], c(1,3), mean)
+        } 
+      }
+
+#ensure indices line up, so you're comparing stations things that make sense in space/time
+      downstream_avg <- downstream_avg[,which(unique(down_idx$timestream) %in% intersect(down_idx$timestream, up_idx$timestream)),]
+      upstream_avg <- upstream_avg[,which(unique(up_idx$timestream) %in% intersect(down_idx$timestream, up_idx$timestream)),]
+      
+            
+#difference between downstream and upstream
+#array of dimensions (posteriorSample, geogr site, species)
+diff <- (upstream_avg-downstream_avg)/downstream_avg  #culvert effect; fold difference
+diff_mean <- apply(diff, c(2,3), mean) %>% 
+  as.data.frame() %>% 
+        mutate(TimeStream_idx = 1:n()) %>% 
+        pivot_longer(-TimeStream_idx, names_to = "species", values_to = "mean_Diff_est") %>% 
+        mutate(species = str_replace(species, "V",""),
+               species = as.numeric(species))
+diff_95high <- apply(diff, c(2,3), quantile, .975) %>% 
+  as.data.frame() %>% 
+        mutate(TimeStream_idx = 1:n()) %>% 
+        pivot_longer(-TimeStream_idx, names_to = "species", values_to = "mean_Diff_95high") %>% 
+        mutate(species = str_replace(species, "V",""),
+               species = as.numeric(species))
+
+diff_95low <- apply(diff, c(2,3), quantile, .025) %>% 
+  as.data.frame() %>% 
+        mutate(TimeStream_idx = 1:n()) %>% 
+        pivot_longer(-TimeStream_idx, names_to = "species", values_to = "mean_Diff_95low") %>% 
+        mutate(species = str_replace(species, "V",""),
+               species = as.numeric(species))
+  
+diff_res <- results.df %>% 
+  dplyr::select(time, creek, species) %>% 
+  distinct() %>% 
+  unite(time, creek, col = "timestream") %>% 
+  mutate(TimeStream_idx = match(timestream, unique(timestream))) %>% 
+  left_join(diff_mean) %>% 
+  left_join(diff_95high) %>% 
+  left_join(diff_95low) %>% 
+  separate(timestream, into = c("time", "creek"))
+  
+
+diff_res %>% 
+  filter(mean_Diff_est < 1e4) %>%  #remove outliers for now
+  filter(species %in% c(1,4)) %>%  #keep only common ones
+  left_join(sp_list %>% rename(sp_name = species, species = species_idx)) %>% 
+  ggplot(aes(x = time, y = mean_Diff_est, color = sp_name)) +
+    geom_point() +
+    geom_segment(aes(x = time, xend = time, y = mean_Diff_95low, yend = mean_Diff_95high, color = sp_name)) +
+    facet_wrap(~sp_name, scales = "free")
+```
+
+
+Here, the 95% CIs are pretty large because of the differences among biological samples within a site/time. 
+
+
+
