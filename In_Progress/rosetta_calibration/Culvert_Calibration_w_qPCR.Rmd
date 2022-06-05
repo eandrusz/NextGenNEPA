@@ -27,6 +27,7 @@ envir_qPCR <- qPCRdata %>%
   filter(Type != "STANDARD") %>% 
   filter(Ct != "Undetermined") %>% 
   mutate(Ct = as.numeric(Ct)) %>% 
+  arrange(Sample) %>% 
   separate(Sample, into = c("time", "site", "station", "biolRep"), remove = F) %>% 
   group_by(time, site, station, biolRep) %>% 
   mutate(tech_rep = 1:n())
@@ -115,6 +116,9 @@ Observation$Observation <- Observation$Observation %>% filter(Sample %in% keepSa
 envir_qPCR <- envir_qPCR %>% filter(Sample %in% keepSamples)
 
 NSpecies <- nrow(sp_list)
+
+RefSpecies <- 1 #index of the species for which you have qPCR data, relative to sp_list
+
 ```
 
 
@@ -157,19 +161,7 @@ qPCR calibration and estimating absolute concentrations from enviro samples usin
 
 ```{r fit qPCR calibration model and estimate concentration of enviro samples, results='hide'}
 
-      # M <- stan_model(file=here("qPCR_calibration.stan"))
-      # stanOpt <- optimizing(M, data=stan_data, iter=30000,draws=0,
-      #                       verbose=T,
-      #                       #init=stan_init_f4(N_species=stan_data$N_species, Observation),
-      #                       tol_param=1e-15,
-      #                       algorithm="LBFGS")
-      # stanOpt$par[grep("beta_std_curve_1", names(stanOpt$par))]
-      # stanOpt$par[grep("beta_std_curve_0", names(stanOpt$par))]
-      # stanOpt$par[grep("mu_std_curve", names(stanOpt$par))]
-      # stanOpt$par[grep("sigma_std_curve", names(stanOpt$par))]
-      # stanOpt$par[grep("sigma_envir_qPCR", names(stanOpt$par))]
-      # stanOpt$par[grep("mu_qPCR_envir", names(stanOpt$par))]
-      # stanOpt$par[grep("envir_concentration", names(stanOpt$par))]
+#TODO modify model to handle multiple different std curves
 
 qMod = stan(file = here("In_Progress/rosetta_calibration/qPCR_calibration.stan") ,data = stan_data,
                      verbose = FALSE, chains = 3, thin = 1,
@@ -193,8 +185,18 @@ qMod = stan(file = here("In_Progress/rosetta_calibration/qPCR_calibration.stan")
 Visualize std curve with CI
 
 ```{r}
+pp_beta0 <- extract(qMod, "beta_std_curve_0")$beta_std_curve_0
+pp_beta1 <- extract(qMod, "beta_std_curve_1")$beta_std_curve_1
+pp_sigma <- extract(qMod, "sigma_std_curve")$sigma_std_curve
 
+conc <- runif(1000, 0, 5)
+mu <- sample(pp_beta0, 1000) + (sample(pp_beta1, 1000)*conc)
+y<-NA
+for(i in 1:1000){y[i] <- rnorm(1, mean = mu[i], sd = pp_sigma[i])}
 
+data.frame(y, conc) %>% 
+  ggplot(aes(x = conc, y = y)) +
+    geom_point(alpha = .5)
 
 ```
 
@@ -245,7 +247,7 @@ stan_data <- makeDesign(Observation)
       
       
       #scale by qPCR values to estimate absolute concentration 
-      totalDNA <- results_qPCR$bayes_est / MLest[,1]
+      totalDNA <- results_qPCR$bayes_est / MLest[,RefSpecies]
       ML_absolute <- totalDNA * MLest
       ML_absolute <- ML_absolute %>% 
         as.data.frame() %>% 
@@ -278,6 +280,9 @@ stan_data <- makeDesign(Observation)
         geom_boxplot() +
         facet_grid(as.factor(species)~time, scales = "free_y")
 
+      MLest %>% 
+        filter(time == "0321", species == 1)
+      results_qPCR %>% filter(time == "0321")
 ```
 
 Now estimate full Bayesian version of proportions, so we can use the full posterior.
@@ -350,10 +355,10 @@ Now estimate full Bayesian version of proportions, so we can use the full poster
 Now, we sample from the posteriors of the proportions and from the qPCR model to reach a final estimate of absolute molecular abundance in the underlying samples.
 
 ```{r}
-ppp <- extract(stanMod, par = "int_samp_small")$int_samp_small
-ppq <- 10^extract(qMod, par = "envir_concentration")$envir_concentration #for simulations, this relates to species 1
+ppp <- extract(stanMod, par = "int_samp_small")$int_samp_small #get posterior samples for proportions
+ppq <- 10^extract(qMod, par = "envir_concentration")$envir_concentration #get posterior samples for absolute concentration of reference species
 
-totalDNAposterior <- ppq/ppp[,,1] #note need same number of chains in quant metabar and qPCR models for this to work easily
+totalDNAposterior <- ppq/ppp[,,RefSpecies] #note need same number of chains in quant metabar and qPCR models for this to work easily
 
 #dimensions are c(postSamples, site, species)
 absolute_estimate <- array(NA, dim = dim(ppp))
@@ -425,7 +430,7 @@ results.df %>%
 Now, finally, can we estimate the effects of culverts on these species? 
 
 ```{r Illustrate Culvert Effect}
-  results.df
+  #results.df
 
 #flatten biol replicates into means within geographic sites / stations
       downstream <- absolute_estimate[,results.df %>% dplyr::select(time, creek, biol, station, site_idx) %>% distinct() %>% filter(station == "Dn") %>% pull(site_idx),
