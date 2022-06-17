@@ -16,31 +16,37 @@ library(here)
 rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
 
-
 source(here("In_Progress/rosetta_calibration/simFunctions.R")) #functions to generate communities and observations of those communities
-qPCRdata <- read.csv(here("In_Progress/rosetta_calibration/data/cutthroat_qpcr_results.csv"))
-stdCurve <- qPCRdata %>% 
-  filter(Type == "STANDARD" & Ct != "Undetermined" & Plate == 1) %>% 
-  mutate(Ct = as.numeric(Ct),
-         Sample = as.numeric(Sample))
-envir_qPCR <- qPCRdata %>% 
-  filter(Type != "STANDARD") %>% 
-  filter(Ct != "Undetermined") %>% 
-  mutate(Ct = as.numeric(Ct)) %>% 
-  arrange(Sample) %>% 
-  separate(Sample, into = c("time", "site", "station", "biolRep"), remove = F) %>% 
-  group_by(time, site, station, biolRep) %>% 
-  mutate(tech_rep = 1:n())
 ```
 
-Metabarcoding data
+```{r load qPCR data}
+qPCRdata <- read.csv(here("In_Progress/rosetta_calibration/data/cutthroat_qpcr_results.csv")) %>% 
+  filter(Type != "NTC") %>% 
+  mutate(z = ifelse(Ct == "Undetermined", 0, 1),
+         Ct = ifelse(Ct == "Undetermined", 99, Ct)) %>% 
+  # mutate(Plate = ifelse(Plate == 2 & Type == "UNKNOWN", 1, Plate)) %>%  #temporarily treat plate 2 as arising from plate 1 standards
+  # filter(Plate != 2) %>%  #remove offending standards for the moment 
+  unite(c(Plate,Sample), col = "plateSample", remove = F) %>% 
+  mutate(plateSample_idx = match(plateSample, unique(plateSample))) %>% 
+  mutate(Ct = as.numeric(Ct)) %>% 
+  mutate(conc = NA)
+qPCRdata$conc[qPCRdata$Type == "STANDARD"] <- qPCRdata$Sample[qPCRdata$Type == "STANDARD"] %>% as.numeric()
 
-```{r}
+qPCRdata <- qPCRdata %>% 
+  left_join(read_csv(here("In_Progress/rosetta_calibration/data/qpcr.dilutions2.csv")) %>% dplyr::select(Sample, Final.qpcr.Dilution)) %>% 
+  rename(dilution = Final.qpcr.Dilution) %>%  
+separate(Sample, into = c("time", "creek", "station", "biolRep"), remove = F) 
+
+```
+
+
+
+```{r load Metabarcoding data}
 a <- readRDS("data/MiFish.salmonidonly.envirodata.RDS") %>% 
   filter(species != "") %>% 
   filter(time != "NA") %>% 
   filter(creek == "4Pad") %>% 
-  filter(time %in% unique(envir_qPCR$time))
+  filter(time %in% unique(qPCRdata$time))
 
 d <- readRDS(here("In_Progress","rosetta_calibration","data","MiFishmockdata.RDS")) %>% 
   mutate(time = 1,
@@ -111,9 +117,9 @@ Observation$Observation  <- Observation$Observation %>%
   unite(c(time, creek, sitename, biol), col = "Sample", sep = ".", remove = F) %>%
   rename(station = sitename) 
 
-keepSamples <- intersect(Observation$Observation$Sample, envir_qPCR$Sample)
+keepSamples <- intersect(Observation$Observation$Sample, qPCRdata$Sample)
 Observation$Observation <- Observation$Observation %>% filter(Sample %in% keepSamples)
-envir_qPCR <- envir_qPCR %>% filter(Sample %in% keepSamples)
+envir_qPCR <- qPCRdata %>% filter(Sample %in% keepSamples)
 
 NSpecies <- nrow(sp_list)
 
@@ -124,10 +130,12 @@ RefSpecies <- 1 #index of the species for which you have qPCR data, relative to 
 
 
 
-Check std curves
+Quick check std curves
 ```{r}
-stdCurve %>% 
-  ggplot(aes(x= log(Sample), y = Ct, color = as.factor(Plate))) +
+qPCRdata %>% 
+  filter(Type == "STANDARD") %>% 
+  filter(z == 1) %>% 
+  ggplot(aes(x= log(conc), y = Ct, color = as.factor(Plate))) +
     geom_point() +
     geom_smooth(method = "lm")
 
@@ -138,21 +146,24 @@ stdCurve %>%
 
 ```{r qPCR calibrations setup}
 
-stan_data <- list()
-#add qPCR std curve
-  stan_data$N_std_curve <- length(stdCurve$Ct)
-  stan_data$N_std_samples <- length(unique(stdCurve$Sample))
-  stan_data$std_sample_idx <- match(stdCurve$Sample, unique(stdCurve$Sample)) #note, assumes single array of dilutions
-  stan_data$known_concentration <- unique(stdCurve$Sample)
-  stan_data$y_ct_std_curve <- stdCurve$Ct
+type <- qPCRdata %>% dplyr::select(plateSample, Type) %>% distinct() %>% pull(Type)
 
-#add qPCR from envir samples
-  stan_data$N_qPCR_envir <- nrow(envir_qPCR)
-  stan_data$N_biol_estimates <- length(unique(envir_qPCR$Sample))
-  stan_data$sp_idx_qPCR <- rep(1, stan_data$N_biol_estimates) #species idx; will need to change when we have multiple reference species
-  stan_data$obs_samp_idx <- match(envir_qPCR$Sample, unique(envir_qPCR$Sample))
-  stan_data$obs_samp_small_idx <- unique(envir_qPCR$Sample)
-  stan_data$y_ct_envir <- envir_qPCR$Ct
+stan_qPCR_data <- list(
+  Nplates = length(unique(qPCRdata$Plate)),
+  Nobs = length(qPCRdata$Ct),
+  NSamples = length(unique(qPCRdata$plateSample)),
+  NstdSamples = qPCRdata %>% filter(Type == "STANDARD") %>% dplyr::select(plateSample) %>% distinct() %>% nrow(),
+  plate_idx = match(qPCRdata$Plate, unique(qPCRdata$Plate)),
+  std_idx =  which(type=="STANDARD"),
+  unkn_idx = which(type != "STANDARD"),
+  plateSample_idx = match(qPCRdata$plateSample, unique(qPCRdata$plateSample)),
+  y = qPCRdata$Ct,
+  z = qPCRdata$z,
+  known_concentration = qPCRdata %>% filter(Type == "STANDARD") %>% dplyr::select(plateSample_idx, conc) %>% distinct() %>% pull(conc),
+  stdCurvePrior_intercept = c(42, 1), #normal distr, mean and sd
+  stdCurvePrior_slope = c(-3, .5) #normal distr, mean and sd
+)
+
 
 ```
 
@@ -161,9 +172,7 @@ qPCR calibration and estimating absolute concentrations from enviro samples usin
 
 ```{r fit qPCR calibration model and estimate concentration of enviro samples, results='hide'}
 
-#TODO modify model to handle multiple different std curves
-
-qMod = stan(file = here("In_Progress/rosetta_calibration/qPCR_calibration.stan") ,data = stan_data,
+qMod = stan(file = here("In_Progress/rosetta_calibration/qPCR_calibration_multiplate.stan") ,data = stan_qPCR_data,
                      verbose = FALSE, chains = 3, thin = 1,
                      warmup = 500, iter = 2000,
                      control = list(adapt_init_buffer = 175,
@@ -178,46 +187,74 @@ qMod = stan(file = here("In_Progress/rosetta_calibration/qPCR_calibration.stan")
                      sample_file = "temp/tmp.csv"
       )
 
-#plot(qMod, par = c("beta_std_curve_1", "sigma_std_curve", "sigma_envir_qPCR"))
-# launch_shinystan(qMod)
+#plot(qMod, par = c("beta_std_curve_1", "gamma_0", "gamma_1"))
+#plot(qMod, par = c("beta_std_curve_0"))
+#plot(qMod, par = c("phi_0", "phi_1"))
+# shinystan::launch_shinystan(qMod)
 ```
 
 Visualize std curve with CI
 
 ```{r}
-pp_beta0 <- extract(qMod, "beta_std_curve_0")$beta_std_curve_0
-pp_beta1 <- extract(qMod, "beta_std_curve_1")$beta_std_curve_1
-pp_sigma <- extract(qMod, "sigma_std_curve")$sigma_std_curve
 
-conc <- runif(1000, 0, 5)
-mu <- sample(pp_beta0, 1000) + (sample(pp_beta1, 1000)*conc)
+PLATE = 1
+
+pp_beta0 <- extract(qMod, "beta_std_curve_0")$beta_std_curve_0[,PLATE]
+pp_beta1 <- extract(qMod, "beta_std_curve_1")$beta_std_curve_1[,PLATE]
+# pp_sigma <- extract(qMod, "sigma_std_curve")$sigma_std_curve
+pp_gamma_0 <- extract(qMod, "gamma_0")$gamma_0[,PLATE]
+pp_gamma_1 <- extract(qMod, "gamma_1")$gamma_1[,PLATE]
+
+
+conc <- runif(length(pp_beta0), 0, 6)
+mu <- pp_beta0 + pp_beta1*conc
+sigma <- exp(pp_gamma_0 + pp_gamma_1*mu)
 y<-NA
-for(i in 1:1000){y[i] <- rnorm(1, mean = mu[i], sd = pp_sigma[i])}
+for(i in 1:length(pp_beta0)){y[i] <- rnorm(1, mean = mu[i], sd = sigma[i])}
 
-data.frame(y, conc) %>% 
+(plotstd <- data.frame(y, conc) %>% 
   ggplot(aes(x = conc, y = y)) +
-    geom_point(alpha = .5)
+    geom_point(alpha = .1) +
+    geom_point(data = qPCRdata %>% filter(Plate == PLATE & z == 1), aes(x = log10(conc), y = Ct), color = "red") +
+    geom_point(data = qPCRdata %>% filter(Plate == PLATE & z == 0), aes(x = log10(conc), y = 20), color = "blue") +
+    ggtitle(paste("Plate ", PLATE)))
 
 ```
 
 
 
 ```{r plot qPCR fit}
-results_qPCR <- envir_qPCR %>%
+results_qPCR <- qPCRdata %>%
+  filter(Type != "STANDARD") %>% 
   ungroup() %>% 
-  filter(tech_rep == 1) %>%
+  left_join(data.frame(
+  Sample = qPCRdata %>% filter(Type != "STANDARD") %>% dplyr::select(Sample) %>% distinct()) %>% 
   mutate(bayes_est = 10^(summary(qMod, par = "envir_concentration")$summary[,1]),
          bayes_25pct = 10^(summary(qMod, par = "envir_concentration")$summary[,5]),
          bayes_75pct = 10^(summary(qMod, par = "envir_concentration")$summary[,7]))
-         
+  ) %>% 
+  mutate(mean_corrected = bayes_est * dilution,
+         ci25_corrected = bayes_25pct * dilution,
+         ci75_corrected = bayes_75pct * dilution)
+
+plotstd +
+  geom_point(data = results_qPCR %>% filter(z == 1), aes(x = log10(mean_corrected), y = Ct, color = as.factor(Plate)))
+
 
 results_qPCR %>% 
-  ggplot(aes(x = station, y = log(bayes_est))) +
+  ggplot(aes(x = station, y = mean_corrected)) +
     geom_point() +
-    geom_segment(aes(x = station, xend = station, y = log(bayes_25pct), yend = log(bayes_75pct))) +
-    facet_wrap(~time)
+    geom_segment(aes(x = station, xend = station, y = ci25_corrected, yend = ci75_corrected)) +
+    facet_wrap(~time) +
+    scale_y_continuous(trans='log10')
     
 
+#visualize non-detects
+results_qPCR %>% 
+  group_by(plateSample) %>% 
+  mutate(n = sum(z)) %>% 
+  filter(n < 3) 
+  
 ```
 
 
@@ -242,12 +279,12 @@ stan_data <- makeDesign(Observation)
       MLest <- stanOpt$par[grep("int_samp_small", names(stanOpt$par))] %>%
         matrix(ncol = stan_data$N_species)
 
-      #make sure we got amp efficiencies right; this should be a straight line      
+      
       ML_a <- stanOpt$par[grep("alpha\\[", names(stanOpt$par))]
       
       
       #scale by qPCR values to estimate absolute concentration 
-      totalDNA <- results_qPCR$bayes_est / MLest[,RefSpecies]
+      totalDNA <- results_qPCR %>% dplyr::select(-Ct) %>% pull(mean_corrected) / MLest[,RefSpecies]
       ML_absolute <- totalDNA * MLest
       ML_absolute <- ML_absolute %>% 
         as.data.frame() %>% 
